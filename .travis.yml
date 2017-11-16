@@ -1,0 +1,9 @@
+language: java
+jdk:
+- oraclejdk8
+cache:
+  directories:
+  - "$HOME/.m2"
+script: 
+# Skip Python tests for now until we land PySpark dependencies
+- mvn clean install -Dmaven.javadoc.skip=true -Dskip.python.tests=True -B -V -e
