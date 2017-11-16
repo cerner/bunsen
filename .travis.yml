@@ -4,6 +4,8 @@ jdk:
 cache:
   directories:
   - "$HOME/.m2"
+# Skip default install logic since we use our own settings below.
+install: true
 script: 
 # Skip Python tests for now until we land PySpark dependencies
 - mvn clean install -Dmaven.javadoc.skip=true -Dskip.python.tests=True -B -V -e
