@@ -1,0 +1,30 @@
+<assembly>
+  <id>dist</id>
+  <formats>
+    <format>zip</format>
+    <format>dir</format>
+  </formats>
+
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>jars</outputDirectory>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <includes>
+        <include>com.cerner.bunsen:bunsen-shaded:jar</include>
+      </includes>
+    </dependencySet>
+
+    <dependencySet>
+      <outputDirectory>python</outputDirectory>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <includes>
+        <include>com.cerner.bunsen:bunsen-python:jar</include>
+      </includes>
+      <unpack>true</unpack>
+    </dependencySet>
+
+  </dependencySets>
+</assembly>
+
+
+

@@ -1,0 +1,9 @@
+{% extends "!layout.html" %}
+{% set css_files = css_files + ["_static/github_fork.css"] %}
+{% set script_files = script_files + ["_static/github_fork.js"] %}
+{% block menu %}
+{{ super() }}
+<li>
+  <a href="apidocs/index.html">Java Docs</a>
+</li>
+{% endblock %}

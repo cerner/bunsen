@@ -1,0 +1,50 @@
+# Java Artifacts #
+*.class
+*.classpath
+target
+*.clover
+spark-warehouse
+metastore_db
+
+# Clover Artifacts #
+.clover
+
+# Eclipse Artifacts #
+*.project
+*.settings
+
+# Intellij Artifacts #
+*.iml
+## Directory-based project format:
+.idea/
+## File-based project format:
+*.ipr
+*.iws
+
+# Vim swap files #
+*.swp
+*.swo
+
+# Mac file system
+.DS_Store
+
+# maven artifacts #
+*.releaseBackup
+*.versionsBackup
+**/target
+**/dependency-reduced-pom.xml
+*.crc
+
+# Python artifacts #
+**/*.pyc
+**/.cache
+
+# Sphinx docs artifacts #
+docs/build
+
+#Pyspark/Jupyter artifacts
+**/.ipynb_checkpoints/
+**/derby.log
+
+# Test Artifacts #
+*.crc

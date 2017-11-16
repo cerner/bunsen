@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>bunsen-shaded</artifactId>
+  <packaging>jar</packaging>
+  <parent>
+    <artifactId>bunsen-parent</artifactId>
+    <groupId>com.cerner.bunsen</groupId>
+    <version>0.1.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <name>Bunsen Shaded Assembly</name>
+  <description>Shaded JAR containing Bunsen and FHIR dependencies.</description>
+
+  <build>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.1</version>
+        <executions>
+          <execution>
+            <id>spark-assembly</id>
+            <phase>package</phase>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              </transformers>
+              <artifactSet>
+                <includes>
+
+                  <!-- Include the Bunsen artifacts. -->
+                  <include>com.cerner.bunsen:bunsen-core</include>
+
+                  <!-- Include the FHIR APIs -->
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-structures-dstu3</include>
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-validation-resources-dstu3</include>
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-base</include>
+
+                </includes>
+              </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/LICENSE</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-core</artifactId>
+    </dependency>
+  </dependencies>
+</project>
