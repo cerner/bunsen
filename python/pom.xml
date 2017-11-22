@@ -40,6 +40,9 @@
                 <argument>test</argument>
               </arguments>
               <skip>${skip.python.tests}</skip>
+              <environmentVariables>
+                <SHADED_JAR_PATH>${project.parent.basedir}/bunsen-shaded/target/bunsen-shaded-${project.version}.jar</SHADED_JAR_PATH>
+              </environmentVariables>
             </configuration>
             <id>python-tests</id>
             <phase>integration-test</phase>

@@ -1,4 +1,4 @@
-import glob
+import os
 
 from tempfile import mkdtemp
 from pytest import fixture
@@ -25,7 +25,7 @@ def spark_session(request):
   """
 
   # Get the shaded JAR for testing purposes.
-  shaded_jar =  glob.glob('../bunsen-shaded/target/bunsen-shaded*.jar')[0]
+  shaded_jar =  os.environ['SHADED_JAR_PATH']
 
   spark = SparkSession.builder \
     .appName('Foresight-test') \
