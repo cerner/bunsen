@@ -25,7 +25,11 @@ Bunsen currently uses FHIR STU3 and Spark 2.1. The assembly itself can be downlo
 Simple Queries
 --------------
 A production deployment would typically bulk load large volumes of data, but the easiest way to experiment
-with Bunsen is simply to pull in some existing FHIR bundles.
+with Bunsen is simply to pull in some existing FHIR bundles. Bunsen offers a convenience method
+to load a collection of bundles from a given directory, or users can provide their own data via Python or
+Java APIs.
+
+Here's a simple example loading test bundles from a directory:
 
 >>> from bunsen.bundles import load_from_directory, extract_entry
 >>>
