@@ -17,10 +17,8 @@ in the PYTHONPATH, all of which can be found in the assembly:
 >>> export PYTHONPATH=$PWD/bunsen-assembly-0.1.0/python:$PYTHONPATH
 >>> pyspark --jars bunsen-assembly-0.1.0/jars/bunsen-shaded-0.1.0.jar
 
-Bunsen currently uses FHIR STU3 and Spark 2.1. The assembly itself can be downloaded from
-`Maven Central <https://repo.maven.apache.org/maven2/com/cerner/>`_.
-
-(Note: the above link will be updated when the first release lands on Maven Central.)
+Bunsen currently uses FHIR STU3 and Spark 2.1. The assembly itself can be downloaded from the
+releases in `Maven Central <http://repo.maven.apache.org/maven2/com/cerner/bunsen/bunsen-assembly/>`_.
 
 Simple Queries
 --------------
