@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 
 EXPECTED_COLUMNS = {'sourceValueSet', 'targetValueSet', 'sourceSystem',
                     'sourceValue', 'targetSystem', 'targetValue', 'equivalence',
-                    'conceptMapUri', 'conceptMapVersion'}
+                    'conceptmapuri', 'conceptmapversion'}
 
 @fixture(scope="session")
 def spark_session(request):
@@ -61,7 +61,7 @@ def test_add_map(spark_session):
                                       mappings=snomed_to_loinc)
 
   assert updated.get_maps().count() == 1
-  assert updated.get_mappings().where(col('conceptMapUri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
+  assert updated.get_mappings().where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
 
 def test_add_to_existing(spark_session):
 
@@ -84,11 +84,11 @@ def test_add_to_existing(spark_session):
 
   # Original concept map should be unchanged.
   assert with_existing.get_maps().count() == 1
-  assert with_existing.get_mappings().where(col('conceptMapUri') == 'urn:cerner:test:snomed-to-loinc').count() == 1
+  assert with_existing.get_mappings().where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc').count() == 1
 
   # Updated concept map should have the new mappings.
   assert updated.get_maps().count() == 1
-  assert updated.get_mappings().where(col('conceptMapUri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
+  assert updated.get_mappings().where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
   assert updated.get_ancestors().count() == 0
 
 def test_get_map_as_xml(spark_session):
@@ -135,7 +135,7 @@ def test_write_maps(spark_session):
   reloaded = get_default(spark_session)
 
   assert reloaded.get_maps().count() == 1
-  assert reloaded.get_mappings().where(col('conceptMapUri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
+  assert reloaded.get_mappings().where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
 
 # LOINC Tests
 def test_read_hierarchy_file(spark_session):

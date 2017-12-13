@@ -275,7 +275,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
 
       case tsClass if tsClass == classOf[org.hl7.fhir.dstu3.model.InstantType] =>
 
-        Cast(dataTypeToUtf8Expr(inputObject), DataTypes.TimestampType)
+        Cast(dataTypeToUtf8Expr(inputObject), DataTypes.TimestampType).withTimeZone("UTC")
 
       case base64Class if base64Class == classOf[org.hl7.fhir.dstu3.model.Base64BinaryType] =>
 
