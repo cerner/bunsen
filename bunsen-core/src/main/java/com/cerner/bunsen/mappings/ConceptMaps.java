@@ -135,8 +135,8 @@ public class ConceptMaps {
 
   private static final StructType MAP_AND_VERSION_SCHEMA =
       DataTypes.createStructType(new StructField[]{
-          DataTypes.createStructField("conceptMapUri", DataTypes.StringType, false),
-          DataTypes.createStructField("conceptMapVersion", DataTypes.StringType, false)});
+          DataTypes.createStructField("conceptmapuri", DataTypes.StringType, false),
+          DataTypes.createStructField("conceptmapversion", DataTypes.StringType, false)});
 
   private final SparkSession spark;
 
@@ -447,8 +447,8 @@ public class ConceptMaps {
         "targetSystem",
         "targetValue",
         "equivalence",
-        "conceptMapUri",
-        "conceptMapVersion")
+        "conceptmapuri",
+        "conceptmapversion")
         .as(MAPPING_ENCODER);
   }
 
@@ -463,8 +463,8 @@ public class ConceptMaps {
         "descendantSystem",
         "ancestorSystem",
         "ancestorValue",
-        "conceptMapUri",
-        "conceptMapVersion")
+        "conceptmapuri",
+        "conceptmapversion")
         .as(ANCESTOR_ENCODER);
   }
 
@@ -695,17 +695,17 @@ public class ConceptMaps {
 
     Dataset<Mapping> unchangedMappings =
         asMappings(this.mappings.join(changes.alias("changes"),
-            functions.col("conceptMapUri")
+            functions.col("conceptmapuri")
                 .equalTo(functions.col("changes.url")).and(
-                functions.col("conceptMapVersion")
+                functions.col("conceptmapversion")
                     .equalTo(functions.col("changes.version"))),
             "leftanti"));
 
     Dataset<Ancestor> unchangedAncestors =
         asAncestors(this.ancestors.join(changes.alias("changes"),
-            functions.col("conceptMapUri")
+            functions.col("conceptmapuri")
                 .equalTo(functions.col("changes.url")).and(
-                functions.col("conceptMapVersion")
+                functions.col("conceptmapversion")
                     .equalTo(functions.col("changes.version"))),
             "leftanti"));
 
@@ -831,8 +831,8 @@ public class ConceptMaps {
    */
   public Dataset<Mapping> getMappings(String uri, String version) {
 
-    return mappings.where(functions.col("conceptMapUri").equalTo(functions.lit(uri))
-        .and(functions.col("conceptMapVersion").equalTo(functions.lit(version))));
+    return mappings.where(functions.col("conceptmapuri").equalTo(functions.lit(uri))
+        .and(functions.col("conceptmapversion").equalTo(functions.lit(version))));
   }
 
   /**
@@ -931,8 +931,8 @@ public class ConceptMaps {
   }
 
   /**
-   * Creates a table of mapping records partitioned by conceptMapUri and
-   * conceptMapVersion.
+   * Creates a table of mapping records partitioned by conceptmapuri and
+   * conceptmapversion.
    *
    * @param spark the spark session
    * @param tableName the name of the mapping table
@@ -967,7 +967,7 @@ public class ConceptMaps {
     builder.append(tableName);
 
     // Note the partitioned by columns are deliberately lower case here,
-    // since Spark 2.1 does not appear to match columns to
+    // since Spark does not appear to match columns to
     // Hive partitions if they are not.
     builder.append("(sourceValueSet STRING, "
         + "targetValueSet STRING, "
@@ -1026,7 +1026,7 @@ public class ConceptMaps {
     builder.append(tableName);
 
     // Note the partitioned by columns are deliberately lower case here,
-    // since Spark 2.1 does not appear to match columns to
+    // since Spark does not appear to match columns to
     // Hive partitions if they are not.
     builder.append("(descendantSystem STRING, "
         + "descendantValue STRING, "
@@ -1092,7 +1092,7 @@ public class ConceptMaps {
       String tableName) {
 
     // Note the last two columns here must be the partitioned-by columns
-    // in order and in lower case for Spark 2.1 to properly match
+    // in order and in lower case for Spark to properly match
     // them to the partitions.
     Dataset<Row> orderedColumnDataset =
         mappings.select("sourceValueSet",
@@ -1123,7 +1123,7 @@ public class ConceptMaps {
       String tableName) {
 
     // Note the last two columns here must be the partitioned-by columns
-    // in order and in lower case for Spark 2.1 to properly match
+    // in order and in lower case for Spark to properly match
     // them to the partitions.
     Dataset<Row> orderedColumnDataset =
         ancestors.select("descendantSystem",
@@ -1163,9 +1163,9 @@ public class ConceptMaps {
 
     // Get only the ancestors to write and save them.
     Dataset<Ancestor> ancestorsToWrite = this.ancestors.join(mapsToWrite,
-        functions.col("conceptMapUri")
+        functions.col("conceptmapuri")
             .equalTo(functions.col("url")).and(
-            functions.col("conceptMapVersion")
+            functions.col("conceptmapversion")
                 .equalTo(functions.col("version"))),
         "leftsemi")
         .as(ANCESTOR_ENCODER);
@@ -1192,9 +1192,9 @@ public class ConceptMaps {
 
     // Get only mappings to write and save them.
     Dataset<Mapping> mappingsToWrite = this.mappings.join(mapsToWrite,
-        functions.col("conceptMapUri")
+        functions.col("conceptmapuri")
             .equalTo(functions.col("url")).and(
-            functions.col("conceptMapVersion")
+            functions.col("conceptmapversion")
                 .equalTo(functions.col("version"))),
         "leftsemi")
         .as(MAPPING_ENCODER);
