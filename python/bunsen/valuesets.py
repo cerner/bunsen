@@ -5,34 +5,37 @@ in Spark queries.
 
 from collections import namedtuple
 
-from bunsen.mapping import get_default
+from bunsen.mapping import get_default_value_sets, get_default_hierarchies
 
-# Placeholder record to load descendents of a given ancestor
-AncestorPlaceholder = namedtuple("AncestorPlaceholder",
-                                 "codeSystem codeValue conceptMapUri conceptMapVersion")
+# Placeholder record to load a particular value set
+ValueSetPlaceholder = namedtuple("ValueSetPlaceholder",
+                                 "valueSetUri valueSetVersion")
+
+# Placeholder record to load a particular hierarchical system
+HierarchyPlaceholder = namedtuple("HierarchyPlaceholder",
+                                  "codeSystem codeValue hierarchyUri hierarchyVersion")
 
 def isa_loinc(code_value, loinc_version=None):
     """
-    Returns a valueset placeholder that will load all values that are descendents
+    Returns a hierarchy placeholder that will load all values that are descendents
     of a given LOINC code.
     """
-    return AncestorPlaceholder('http://loinc.org',
-                               code_value,
-                               'uri:cerner:foresight:mapping:loinc-hierarchy',
-                               loinc_version)
+    return HierarchyPlaceholder('http://loinc.org',
+                                code_value,
+                                'urn:com:cerner:bunsen:hierarchy:loinc',
+                                loinc_version)
 
 def isa_snomed(code_value, snomed_version=None):
     """
-    Returns a valueset placeholder that will load all values that are descendents
+    Returns a hierarchy placeholder that will load all values that are descendents
     of a given SNOMED code.
     """
-    return AncestorPlaceholder('http://snomed.info/sct',
-                               code_value,
-                               'uri:cerner:foresight:mapping:snomed-hierarchy',
-                               snomed_version)
+    return HierarchyPlaceholder('http://snomed.info/sct',
+                                code_value,
+                                'urn:com:cerner:bunsen:hierarchy:snomed',
+                                snomed_version)
 
-
-def push_valuesets(spark_session, valueset_map, concept_maps=None):
+def push_valuesets(spark_session, valueset_map, value_sets=None, hierarchies=None):
     """
     Pushes valuesets onto a stack and registers an in_valueset user-defined function
     that uses this content.
@@ -40,12 +43,17 @@ def push_valuesets(spark_session, valueset_map, concept_maps=None):
     The valueset_map takes the form of {referenceName: [(codeset, codevalue), (codeset, codevalue)]}
     to specify which codesets/values are used for the given valueset reference name.
 
-    Rather than explicitly passing a list of (codeset, codevalue) tuples, users may instead provide
-    an AncestorPlaceholder that instructs the the system to load all descendents of a given
-    code value. See the isa_loinc and isa_snomed functions above for details.
+    Rather than explicitly passing a list of (codeset, codevalue) tuples, users may instead
+    load particular value sets or particular hierarchies by providing a ValueSetPlaceholder
+    or HierarchyPlaceholder that instructs the system to load codes belonging to a particular
+    value set or hierarchical system, respectively. See the isa_loinc and isa_snomed functions
+    above for details.
     """
-    if concept_maps is None:
-        concept_maps = get_default(spark_session)
+    if value_sets is None:
+        value_sets = get_default_value_sets(spark_session)
+
+    if hierarchies is None:
+        hierarchies = get_default_hierarchies(spark_session)
 
     jvm = spark_session._jvm
 
@@ -53,12 +61,26 @@ def push_valuesets(spark_session, valueset_map, concept_maps=None):
 
     for (name, content) in valueset_map.items():
 
-        if type(content) is AncestorPlaceholder:
+        print(name)
+        print(content)
 
-            # Add descendents of the specified item
-            (codeSystem, codeValue, conceptMapUri, conceptMapVersion) = content
+        if type(content) is HierarchyPlaceholder:
 
-            builder.addDescendantsOf(name, codeSystem, codeValue, conceptMapUri, conceptMapVersion)
+            # Add codes belonging to the specified hierarchy
+            (codeSystem, codeValue, hierarchyUri, hierarchyVersion) = content
+
+            builder.addDescendantsOf(name,
+                                     codeSystem,
+                                     codeValue,
+                                     hierarchyUri,
+                                     hierarchyVersion)
+
+        elif type(content) is ValueSetPlaceholder:
+
+            # Add codes belonging to the specified value set
+            (valueSetUri, valueSetVersion) = content
+
+            builder.addReference(name, valueSetUri, valueSetVersion)
 
         else:
 
@@ -66,7 +88,9 @@ def push_valuesets(spark_session, valueset_map, concept_maps=None):
             for (codeSystem, codeValue) in content:
                 builder.addCode(name, codeSystem, codeValue)
 
-    broadcastable = builder.build(spark_session._jsparkSession, concept_maps._jconcept_maps)
+    broadcastable = builder.build(spark_session._jsparkSession,
+                                  value_sets._jvalue_sets,
+                                  hierarchies._jhierarchies)
 
     jvm.com.cerner.bunsen.ValueSetUdfs.pushUdf(spark_session._jsparkSession, broadcastable)
 

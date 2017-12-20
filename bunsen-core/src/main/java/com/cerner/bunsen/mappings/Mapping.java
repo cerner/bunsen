@@ -47,9 +47,48 @@ public class Mapping {
   private String equivalence = EQUIVALENT;
 
   /**
+   * Nullary constructor so Spark can encode this class as a bean.
+   */
+  public Mapping() {
+  }
+
+  /**
+   * Constructs a {@link Mapping} instance.
+   *
+   * @param conceptMapUri the URI for the FHIR concept map that owns this mapping
+   * @param conceptMapVersion the version of the FHIR concept map that owns this mapping
+   * @param sourceValueSet the valueset for all source values in this mapping
+   * @param targetValueSet the valueset for all target values in this mapping
+   * @param sourceSystem the code system for the source code
+   * @param sourceValue the code value for the source code
+   * @param targetSystem the code system for the target code
+   * @param targetValue the code value for the target code
+   * @param equivalence the FHIR equivalence type
+   */
+  public Mapping(String conceptMapUri,
+      String conceptMapVersion,
+      String sourceValueSet,
+      String targetValueSet,
+      String sourceSystem,
+      String sourceValue,
+      String targetSystem,
+      String targetValue,
+      String equivalence) {
+    this.conceptMapUri = conceptMapUri;
+    this.conceptMapVersion = conceptMapVersion;
+    this.sourceValueSet = sourceValueSet;
+    this.targetValueSet = targetValueSet;
+    this.sourceSystem = sourceSystem;
+    this.sourceValue = sourceValue;
+    this.targetSystem = targetSystem;
+    this.targetValue = targetValue;
+    this.equivalence = equivalence;
+  }
+
+  /**
    * Returns the URI for the FHIR concept map that owns this mapping.
    *
-   * @return the URI for the FHIR concept map that owns this mapping
+   * @return the URI for the FHIR concept map that owns this mapping.
    */
   public String getConceptMapUri() {
     return conceptMapUri;
@@ -67,7 +106,7 @@ public class Mapping {
   /**
    * Returns the version of the FHIR concept map that owns this mapping.
    *
-   * @return the version of the FHIR concept map that owns this mapping
+   * @return the version of the FHIR concept map that owns this mapping.
    */
   public String getConceptMapVersion() {
     return conceptMapVersion;
@@ -85,7 +124,7 @@ public class Mapping {
   /**
    * Returns the valueset for all source values in this mapping.
    *
-   * @return the valueset for all source values in this mapping
+   * @return the valueset for all source values in this mapping.
    */
   public String getSourceValueSet() {
     return sourceValueSet;
@@ -103,7 +142,7 @@ public class Mapping {
   /**
    * Returns the valueset for all target values in this mapping.
    *
-   * @return the valueset for all target values in this mapping
+   * @return the valueset for all target values in this mapping.
    */
   public String getTargetValueSet() {
     return targetValueSet;
@@ -121,7 +160,7 @@ public class Mapping {
   /**
    * Returns the code system for the source code.
    *
-   * @return the code system for the source code
+   * @return the code system for the source code.
    */
   public String getSourceSystem() {
     return sourceSystem;
@@ -157,7 +196,7 @@ public class Mapping {
   /**
    * Returns the code system for the target code.
    *
-   * @return the code system for the target code
+   * @return the code system for the target code.
    */
   public String getTargetSystem() {
     return targetSystem;
@@ -175,7 +214,7 @@ public class Mapping {
   /**
    * Returns the code value for the target code.
    *
-   * @return the code value for the target code
+   * @return the code value for the target code.
    */
   public String getTargetValue() {
     return targetValue;
@@ -195,7 +234,7 @@ public class Mapping {
    * Returns the equivalence for the mapping. Defaults to "equivalent" if not
    * otherwise set.
    *
-   * @return the FHIR equivalence type
+   * @return the FHIR equivalence type.
    * @see <a href="https://www.hl7.org/fhir/valueset-concept-map-equivalence.html">FHIR valueset
    * concept map equivalence</a>
    */

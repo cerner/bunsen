@@ -9,9 +9,9 @@ import java.util.Objects;
  */
 public class Ancestor implements Serializable {
 
-  private String conceptMapUri;
+  private String uri;
 
-  private String conceptMapVersion;
+  private String version;
 
   private String descendantSystem;
 
@@ -22,30 +22,29 @@ public class Ancestor implements Serializable {
   private String ancestorValue;
 
   /**
-   * Nullary constructor so Spark can encode this as a bean.
+   * Nullary constructor so Spark can encode this class as a bean.
    */
   public Ancestor() {
   }
 
   /**
-   * Constructs an ancestor bean.
+   * Constructs a {@link Ancestor} instance.
    *
-   * @param conceptMapUri the URI of the concept map defining this relationship
-   * @param conceptMapVersion the version of the concept map defining this relationship
-   * @param descendantSystem the code system of the descendant
-   * @param descendantValue the code value of the descendant
-   * @param ancestorSystem the code system of the ancestor
-   * @param ancestorValue the code value of the ancestor
+   * @param uri the hierarchy uri that owns this value
+   * @param version the hierarchy version that owns this value
+   * @param descendantSystem the code system of the descendant value
+   * @param descendantValue the descendant value
+   * @param ancestorSystem the code system of the ancestor value
+   * @param ancestorValue the ancestor value
    */
-  public Ancestor(String conceptMapUri,
-      String conceptMapVersion,
+  public Ancestor(String uri,
+      String version,
       String descendantSystem,
       String descendantValue,
       String ancestorSystem,
       String ancestorValue) {
-
-    this.conceptMapUri = conceptMapUri;
-    this.conceptMapVersion = conceptMapVersion;
+    this.uri = uri;
+    this.version = version;
     this.descendantSystem = descendantSystem;
     this.descendantValue = descendantValue;
     this.ancestorSystem = ancestorSystem;
@@ -53,108 +52,108 @@ public class Ancestor implements Serializable {
   }
 
   /**
-   * Returns the URI of the concept map that defines this relationship.
+   * Returns the hierarchy URI that owns this value.
    *
-   * @return the URI of the concept map
+   * @return the hierarchy URI that owns this value.
    */
-  public String getConceptMapUri() {
-    return conceptMapUri;
+  public String getUri() {
+    return uri;
   }
 
   /**
-   * Sets the URI of the concept map that defines this relationship.
+   * Sets the hierarchy URI that owns this value.
    *
-   * @param conceptMapUri the URI of the concept map
+   * @param uri the hierarchy URI that owns this value
    */
-  public void setConceptMapUri(String conceptMapUri) {
-    this.conceptMapUri = conceptMapUri;
+  public void setUri(String uri) {
+    this.uri = uri;
   }
 
   /**
-   * Returns the version of the concept map that defines this relationship.
+   * Returns the hierarchy version that owns this value.
    *
-   * @return the version of the concept map.
+   * @return the hierarchy version that owns this value.
    */
-  public String getConceptMapVersion() {
-    return conceptMapVersion;
+  public String getVersion() {
+    return version;
   }
 
   /**
-   * Sets the version of the concept map that defines this relationship.
+   * Sets the hierarchy version that owns this value.
    *
-   * @param conceptMapVersion the version of the concept map.
+   * @param version the hierarchy version that owns this value
    */
-  public void setConceptMapVersion(String conceptMapVersion) {
-    this.conceptMapVersion = conceptMapVersion;
+  public void setVersion(String version) {
+    this.version = version;
   }
 
   /**
-   * Returns the system of the descendant code.
+   * Returns the code system that owns the descendant value.
    *
-   * @return the system of the descendant code
+   * @return the code system that owns the descendant value.
    */
   public String getDescendantSystem() {
     return descendantSystem;
   }
 
   /**
-   * Sets the system of the descendant code.
+   * Sets the code system that owns the descendant value.
    *
-   * @param descendantSystem the system of the descendant code.
+   * @param descendantSystem the code system that owns the descendant value
    */
   public void setDescendantSystem(String descendantSystem) {
     this.descendantSystem = descendantSystem;
   }
 
   /**
-   * Returns the value of the descendant code.
+   * Returns the descendant value.
    *
-   * @return the value of the descendant code.
+   * @return the descendant value.
    */
   public String getDescendantValue() {
     return descendantValue;
   }
 
   /**
-   * Sets the value of the descendant code.
+   * Sets the descendant value.
    *
-   * @param descendantValue the value of the descendant code.
+   * @param descendantValue the descendant value
    */
   public void setDescendantValue(String descendantValue) {
     this.descendantValue = descendantValue;
   }
 
   /**
-   * Returns the system of the ancestor code.
+   * Returns the code system that owns the ancestor value.
    *
-   * @return the system of the ancestor code
+   * @return the code system that owns the ancestor value.
    */
   public String getAncestorSystem() {
     return ancestorSystem;
   }
 
   /**
-   * Sets the system of the ancestor code.
+   * Sets the code system that owns the ancestor value.
    *
-   * @param ancestorSystem the system of the ancestor code.
+   * @param ancestorSystem the code system that owns the ancestor value
    */
   public void setAncestorSystem(String ancestorSystem) {
     this.ancestorSystem = ancestorSystem;
   }
 
   /**
-   * Returns the value of the ancestor code.
+   * Returns the ancestor value.
    *
-   * @return the value of the ancestor code.
+   * @return the ancestor value.
    */
   public String getAncestorValue() {
     return ancestorValue;
   }
 
   /**
-   * Sets the value of the ancestor code.
+   * Sets the ancestor value.
    *
-   * @param ancestorValue the value of the ancestor code.
+   * @param ancestorValue the ancestor value
    */
   public void setAncestorValue(String ancestorValue) {
     this.ancestorValue = ancestorValue;
@@ -169,8 +168,8 @@ public class Ancestor implements Serializable {
 
     Ancestor that = (Ancestor) obj;
 
-    return Objects.equals(this.conceptMapUri, that.conceptMapUri)
-        && Objects.equals(this.conceptMapVersion, that.conceptMapVersion)
+    return Objects.equals(this.uri, that.uri)
+        && Objects.equals(this.version, that.version)
         && Objects.equals(this.descendantSystem, that.descendantSystem)
         && Objects.equals(this.descendantValue, that.descendantValue)
         && Objects.equals(this.ancestorSystem, that.ancestorSystem)
@@ -180,8 +179,8 @@ public class Ancestor implements Serializable {
   @Override
   public int hashCode() {
     return 37
-        * Objects.hashCode(this.conceptMapUri)
-        * Objects.hashCode(this.conceptMapVersion)
+        * Objects.hashCode(this.uri)
+        * Objects.hashCode(this.version)
         * Objects.hashCode(this.descendantSystem)
         * Objects.hashCode(this.descendantValue)
         * Objects.hashCode(this.ancestorSystem)

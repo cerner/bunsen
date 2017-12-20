@@ -2,6 +2,7 @@ package com.cerner.bunsen
 
 import ca.uhn.fhir.context._
 import org.apache.spark.sql.types.{BooleanType => _, DateType => _, IntegerType => _, StringType => _, _}
+import org.hl7.fhir.dstu3.model.ValueSet
 import org.hl7.fhir.dstu3.model._
 import org.hl7.fhir.instance.model.api.{IBase, IBaseResource}
 
@@ -43,6 +44,13 @@ object SchemaConverter {
     StructField("reference", DataTypes.StringType),
     StructField("display", DataTypes.StringType)))
 
+  private[bunsen] val containsSchema = StructType(List(
+    StructField("system", DataTypes.StringType),
+    StructField("abstract", DataTypes.BooleanType),
+    StructField("inactive", DataTypes.BooleanType),
+    StructField("version", DataTypes.StringType),
+    StructField("code", DataTypes.StringType),
+    StructField("display", DataTypes.StringType)))
 }
 
 /**
@@ -112,6 +120,17 @@ class SchemaConverter(fhirContext: FhirContext) {
         List(StructField(childDefinition.getElementName, SchemaConverter.referenceSchema))
       }
 
+    } else if (childDefinition.getChildByName(childDefinition.getElementName)
+      .getImplementingClass == classOf[ValueSet.ValueSetExpansionContainsComponent]) {
+
+      if (childDefinition.getMax != 1) {
+
+        List(StructField(childDefinition.getElementName, ArrayType(SchemaConverter.containsSchema)))
+
+      } else {
+        List(StructField(childDefinition.getElementName, SchemaConverter.containsSchema))
+      }
+
     } else {
 
       val definition = childDefinition.getChildByName(childDefinition.getElementName)
@@ -135,7 +154,7 @@ class SchemaConverter(fhirContext: FhirContext) {
   }
 
   /**
-    * Returns the Spark DataType used to encode the given FHIR primitve.
+    * Returns the Spark DataType used to encode the given FHIR primitive.
     */
   private[bunsen] def primitiveToDataType(definition: RuntimePrimitiveDatatypeDefinition): DataType = {
 

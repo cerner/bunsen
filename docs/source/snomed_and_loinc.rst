@@ -33,30 +33,30 @@ Once the content is downloaded, users can import it with the following commands.
 :py:func:`~bunsen.mapping.loinc.with_loinc_hierarchy` and :py:func:`~bunsen.snomed.loinc.with_relationships`
 functions for details.
 
->>> from bunsen.mapping import get_empty
+>>> from bunsen.mapping import get_empty_hierarchies
 >>> from bunsen.mapping.loinc import with_loinc_hierarchy
 >>> from bunsen.mapping.snomed import with_relationships
 >>>
->>> # Add SNOMED ot the concept maps
->>> concept_maps = with_relationships(
+>>> # Add SNOMED to the value sets
+>>> snomed_hierarchy= with_relationships(
 >>>       spark,
->>>       get_empty(spark),
+>>>       get_empty_hierarchies(spark),
 >>>       '/path/to/mappings/snomedct_rf2/20160901/Snapshot/Terminology/sct2_Relationship_Snapshot_US1000124_20160901.txt',
 >>>       '20160901')
 >>>
->>> # Add LOINC to the concept maps.
->>> concept_maps = with_loinc_hierarchy(
+>>> # Add LOINC to the value sets
+>>> loinc_hierarchy= with_loinc_hierarchy(
 >>>        spark,
->>>        concept_maps,
+>>>        snomed_hierarchy,
 >>>        '/path/to/mappings/loinc_hierarchy/2.56/LOINC_2.56_MULTI-AXIAL_HIERARCHY.CSV',
->>>       '2.56')
+>>>        '2.56')
 >>>
 >>> # Write the SNOMED and LOINC data to the ontologies database, where it is visible
 >>> # in Bunsen's valueset functions.
->>> concept_maps.write_to_database('ontologies')
+>>> hierarchies.write_to_database('ontologies')
 
 
-FHIR ConceptMap APIs
+FHIR ValueSet and ConceptMap APIs, and APIs for hierarchical systems
 --------------------
 
 .. automodule:: bunsen.mapping
