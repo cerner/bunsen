@@ -3,13 +3,12 @@ package com.cerner.bunsen.mappings.systems;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.lit;
 
-import com.cerner.bunsen.mappings.ConceptMaps;
-import com.cerner.bunsen.mappings.Mapping;
+import com.cerner.bunsen.mappings.Hierarchies;
+import com.cerner.bunsen.mappings.Hierarchies.HierarchicalElement;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.hl7.fhir.dstu3.model.ConceptMap;
 
 /**
  * Support for SNOMED CT.
@@ -17,16 +16,9 @@ import org.hl7.fhir.dstu3.model.ConceptMap;
 public class Snomed {
 
   /**
-   * Concept map URI used for SNOMED is-a relationships.
+   * Hierarchy URI used for SNOMED is-a relationships.
    */
-  public static final String SNOMED_HIERARCHY_MAPPING_URI =
-      "uri:cerner:bunsen:mapping:snomed-hierarchy";
-
-  /**
-   * Value set URI for all of SNOMED. See the
-   * <a href="https://www.hl7.org/fhir/snomedct.html">FHIR SNOMED documentation</a>.
-   */
-  public static final String SNOMED_CODES_VALUESET_URI = "http://snomed.info/sct?fhir_vs";
+  public static final String SNOMED_HIERARCHY_URI = Hierarchies.HIERARCHY_URI_PREFIX + "snomed";
 
   /**
    * SNOMED code system URI.
@@ -39,16 +31,14 @@ public class Snomed {
   private static final String SNOMED_ISA_RELATIONSHIP_ID = "116680003";
 
   /**
-   * Reads a Snomed relationship file
+   * Reads a Snomed relationship file and converts it to a {@link HierarchicalElement} dataset.
    *
    * @param spark the Spark session
    * @param snomedRelationshipPath path to the SNOMED relationship file
-   * @param snomedVersion the version of the SNOMED CT being read.
-   * @return a dataset of mappings representing the hierarchical relationship.
+   * @return a dataset of{@link HierarchicalElement} representing the hierarchical relationship.
    */
-  public static Dataset<Mapping> readRelationshipFile(SparkSession spark,
-      String snomedRelationshipPath,
-      String snomedVersion) {
+  public static Dataset<HierarchicalElement> readRelationshipFile(SparkSession spark,
+      String snomedRelationshipPath) {
 
     return spark.read()
         .option("header", true)
@@ -56,54 +46,43 @@ public class Snomed {
         .csv(snomedRelationshipPath)
         .where(col("typeId").equalTo(lit(SNOMED_ISA_RELATIONSHIP_ID)))
         .where(col("active").equalTo(lit("1")))
-        .select(col("sourceId"), col("destinationId"))
-        .where(col("sourceId").isNotNull()
-            .and(col("sourceId").notEqual(lit(""))))
+        .select(col("destinationId"), col("sourceId"))
         .where(col("destinationId").isNotNull()
             .and(col("destinationId").notEqual(lit(""))))
-        .map((MapFunction<Row, Mapping>) row -> {
+        .where(col("sourceId").isNotNull()
+            .and(col("sourceId").notEqual(lit(""))))
+        .map((MapFunction<Row, HierarchicalElement>) row -> {
 
-          Mapping mapping = new Mapping();
+          HierarchicalElement element = new HierarchicalElement();
 
-          mapping.setConceptMapUri(SNOMED_HIERARCHY_MAPPING_URI);
-          mapping.setConceptMapVersion(snomedVersion);
-          mapping.setSourceValueSet(SNOMED_CODES_VALUESET_URI);
-          mapping.setTargetValueSet(SNOMED_CODES_VALUESET_URI);
-          mapping.setSourceSystem(SNOMED_CODE_SYSTEM_URI);
-          mapping.setSourceValue(row.getString(0));
-          mapping.setTargetSystem(SNOMED_CODE_SYSTEM_URI);
-          mapping.setTargetValue(row.getString(1));
-          mapping.setEquivalence(Mapping.SUBSUMES);
+          element.setAncestorSystem(SNOMED_CODE_SYSTEM_URI);
+          element.setAncestorValue(row.getString(0));
 
-          return mapping;
-        }, ConceptMaps.getMappingEncoder());
+          element.setDescendantSystem(SNOMED_CODE_SYSTEM_URI);
+          element.setDescendantValue(row.getString(1));
+
+          return element;
+        }, Hierarchies.getHierarchicalElementEncoder());
   }
 
   /**
    * Returns a ConceptMaps instance with the specified multiaxial hierarchy. This method
-   * reads the LOINC multiaxial hierarchy file and convert it to a mapping dataset, and
-   * adds it to the given concept maps.
+   * reads the LOINC multiaxial hierarchy file and convert it to a {@link HierarchicalElement}
+   * dataset, and adds it to the given hierarchies.
    *
    * @param spark the Spark session
-   * @param maps a ConceptMaps instance to which the hierarchy will be added
+   * @param hierarchies a {@link Hierarchies} instance to which the hierarchy will be added
    * @param snomedRelationshipPath path to the relationship CSV
    * @param snomedVersion the version of SNOMED being read.
-   * @return a ConceptMaps instance that includes the read hierarchy.
+   * @return a {@link Hierarchies} instance that includes the read hierarchy.
    */
-  public static ConceptMaps withRelationships(SparkSession spark,
-      ConceptMaps maps,
+  public static Hierarchies withRelationships(SparkSession spark,
+      Hierarchies hierarchies,
       String snomedRelationshipPath,
       String snomedVersion) {
 
-    ConceptMap conceptMap = new ConceptMap();
+    Dataset<HierarchicalElement> elements = readRelationshipFile(spark, snomedRelationshipPath);
 
-    conceptMap.setUrl(SNOMED_HIERARCHY_MAPPING_URI);
-    conceptMap.setVersion(snomedVersion);
-    conceptMap.setExperimental(false);
-
-    Dataset<Mapping> mappings = readRelationshipFile(spark,
-        snomedRelationshipPath, snomedVersion);
-
-    return maps.withExpandedMap(conceptMap, mappings);
+    return hierarchies.withHierarchyElements(SNOMED_HIERARCHY_URI, snomedVersion, elements);
   }
 }

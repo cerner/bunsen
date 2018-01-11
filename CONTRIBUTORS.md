@@ -1,4 +1,3 @@
-Cerner Corporation
 [Contributor Names Follow]
 
 Cerner Corporation
@@ -7,4 +6,4 @@ Cerner Corporation
 - Aleksander Eskilson [@bdrillard]
 
 [@rbrush]: https://github.com/rbrush
-[@bdrillard] https://github.com/bdrillard
+[@bdrillard]: https://github.com/bdrillard

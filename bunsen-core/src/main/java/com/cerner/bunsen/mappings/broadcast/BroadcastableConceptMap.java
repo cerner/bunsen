@@ -56,7 +56,7 @@ public class BroadcastableConceptMap implements Serializable {
   }
 
   /**
-   * Cosntructs the broadcastable concept map.
+   * Constructs the broadcastable concept map.
    *
    * @param conceptMapUri the URI of the map
    * @param mappings the mappings to include in the broadcast
@@ -82,7 +82,7 @@ public class BroadcastableConceptMap implements Serializable {
   /**
    * Returns the URI for the concept map.
    *
-   * @return the URI for the concept map
+   * @return the URI for the concept map.
    */
   public String getConceptMapUri() {
 
@@ -142,7 +142,7 @@ public class BroadcastableConceptMap implements Serializable {
     /**
      * Returns the code system.
      *
-     * @return the code system
+     * @return the code system.
      */
     public String getSystem() {
       return system;
@@ -151,7 +151,7 @@ public class BroadcastableConceptMap implements Serializable {
     /**
      * Returns the code value.
      *
-     * @return the code value
+     * @return the code value.
      */
     public String getValue() {
       return value;

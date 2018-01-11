@@ -3,7 +3,7 @@ package com.cerner.bunsen.mappings.systems;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.lit;
 
-import com.cerner.bunsen.mappings.Mapping;
+import com.cerner.bunsen.mappings.Hierarchies.HierarchicalElement;
 import java.util.List;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SparkSession;
@@ -19,7 +19,7 @@ public class SnomedTest {
 
   private static SparkSession spark;
 
-  private static Dataset<Mapping> snomedMappings;
+  private static Dataset<HierarchicalElement> snomedValues;
 
   /**
    * Sets up Spark and loads the SNOMED mappings for testing.
@@ -32,11 +32,10 @@ public class SnomedTest {
         .appName("SnomedTest")
         .getOrCreate();
 
-    snomedMappings = Snomed.readRelationshipFile(spark,
-        "src/test/resources/SNOMED_RELATIONSHIP_SAMPLE.TXT",
-        "20160901");
+    snomedValues = Snomed.readRelationshipFile(spark,
+        "src/test/resources/SNOMED_RELATIONSHIP_SAMPLE.TXT");
 
-    snomedMappings.cache();
+    snomedValues.cache();
   }
 
   /**
@@ -51,47 +50,24 @@ public class SnomedTest {
   @Test
   public void testHasParent() {
 
-    List<Mapping> mappings = snomedMappings
-        .where(col("sourceValue")
+    List<HierarchicalElement> values = snomedValues
+        .where(col("descendantValue")
             .equalTo(lit("44054006")))
         .collectAsList();
 
-    Assert.assertEquals(1, mappings.size());
+    Assert.assertEquals(1, values.size());
     Assert.assertEquals("73211009",
-        mappings.get(0).getTargetValue());
-  }
-
-  @Test
-  public void checkConceptMapUri() {
-
-    // All imported rows should have the expected concept map URI.
-    Assert.assertEquals(snomedMappings.count(),
-        snomedMappings
-            .where(col("conceptMapUri")
-                .equalTo(lit(Snomed.SNOMED_HIERARCHY_MAPPING_URI)))
-            .count());
-  }
-
-  @Test
-  public void checkVersion() {
-
-    // All imported rows should have the expected concept map version.
-    Assert.assertEquals(snomedMappings.count(),
-        snomedMappings
-            .where(col("conceptMapVersion")
-                .equalTo(lit("20160901")))
-            .count());
+        values.get(0).getAncestorValue());
   }
 
   @Test
   public void checkSystems() {
 
-    Assert.assertEquals(snomedMappings.count(),
-        snomedMappings
-            .where(col("sourceSystem")
-                .equalTo(lit(Snomed.SNOMED_CODE_SYSTEM_URI)))
-            .where(col("targetSystem")
-                .equalTo(lit(Snomed.SNOMED_CODE_SYSTEM_URI)))
+    // All imported rows should have the expected system
+    Assert.assertEquals(snomedValues.count(),
+        snomedValues
+            .where(col("ancestorSystem").equalTo(lit(Snomed.SNOMED_CODE_SYSTEM_URI))
+                .and(col("descendantSystem").equalTo(lit(Snomed.SNOMED_CODE_SYSTEM_URI))))
             .count());
   }
 }

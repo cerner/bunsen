@@ -1,6 +1,8 @@
 package com.cerner.bunsen;
 
 import com.cerner.bunsen.mappings.ConceptMaps;
+import com.cerner.bunsen.mappings.Hierarchies;
+import com.cerner.bunsen.mappings.ValueSets;
 import com.cerner.bunsen.mappings.broadcast.BroadcastableValueSets;
 import com.cerner.bunsen.mappings.systems.Loinc;
 import com.cerner.bunsen.mappings.systems.Snomed;
@@ -12,7 +14,9 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Condition;
+import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.dstu3.model.Observation;
+import org.hl7.fhir.dstu3.model.Patient;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -59,8 +63,18 @@ public class ValueSetUdfsTest {
     return condition;
   }
 
+  private static Patient patient(String id, String marritalStatus) {
+    Patient patient = new Patient();
+
+    patient.setId(id);
+
+    patient.setMaritalStatus(codeable("http://hl7.org/fhir/v3/MaritalStatus", marritalStatus));
+
+    return patient;
+  }
+
   /**
-   * Sets up Spark and loads test mappings.
+   * Sets up Spark and loads test value sets.
    */
   @BeforeClass
   public static void setUp() throws IOException {
@@ -82,50 +96,45 @@ public class ValueSetUdfsTest {
 
     spark.sql("create database " + ConceptMaps.MAPPING_DATABASE);
 
-    ConceptMaps empty = ConceptMaps.getEmpty(spark);
-
-    ConceptMaps withLoinc = Loinc.withLoincHierarchy(spark,
-        empty,
+    Hierarchies withLoinc = Loinc.withLoincHierarchy(spark,
+        Hierarchies.getEmpty(spark),
         "src/test/resources/LOINC_HIERARCHY_SAMPLE.CSV",
         "2.56");
 
-    ConceptMaps withLoincAndSnomed = Snomed.withRelationships(spark,
+    Hierarchies withLoincAndSnomed = Snomed.withRelationships(spark,
         withLoinc,
         "src/test/resources/SNOMED_RELATIONSHIP_SAMPLE.TXT",
         "20160901");
 
+    ValueSets withGender = ValueSets.getEmpty(spark)
+        .withValueSetsFromDirectory("src/test/resources/valuesets");
+
     BroadcastableValueSets valueSets = BroadcastableValueSets.newBuilder()
-        .addDescendantsOf("bp",
+        .addCode("bp",
             Loinc.LOINC_CODE_SYSTEM_URI,
-            "8462-4",
-            Loinc.LOINC_HIERARCHY_MAPPING_URI,
-            "2.56")
+            "8462-4")
+        .addCode("albumin",
+            Loinc.LOINC_CODE_SYSTEM_URI,
+            "14959-1")
+        .addReference("married",
+            "urn:cerner:bunsen:valueset:married_maritalstatus")
         .addDescendantsOf("leukocytes",
             Loinc.LOINC_CODE_SYSTEM_URI,
             "LP14419-3",
-            Loinc.LOINC_HIERARCHY_MAPPING_URI,
-            "2.56")
-        .addDescendantsOf("albumin",
-            Loinc.LOINC_CODE_SYSTEM_URI,
-            "14959-1",
-            Loinc.LOINC_HIERARCHY_MAPPING_URI,
-            "2.56")
+            Loinc.LOINC_HIERARCHY_URI)
         .addDescendantsOf("diabetes",
             Snomed.SNOMED_CODE_SYSTEM_URI,
             "73211009",
-            Snomed.SNOMED_HIERARCHY_MAPPING_URI,
-            "20160901")
+            Snomed.SNOMED_HIERARCHY_URI)
         .addDescendantsOf("blood_disorder",
             Snomed.SNOMED_CODE_SYSTEM_URI,
             "266992002",
-            Snomed.SNOMED_HIERARCHY_MAPPING_URI,
-            "20160901")
+            Snomed.SNOMED_HIERARCHY_URI)
         .addDescendantsOf("disorder_history",
             Snomed.SNOMED_CODE_SYSTEM_URI,
             "312850006",
-            Snomed.SNOMED_HIERARCHY_MAPPING_URI,
-            "20160901")
-        .build(spark, withLoincAndSnomed);
+            Snomed.SNOMED_HIERARCHY_URI)
+        .build(spark, withGender, withLoincAndSnomed);
 
     ValueSetUdfs.pushUdf(spark, valueSets);
 
@@ -149,6 +158,14 @@ public class ValueSetUdfsTest {
         encoders.of(Condition.class));
 
     conditions.createOrReplaceTempView("test_snomed_cond");
+
+    Dataset<Patient> patients = spark.createDataset(
+        ImmutableList.of(
+            patient("married", "M"),
+            patient("unmarried", "U")),
+        encoders.of(Patient.class));
+
+    patients.createOrReplaceTempView("test_valueset_patient");
   }
 
   /**
@@ -201,6 +218,7 @@ public class ValueSetUdfsTest {
 
   @Test
   public void testHasCyclicAncestor() {
+
     Dataset<Row> results = spark.sql("select id from test_snomed_cond "
         + "where in_valueset(code, 'blood_disorder')");
 
@@ -212,5 +230,15 @@ public class ValueSetUdfsTest {
 
     Assert.assertEquals(1, ancestorResults.count());
     Assert.assertEquals("history_of_anemia", ancestorResults.head().get(0));
+  }
+
+  @Test
+  public void testHasValueSetCode() {
+
+    Dataset<Row> results = spark.sql("select id from test_valueset_patient "
+        + "where in_valueset(maritalStatus, 'married')");
+
+    Assert.assertEquals(1, results.count());
+    Assert.assertEquals("married", results.head().get(0));
   }
 }

@@ -14,7 +14,7 @@ import org.apache.spark.sql.catalyst.expressions.objects._
 import org.apache.spark.sql.catalyst.{InternalRow, expressions}
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
-import org.hl7.fhir.dstu3.model.{Reference, TemporalPrecisionEnum}
+import org.hl7.fhir.dstu3.model._
 import org.hl7.fhir.instance.model.api.{IBase, IBaseDatatype, IIdType}
 import org.hl7.fhir.utilities.xhtml.XhtmlNode
 
@@ -495,6 +495,43 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
       List(Literal("reference"), reference,
         Literal("display"), display)
 
+    } else if (definition.getImplementingClass == classOf[ValueSet.ValueSetExpansionContainsComponent]) {
+
+      val system = dataTypeToUtf8Expr(
+        Invoke(inputObject,
+          "getSystemElement",
+          ObjectType(classOf[UriType])))
+
+      val abstract_ = Invoke(inputObject,
+        "getAbstract",
+        DataTypes.BooleanType)
+
+      val inactive = Invoke(inputObject,
+        "getInactive",
+        DataTypes.BooleanType)
+
+      val version = dataTypeToUtf8Expr(
+        Invoke(inputObject,
+          "getVersionElement",
+          ObjectType(classOf[org.hl7.fhir.dstu3.model.StringType])))
+
+      val code = dataTypeToUtf8Expr(
+        Invoke(inputObject,
+          "getCodeElement",
+          ObjectType(classOf[org.hl7.fhir.dstu3.model.CodeType])))
+
+      val display = dataTypeToUtf8Expr(
+        Invoke(inputObject,
+          "getDisplayElement",
+          ObjectType(classOf[org.hl7.fhir.dstu3.model.StringType])))
+
+      List(Literal("system"), system,
+        Literal("abstract"), abstract_,
+        Literal("inactive"), inactive,
+        Literal("version"), version,
+        Literal("code"), code,
+        Literal("display"), display)
+
     } else {
       // Map to (name, value, name, value) expressions for child elements.
       definition.getChildren
@@ -602,7 +639,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
 
       val child = EncoderBuilder.ObjectCast(deserializer, ObjectType(classOf[org.hl7.fhir.dstu3.model.Type]))
 
-      // If this item is not null, deseralize it. Otherwise attempt other choices.
+      // If this item is not null, deserialize it. Otherwise attempt other choices.
       expressions.If(IsNotNull(childPath),
         child,
         choiceToDeserializer(fhirChildTypes.tail, choiceChildDefinition, path))
@@ -646,7 +683,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
 
       val childPath = Some(addToPath(childDefinition.getElementName))
 
-      // These must match on the RuntimeChild* structures rather than the defintions,
+      // These must match on the RuntimeChild* structures rather than the definitions,
       // since only the RuntimeChild* structures include default values to be passed
       // to constructors when deserializing some bound objects.
       val result = childDefinition match {
@@ -831,6 +868,8 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
       .filter(child => definition.getImplementingClass != classOf[Reference] ||
         child.getElementName == "reference" ||
         child.getElementName == "display")
+      .filter(child => definition.getImplementingClass != classOf[ValueSet.ValueSetExpansionContainsComponent] ||
+        child.getElementName != "contains")
       .flatMap(child => childToDeserializer(child, path)).toMap
 
     val compositeInstance = NewInstance(definition.getImplementingClass,
@@ -840,7 +879,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
     val setters = childExpressions.map { case (name, expression) =>
 
       // Option types are not visible in the getChildByName, so we fall back
-      // to looking for htem in the child list.
+      // to looking for them in the child list.
       val childDefinition = if (definition.getChildByName(name) != null)
         definition.getChildByName(name)
       else
