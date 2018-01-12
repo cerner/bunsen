@@ -33,14 +33,14 @@ Once the content is downloaded, users can import it with the following commands.
 :py:func:`~bunsen.mapping.loinc.with_loinc_hierarchy` and :py:func:`~bunsen.snomed.loinc.with_relationships`
 functions for details.
 
->>> from bunsen.mapping import get_empty_hierarchies
+>>> from bunsen.mapping import create_hierarchies
 >>> from bunsen.mapping.loinc import with_loinc_hierarchy
 >>> from bunsen.mapping.snomed import with_relationships
 >>>
 >>> # Add SNOMED to the value sets
 >>> snomed_hierarchy= with_relationships(
 >>>       spark,
->>>       get_empty_hierarchies(spark),
+>>>       create_hierarchies(spark),
 >>>       '/path/to/mappings/snomedct_rf2/20160901/Snapshot/Terminology/sct2_Relationship_Snapshot_US1000124_20160901.txt',
 >>>       '20160901')
 >>>
@@ -57,7 +57,7 @@ functions for details.
 
 
 FHIR ValueSet and ConceptMap APIs, and APIs for hierarchical systems
---------------------
+--------------------------------------------------------------------
 
 .. automodule:: bunsen.mapping
     :members:
