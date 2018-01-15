@@ -5,7 +5,7 @@ in Spark queries.
 
 from collections import namedtuple
 
-from bunsen.mapping import get_default_value_sets, get_default_hierarchies
+from bunsen.mapping import get_value_sets, get_hierarchies
 
 # Placeholder record to load a particular value set
 ValueSetPlaceholder = namedtuple("ValueSetPlaceholder",
@@ -35,7 +35,7 @@ def isa_snomed(code_value, snomed_version=None):
                                 'urn:com:cerner:bunsen:hierarchy:snomed',
                                 snomed_version)
 
-def push_valuesets(spark_session, valueset_map, value_sets=None, hierarchies=None):
+def push_valuesets(spark_session, valueset_map, database='ontologies'):
     """
     Pushes valuesets onto a stack and registers an in_valueset user-defined function
     that uses this content.
@@ -48,12 +48,15 @@ def push_valuesets(spark_session, valueset_map, value_sets=None, hierarchies=Non
     or HierarchyPlaceholder that instructs the system to load codes belonging to a particular
     value set or hierarchical system, respectively. See the isa_loinc and isa_snomed functions
     above for details.
-    """
-    if value_sets is None:
-        value_sets = get_default_value_sets(spark_session)
 
-    if hierarchies is None:
-        hierarchies = get_default_hierarchies(spark_session)
+    Finally, ontology information is assumed to be stored in the 'ontologies' database by
+    default, but users can specify another database name if they have customized
+    ontologies that are separated from the default ontologies database.
+    """
+
+    value_sets = get_value_sets(spark_session, database)
+
+    hierarchies = get_hierarchies(spark_session, database)
 
     jvm = spark_session._jvm
 

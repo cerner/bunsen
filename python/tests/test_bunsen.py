@@ -8,7 +8,7 @@ from pyspark.sql.functions import col
 
 from bunsen.mapping.loinc import with_loinc_hierarchy
 from bunsen.mapping.snomed import with_relationships
-from bunsen.mapping import get_empty_concept_maps, get_default_concept_maps, get_empty_value_sets, get_empty_hierarchies
+from bunsen.mapping import create_concept_maps, get_concept_maps, create_value_sets, create_hierarchies
 from bunsen.bundles import load_from_directory, extract_entry, save_as_database, to_bundle
 from bunsen.valuesets import push_valuesets, isa_loinc, isa_snomed, get_current_valuesets
 
@@ -50,7 +50,7 @@ def spark_session(request):
 # Concept Maps Tests
 def test_add_map(spark_session):
 
-  concept_maps = get_empty_concept_maps(spark_session)
+  concept_maps = create_concept_maps(spark_session)
 
   snomed_to_loinc = [('http://snomed.info/sct', '75367002', 'http://loinc.org', '55417-0', 'equivalent'), # Blood pressure
                      ('http://snomed.info/sct', '271649006', 'http://loinc.org', '8480-6', 'equivalent'), # Systolic BP
@@ -67,7 +67,7 @@ def test_add_map(spark_session):
 
 def test_get_map_as_xml(spark_session):
 
-  concept_maps = get_empty_concept_maps(spark_session)
+  concept_maps = create_concept_maps(spark_session)
 
   snomed_to_loinc = [('http://snomed.info/sct', '75367002', 'http://loinc.org', '55417-0', 'equivalent'), # Blood pressure
                      ('http://snomed.info/sct', '271649006', 'http://loinc.org', '8480-6', 'equivalent'), # Systolic BP
@@ -86,7 +86,7 @@ def test_get_map_as_xml(spark_session):
 
 def test_write_maps(spark_session):
 
-  concept_maps = get_empty_concept_maps(spark_session)
+  concept_maps = create_concept_maps(spark_session)
 
   snomed_to_loinc = [('http://snomed.info/sct', '75367002', 'http://loinc.org', '55417-0', 'equivalent'), # Blood pressure
                      ('http://snomed.info/sct', '271649006', 'http://loinc.org', '8480-6', 'equivalent'), # Systolic BP
@@ -106,7 +106,7 @@ def test_write_maps(spark_session):
   appended.write_to_database('ontologies')
 
   # Check that the maps were written by reloading and inspecting them.
-  reloaded = get_default_concept_maps(spark_session)
+  reloaded = get_concept_maps(spark_session)
 
   assert reloaded.get_maps().count() == 1
   assert reloaded.get_mappings().where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
@@ -114,7 +114,7 @@ def test_write_maps(spark_session):
 # Value Sets Tests
 def test_add_valueset(spark_session):
 
-  value_sets = get_empty_value_sets(spark_session)
+  value_sets = create_value_sets(spark_session)
 
   values = [('urn:cerner:system1', 'urn:code:a'),
             ('urn:cerner:system1', 'urn:code:b'),
@@ -129,7 +129,7 @@ def test_add_valueset(spark_session):
 
 def test_get_value_set_as_xml(spark_session):
 
-  value_sets = get_empty_value_sets(spark_session)
+  value_sets = create_value_sets(spark_session)
 
   values = [('urn:cerner:system1', 'urn:code:a'),
             ('urn:cerner:system1', 'urn:code:b'),
@@ -148,7 +148,7 @@ def test_get_value_set_as_xml(spark_session):
 def test_read_hierarchy_file(spark_session):
   ancestors = with_loinc_hierarchy(
       spark_session,
-      get_empty_hierarchies(spark_session),
+      create_hierarchies(spark_session),
       'tests/resources/LOINC_HIERARCHY_SAMPLE.CSV',
       '2.56').get_ancestors()
 
@@ -158,7 +158,7 @@ def test_read_hierarchy_file(spark_session):
 def test_read_relationship_file(spark_session):
   ancestors = with_relationships(
       spark_session,
-      get_empty_hierarchies(spark_session),
+      create_hierarchies(spark_session),
       'tests/resources/SNOMED_RELATIONSHIP_SAMPLE.TXT',
       '20160901').get_ancestors()
 
@@ -195,16 +195,21 @@ def test_to_bundle(spark_session, bundles):
 
 # ValueSetsUdfs Tests
 def test_isa_loinc(spark_session):
-  with_loinc = with_loinc_hierarchy(
+
+  spark_session.sql('create database isa_loinc_ontologies')
+
+  with_loinc_hierarchy(
       spark_session,
-      get_empty_hierarchies(spark_session),
+      create_hierarchies(spark_session),
       'tests/resources/LOINC_HIERARCHY_SAMPLE.CSV',
-      '2.56')
+      '2.56') \
+    .write_to_database('isa_loinc_ontologies')
+
+  create_value_sets(spark_session).write_to_database('isa_loinc_ontologies')
 
   push_valuesets(spark_session,
                  {'leukocytes' : isa_loinc('LP14738-6')},
-                 value_sets=get_empty_value_sets(spark_session),
-                 hierarchies=with_loinc)
+                 database='isa_loinc_ontologies')
   
   expected = {'leukocytes' : [('http://loinc.org', '5821-4'),
                               ('http://loinc.org', 'LP14738-6'),
@@ -212,16 +217,21 @@ def test_isa_loinc(spark_session):
   assert get_current_valuesets(spark_session) == expected
 
 def test_isa_snomed(spark_session):
-  with_snomed = with_relationships(
+
+  spark_session.sql('create database isa_snomed_ontologies')
+
+  with_relationships(
       spark_session,
-      get_empty_hierarchies(spark_session),
+      create_hierarchies(spark_session),
       'tests/resources/SNOMED_RELATIONSHIP_SAMPLE.TXT',
-      '20160901')
+      '20160901') \
+    .write_to_database('isa_snomed_ontologies')
+
+  create_value_sets(spark_session).write_to_database('isa_snomed_ontologies')
 
   push_valuesets(spark_session,
                  {'diabetes' : isa_snomed('73211009')},
-                 value_sets=get_empty_value_sets(spark_session),
-                 hierarchies=with_snomed)
+                 database = 'isa_snomed_ontologies')
 
   expected = {'diabetes' : [('http://snomed.info/sct', '73211009'),
                             ('http://snomed.info/sct', '44054006')]}
@@ -234,10 +244,13 @@ def test_isa_custom(spark_session, bundles):
 
   blood_pressure = {'blood_pressure' : [('http://loinc.org', '8462-4')]}
 
-  value_sets = get_empty_value_sets(spark_session)
-  hierarchies = get_empty_hierarchies(spark_session)
+  spark_session.sql('create database custom_ontologies')
+  create_value_sets(spark_session).write_to_database('custom_ontologies')
+  create_hierarchies(spark_session).write_to_database('custom_ontologies')
 
-  push_valuesets(spark_session, blood_pressure, value_sets, hierarchies)
+  push_valuesets(spark_session,
+                 blood_pressure,
+                 database='custom_ontologies')
   
   results = spark_session.sql("SELECT subject.reference, "
       + "effectiveDateTime, "

@@ -10,41 +10,59 @@ from pyspark.sql import functions, DataFrame
 import collections
 import datetime
 
-def get_default_concept_maps(spark_session):
+def get_concept_maps(spark_session, database='ontologies'):
+    """
+    Returns a :class:`ConceptMaps` instance for the given database.
+    """
     jconcept_maps = spark_session._jvm.com.cerner.bunsen.mappings \
-      .ConceptMaps.getDefault(spark_session._jsparkSession)
+      .ConceptMaps.getFromDatabase(spark_session._jsparkSession, database)
 
     return ConceptMaps(spark_session, jconcept_maps)
 
-def get_empty_concept_maps(spark_session):
+def create_concept_maps(spark_session):
+    """
+    Creates a new, empty :py:class:`ConceptMaps` instance.
+    """
     jconcept_maps = spark_session._jvm.com.cerner.bunsen.mappings \
       .ConceptMaps.getEmpty(spark_session._jsparkSession)
 
     return ConceptMaps(spark_session, jconcept_maps)
 
-def get_default_value_sets(spark_session):
+def get_value_sets(spark_session, database='ontologies'):
+    """
+    Returns a :class:`ValueSets` instance for the given database.
+    """
     jvalue_sets = spark_session._jvm.com.cerner.bunsen.mappings \
-      .ValueSets.getDefault(spark_session._jsparkSession)
+      .ValueSets.getFromDatabase(spark_session._jsparkSession, database)
 
     return ValueSets(spark_session, jvalue_sets)
 
-def get_empty_value_sets(spark_session):
+def create_value_sets(spark_session):
+    """
+    Creates a new, empty :class:`ValueSets` instance.
+    """
     jvalue_sets = spark_session._jvm.com.cerner.bunsen.mappings \
       .ValueSets.getEmpty(spark_session._jsparkSession)
 
     return ValueSets(spark_session, jvalue_sets)
 
-def get_default_hierarchies(spark_session):
-  jhierarchies = spark_session._jvm.com.cerner.bunsen.mappings \
-      .Hierarchies.getDefault(spark_session._jsparkSession)
+def get_hierarchies(spark_session, database='ontologies'):
+    """
+    Returns a :class:`Hierarchies` instance for the given database.
+    """
+    jhierarchies = spark_session._jvm.com.cerner.bunsen.mappings \
+        .Hierarchies.getFromDatabase(spark_session._jsparkSession, database)
 
-  return Hierarchies(spark_session, jhierarchies)
+    return Hierarchies(spark_session, jhierarchies)
 
-def get_empty_hierarchies(spark_session):
-  jhierarchies = spark_session._jvm.com.cerner.bunsen.mappings \
-      .Hierarchies.getEmpty(spark_session._jsparkSession)
+def create_hierarchies(spark_session):
+    """
+    Creates a new, empty :class:`Hierarchies` instance.
+    """
+    jhierarchies = spark_session._jvm.com.cerner.bunsen.mappings \
+        .Hierarchies.getEmpty(spark_session._jsparkSession)
 
-  return Hierarchies(spark_session, jhierarchies)
+    return Hierarchies(spark_session, jhierarchies)
 
 def _add_mappings_to_map(jvm, concept_map, mappings):
     """
