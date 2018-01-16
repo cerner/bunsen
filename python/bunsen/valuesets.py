@@ -5,7 +5,7 @@ in Spark queries.
 
 from collections import namedtuple
 
-from bunsen.mapping import get_value_sets, get_hierarchies
+from bunsen.codes import get_value_sets, get_hierarchies
 
 # Placeholder record to load a particular value set
 ValueSetPlaceholder = namedtuple("ValueSetPlaceholder",
@@ -60,7 +60,7 @@ def push_valuesets(spark_session, valueset_map, database='ontologies'):
 
     jvm = spark_session._jvm
 
-    builder = jvm.com.cerner.bunsen.mappings.broadcast.BroadcastableValueSets.newBuilder()
+    builder = jvm.com.cerner.bunsen.codes.broadcast.BroadcastableValueSets.newBuilder()
 
     for (name, content) in valueset_map.items():
 

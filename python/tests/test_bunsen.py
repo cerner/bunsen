@@ -6,9 +6,9 @@ from pytest import fixture
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 
-from bunsen.mapping.loinc import with_loinc_hierarchy
-from bunsen.mapping.snomed import with_relationships
-from bunsen.mapping import create_concept_maps, get_concept_maps, create_value_sets, create_hierarchies
+from bunsen.codes.loinc import with_loinc_hierarchy
+from bunsen.codes.snomed import with_relationships
+from bunsen.codes import create_concept_maps, get_concept_maps, create_value_sets, create_hierarchies
 from bunsen.bundles import load_from_directory, extract_entry, save_as_database, to_bundle
 from bunsen.valuesets import push_valuesets, isa_loinc, isa_snomed, get_current_valuesets
 

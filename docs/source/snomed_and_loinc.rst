@@ -30,12 +30,12 @@ ingest the relationship snapshot, such as:
 Loading the Ontologies
 ----------------------
 Once the content is downloaded, users can import it with the following commands. See the
-:py:func:`~bunsen.mapping.loinc.with_loinc_hierarchy` and :py:func:`~bunsen.snomed.loinc.with_relationships`
+:py:func:`~bunsen.codes.loinc.with_loinc_hierarchy` and :py:func:`~bunsen.codes.snomed.with_relationships`
 functions for details.
 
->>> from bunsen.mapping import create_hierarchies
->>> from bunsen.mapping.loinc import with_loinc_hierarchy
->>> from bunsen.mapping.snomed import with_relationships
+>>> from bunsen.codes import create_hierarchies
+>>> from bunsen.codes.loinc import with_loinc_hierarchy
+>>> from bunsen.codes.snomed import with_relationships
 >>>
 >>> # Add SNOMED to the value sets
 >>> snomed_hierarchy= with_relationships(
@@ -59,14 +59,14 @@ functions for details.
 FHIR ValueSet and ConceptMap APIs, and APIs for hierarchical systems
 --------------------------------------------------------------------
 
-.. automodule:: bunsen.mapping
+.. automodule:: bunsen.codes
     :members:
     :undoc-members:
 
-.. automodule:: bunsen.mapping.loinc
+.. automodule:: bunsen.codes.loinc
     :members:
     :undoc-members:
 
-.. automodule:: bunsen.mapping.snomed
+.. automodule:: bunsen.codes.snomed
     :members:
     :undoc-members:
