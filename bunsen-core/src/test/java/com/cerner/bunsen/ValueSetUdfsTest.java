@@ -1,11 +1,11 @@
 package com.cerner.bunsen;
 
-import com.cerner.bunsen.mappings.ConceptMaps;
-import com.cerner.bunsen.mappings.Hierarchies;
-import com.cerner.bunsen.mappings.ValueSets;
-import com.cerner.bunsen.mappings.broadcast.BroadcastableValueSets;
-import com.cerner.bunsen.mappings.systems.Loinc;
-import com.cerner.bunsen.mappings.systems.Snomed;
+import com.cerner.bunsen.codes.ConceptMaps;
+import com.cerner.bunsen.codes.Hierarchies;
+import com.cerner.bunsen.codes.ValueSets;
+import com.cerner.bunsen.codes.broadcast.BroadcastableValueSets;
+import com.cerner.bunsen.codes.systems.Loinc;
+import com.cerner.bunsen.codes.systems.Snomed;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +14,6 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Condition;
-import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.junit.AfterClass;
