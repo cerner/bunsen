@@ -1,9 +1,7 @@
 package com.cerner.bunsen.codes;
 
 import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.collect_list;
 import static org.apache.spark.sql.functions.lit;
-import static org.apache.spark.sql.functions.struct;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
@@ -20,6 +18,7 @@ import java.util.stream.Collectors;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FilterFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
@@ -42,8 +41,6 @@ import scala.Tuple2;
 public class ValueSets {
 
   private static final FhirContext FHIR_CONTEXT = FhirContext.forDstu3();
-
-  private static final IParser PARSER = FHIR_CONTEXT.newXmlParser();
 
   /**
    * An encoder for serializing values.
@@ -330,18 +327,43 @@ public class ValueSets {
     return withValueSets(valueSetDatasetFromDirectory(path));
   }
 
+  private static class ToValueSet implements Function<Tuple2<String, String>, ValueSet> {
+
+    private static final IParser XML_PARSER = FHIR_CONTEXT.newXmlParser();
+
+    private static final IParser JSON_PARSER = FHIR_CONTEXT.newJsonParser();
+
+    @Override
+    public ValueSet call(Tuple2<String, String> fileContentTuple) throws Exception {
+
+      String filePath = fileContentTuple._1.toLowerCase();
+
+      if (filePath.endsWith(".xml")) {
+
+        return (ValueSet) XML_PARSER.parseResource(fileContentTuple._2());
+
+      } else if (filePath.endsWith(".json")) {
+
+        return (ValueSet) JSON_PARSER.parseResource(fileContentTuple._2());
+
+      } else {
+
+        throw new RuntimeException("Unrecognized file extension for resource: " + filePath);
+      }
+    }
+  }
+
   /**
    * Returns a dataset of ValueSet from the content stored at the given directory.
    */
   private Dataset<ValueSet> valueSetDatasetFromDirectory(String path) {
-
 
     JavaRDD<Tuple2<String,String>> fileNamesAndContents = this.spark.sparkContext()
         .wholeTextFiles(path, 1)
         .toJavaRDD();
 
     return this.spark.createDataset(fileNamesAndContents
-        .map(tuple -> (ValueSet) PARSER.parseResource(tuple._2))
+        .map(new ToValueSet())
         .rdd(), VALUE_SET_ENCODER);
   }
 

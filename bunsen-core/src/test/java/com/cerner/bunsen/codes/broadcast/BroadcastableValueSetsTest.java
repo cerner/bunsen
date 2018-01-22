@@ -58,7 +58,7 @@ public class BroadcastableValueSetsTest {
     withLoincAndSnomed.writeToDatabase(Hierarchies.HIERARCHIES_DATABASE);
 
     ValueSets.getEmpty(spark)
-        .withValueSetsFromDirectory("src/test/resources/valuesets")
+        .withValueSetsFromDirectory("src/test/resources/xml/valuesets")
         .writeToDatabase(ValueSets.VALUE_SETS_DATABASE);
   }
 

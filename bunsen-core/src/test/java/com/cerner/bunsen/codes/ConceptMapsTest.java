@@ -146,10 +146,28 @@ public class ConceptMapsTest {
   }
 
   @Test
-  public void testWithMapsFromDirectory() {
+  public void testWithMapsFromDirectoryXml() {
 
     ConceptMaps maps = ConceptMaps.getEmpty(spark)
-        .withMapsFromDirectory("src/test/resources/conceptmaps");
+        .withMapsFromDirectory("src/test/resources/xml/conceptmaps");
+
+    ConceptMap genderMap = maps.getConceptMap(
+        "urn:cerner:poprec:fhir:conceptmap:demographics:gender",
+        "0.0.1");
+
+    Assert.assertNotNull(genderMap);
+
+    Assert.assertEquals("urn:cerner:poprec:fhir:conceptmap:demographics:gender",
+        genderMap.getUrl());
+
+    Assert.assertEquals("0.0.1", genderMap.getVersion());
+  }
+
+  @Test
+  public void testWithMapsFromDirectoryJson() {
+
+    ConceptMaps maps = ConceptMaps.getEmpty(spark)
+        .withMapsFromDirectory("src/test/resources/json/conceptmaps");
 
     ConceptMap genderMap = maps.getConceptMap(
         "urn:cerner:poprec:fhir:conceptmap:demographics:gender",
@@ -170,11 +188,11 @@ public class ConceptMapsTest {
     spark.sql("CREATE DATABASE " + database);
 
     ConceptMaps.getEmpty(spark)
-        .withMapsFromDirectory("src/test/resources/conceptmaps")
+        .withMapsFromDirectory("src/test/resources/xml/conceptmaps")
         .writeToDatabase(database);
 
     ConceptMaps maps = ConceptMaps.getFromDatabase(spark, database)
-        .withDisjointMapsFromDirectory("src/test/resources/conceptmaps", database);
+        .withDisjointMapsFromDirectory("src/test/resources/xml/conceptmaps", database);
 
     ConceptMap genderMap = maps.getConceptMap(
         "urn:cerner:poprec:fhir:conceptmap:demographics:gender",
@@ -196,7 +214,7 @@ public class ConceptMapsTest {
     spark.sql("create database test_mapping_write");
 
     ConceptMaps maps = ConceptMaps.getEmpty(spark)
-        .withMapsFromDirectory("src/test/resources/conceptmaps");
+        .withMapsFromDirectory("src/test/resources/xml/conceptmaps");
 
     maps.writeToDatabase("test_mapping_write");
 

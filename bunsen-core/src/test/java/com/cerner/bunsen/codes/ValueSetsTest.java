@@ -153,10 +153,26 @@ public class ValueSetsTest {
   }
 
   @Test
-  public void testWithValueSetsFromDirectory() {
+  public void testWithValueSetsFromDirectoryXml() {
 
     ValueSets valueSets = ValueSets.getEmpty(spark)
-        .withValueSetsFromDirectory("src/test/resources/valuesets");
+        .withValueSetsFromDirectory("src/test/resources/xml/valuesets");
+
+    ValueSet marriedValueSet = valueSets.getValueSet(
+        "urn:cerner:bunsen:valueset:married_maritalstatus",
+        "0.0.1");
+
+    Assert.assertNotNull(marriedValueSet);
+    Assert.assertEquals("urn:cerner:bunsen:valueset:married_maritalstatus",
+        marriedValueSet.getUrl());
+    Assert.assertEquals("0.0.1", marriedValueSet.getVersion());
+  }
+
+  @Test
+  public void testWithValueSetsFromDirectoryJson() {
+
+    ValueSets valueSets = ValueSets.getEmpty(spark)
+        .withValueSetsFromDirectory("src/test/resources/json/valuesets");
 
     ValueSet marriedValueSet = valueSets.getValueSet(
         "urn:cerner:bunsen:valueset:married_maritalstatus",
@@ -175,11 +191,11 @@ public class ValueSetsTest {
     spark.sql("CREATE DATABASE " + database);
 
     ValueSets.getEmpty(spark)
-        .withValueSetsFromDirectory("src/test/resources/valuesets")
+        .withValueSetsFromDirectory("src/test/resources/xml/valuesets")
         .writeToDatabase(database);
 
     ValueSets valueSets = ValueSets.getFromDatabase(spark, database)
-        .withDisjointValueSetsFromDirectory("src/test/resources/valuesets", database);
+        .withDisjointValueSetsFromDirectory("src/test/resources/xml/valuesets", database);
 
     ValueSet marriedValueSet = valueSets.getValueSet(
         "urn:cerner:bunsen:valueset:married_maritalstatus",
@@ -201,7 +217,7 @@ public class ValueSetsTest {
     spark.sql("CREATE DATABASE " + database);
 
     ValueSets valueSets = ValueSets.getEmpty(spark)
-        .withValueSetsFromDirectory("src/test/resources/valuesets");
+        .withValueSetsFromDirectory("src/test/resources/xml/valuesets");
 
     valueSets.writeToDatabase(database);
 
@@ -238,7 +254,7 @@ public class ValueSetsTest {
     spark.sql("CREATE DATABASE " + database);
 
     ValueSets valueSets = ValueSets.getEmpty(spark)
-        .withValueSetsFromDirectory("src/test/resources/valuesets");
+        .withValueSetsFromDirectory("src/test/resources/xml/valuesets");
 
     valueSets.writeToDatabase(database);
 

@@ -106,7 +106,7 @@ public class ValueSetUdfsTest {
         "20160901");
 
     ValueSets withGender = ValueSets.getEmpty(spark)
-        .withValueSetsFromDirectory("src/test/resources/valuesets");
+        .withValueSetsFromDirectory("src/test/resources/xml/valuesets");
 
     BroadcastableValueSets valueSets = BroadcastableValueSets.newBuilder()
         .addCode("bp",
