@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FilterFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
@@ -43,8 +44,6 @@ import scala.Tuple2;
 public class ConceptMaps {
 
   private static final FhirContext FHIR_CONTEXT = FhirContext.forDstu3();
-
-  private static final IParser PARSER = FHIR_CONTEXT.newXmlParser();
 
   /**
    * An encoder for serializing mappings.
@@ -417,6 +416,32 @@ public class ConceptMaps {
     return withConceptMaps(conceptMapsDatasetFromDirectory(path));
   }
 
+  private static class ToConceptMap implements Function<Tuple2<String, String>, ConceptMap> {
+
+    private static final IParser XML_PARSER = FHIR_CONTEXT.newXmlParser();
+
+    private static final IParser JSON_PARSER = FHIR_CONTEXT.newJsonParser();
+
+    @Override
+    public ConceptMap call(Tuple2<String, String> fileContentTuple) throws Exception {
+
+      String filePath = fileContentTuple._1.toLowerCase();
+
+      if (filePath.endsWith(".xml")) {
+
+        return (ConceptMap) XML_PARSER.parseResource(fileContentTuple._2());
+
+      } else if (filePath.endsWith(".json")) {
+
+        return (ConceptMap) JSON_PARSER.parseResource(fileContentTuple._2());
+
+      } else {
+
+        throw new RuntimeException("Unrecognized file extension for resource: " + filePath);
+      }
+    }
+  }
+
   private Dataset<ConceptMap> conceptMapsDatasetFromDirectory(String path) {
 
     JavaRDD<Tuple2<String,String>> fileNamesAndContents = this.spark.sparkContext()
@@ -424,7 +449,7 @@ public class ConceptMaps {
         .toJavaRDD();
 
     return this.spark.createDataset(fileNamesAndContents
-        .map(tuple -> (ConceptMap) PARSER.parseResource(tuple._2))
+        .map(new ToConceptMap())
         .rdd(), CONCEPT_MAP_ENCODER);
   }
 

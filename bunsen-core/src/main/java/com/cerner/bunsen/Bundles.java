@@ -22,7 +22,7 @@ import scala.Tuple2;
  */
 public class Bundles {
 
-  private static final FhirContext context = FhirContext.forDstu3();
+  private static final FhirContext FHIR_CONTEXT = FhirContext.forDstu3();
 
   /**
    * Returns an RDD of bundles loaded from the given path.
@@ -56,7 +56,7 @@ public class Bundles {
       JavaRDD<Bundle> bundles,
       Class<T> resourceClass) {
 
-    RuntimeResourceDefinition definition = context.getResourceDefinition(resourceClass);
+    RuntimeResourceDefinition definition = FHIR_CONTEXT.getResourceDefinition(resourceClass);
 
     return extractEntry(spark, bundles, definition.getName());
   }
@@ -99,7 +99,7 @@ public class Bundles {
       String resourceName,
       FhirEncoders encoders) {
 
-    RuntimeResourceDefinition def = context.getResourceDefinition(resourceName);
+    RuntimeResourceDefinition def = FHIR_CONTEXT.getResourceDefinition(resourceName);
 
     JavaRDD<T> resourceRdd = bundles.flatMap(new ToResource<T>(def.getName()));
 
@@ -142,12 +142,27 @@ public class Bundles {
 
   private static class ToBundle implements Function<Tuple2<String, String>, Bundle> {
 
-    private static final IParser parser = context.newXmlParser();
+    private static final IParser XML_PARSER = FHIR_CONTEXT.newXmlParser();
+
+    private static final IParser JSON_PARSER = FHIR_CONTEXT.newJsonParser();
 
     @Override
     public Bundle call(Tuple2<String, String> fileContentTuple) throws Exception {
 
-      return (Bundle) parser.parseResource(fileContentTuple._2());
+      String filePath = fileContentTuple._1.toLowerCase();
+
+      if (filePath.endsWith(".xml")) {
+
+        return (Bundle) XML_PARSER.parseResource(fileContentTuple._2());
+
+      } else if (filePath.endsWith(".json")) {
+
+        return (Bundle) JSON_PARSER.parseResource(fileContentTuple._2());
+
+      } else {
+
+        throw new RuntimeException("Unrecognized file extension for resource: " + filePath);
+      }
     }
   }
 

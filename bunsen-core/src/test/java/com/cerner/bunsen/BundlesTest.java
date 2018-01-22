@@ -37,7 +37,7 @@ public class BundlesTest {
             Files.createTempDirectory("spark_warehouse").toString())
         .getOrCreate();
 
-    bundles = Bundles.loadFromDirectory(spark, "src/test/resources/bundles", 1).cache();
+    bundles = Bundles.loadFromDirectory(spark, "src/test/resources/xml/bundles", 1).cache();
   }
 
   /**
@@ -50,7 +50,17 @@ public class BundlesTest {
   }
 
   @Test
-  public void testLoadBundle() {
+  public void testLoadBundleXml() {
+
+    Assert.assertEquals(3,
+        bundles.collect().size());
+  }
+
+  @Test
+  public void testLoadBundleJson() {
+
+    JavaRDD<Bundle> bundles = Bundles.loadFromDirectory(spark,
+        "src/test/resources/json/bundles", 1);
 
     Assert.assertEquals(3,
         bundles.collect().size());
