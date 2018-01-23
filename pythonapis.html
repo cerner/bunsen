@@ -265,14 +265,14 @@ the push_valuesets function above, that is the structure will follow this patter
 <dl class="function">
 <dt id="bunsen.valuesets.isa_loinc">
 <code class="descclassname">bunsen.valuesets.</code><code class="descname">isa_loinc</code><span class="sig-paren">(</span><em>code_value</em>, <em>loinc_version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.valuesets.isa_loinc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a valueset placeholder that will load all values that are descendents
+<dd><p>Returns a hierarchy placeholder that will load all values that are descendents
 of a given LOINC code.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="bunsen.valuesets.isa_snomed">
 <code class="descclassname">bunsen.valuesets.</code><code class="descname">isa_snomed</code><span class="sig-paren">(</span><em>code_value</em>, <em>snomed_version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.valuesets.isa_snomed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a valueset placeholder that will load all values that are descendents
+<dd><p>Returns a hierarchy placeholder that will load all values that are descendents
 of a given SNOMED code.</p>
 </dd></dl>
 
@@ -285,14 +285,19 @@ an active valueset, or false otherwise.</p>
 
 <dl class="function">
 <dt id="bunsen.valuesets.push_valuesets">
-<code class="descclassname">bunsen.valuesets.</code><code class="descname">push_valuesets</code><span class="sig-paren">(</span><em>spark_session</em>, <em>valueset_map</em>, <em>concept_maps=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.valuesets.push_valuesets" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">bunsen.valuesets.</code><code class="descname">push_valuesets</code><span class="sig-paren">(</span><em>spark_session</em>, <em>valueset_map</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.valuesets.push_valuesets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pushes valuesets onto a stack and registers an in_valueset user-defined function
 that uses this content.</p>
 <p>The valueset_map takes the form of {referenceName: [(codeset, codevalue), (codeset, codevalue)]}
 to specify which codesets/values are used for the given valueset reference name.</p>
-<p>Rather than explicitly passing a list of (codeset, codevalue) tuples, users may instead provide
-an AncestorPlaceholder that instructs the the system to load all descendents of a given
-code value. See the isa_loinc and isa_snomed functions above for details.</p>
+<p>Rather than explicitly passing a list of (codeset, codevalue) tuples, users may instead
+load particular value sets or particular hierarchies by providing a ValueSetPlaceholder
+or HierarchyPlaceholder that instructs the system to load codes belonging to a particular
+value set or hierarchical system, respectively. See the isa_loinc and isa_snomed functions
+above for details.</p>
+<p>Finally, ontology information is assumed to be stored in the &#8216;ontologies&#8217; database by
+default, but users can specify another database name if they have customized
+ontologies that are separated from the default ontologies database.</p>
 </dd></dl>
 
 </div>

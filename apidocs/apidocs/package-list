@@ -1,5 +1,5 @@
 com.cerner.bunsen
-com.cerner.bunsen.mappings
-com.cerner.bunsen.mappings.broadcast
-com.cerner.bunsen.mappings.systems
+com.cerner.bunsen.codes
+com.cerner.bunsen.codes.broadcast
+com.cerner.bunsen.codes.systems
 com.cerner.bunsen.python
