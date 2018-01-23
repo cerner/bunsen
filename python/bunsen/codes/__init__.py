@@ -135,7 +135,7 @@ class ConceptMaps(object):
         """
         Returns the latest version of a map, or None if there is none."
         """
-        df = get_maps().where(df.url == functions.lit(url))
+        df = get_maps().where(df.url == url)
         results = df.agg({"version": "max"}).collect()
         return results[0].min if resuls.count() > 0 else None
 
@@ -157,10 +157,10 @@ class ConceptMaps(object):
         df = DataFrame(self._jconcept_maps.getMappings(), self._spark_session)
 
         if url is not None:
-            df = df.where(df.url == functions.lit(url))
+            df = df.where("conceptmapuri = '" + url + "'")
 
         if version is not None:
-            df = df.where(df.version == functions.lit(version))
+            df = df.where("conceptmapversion = '" + version + "'")
 
         return df
 
@@ -198,6 +198,27 @@ class ConceptMaps(object):
 
         return ConceptMaps(self._spark_session,
                            self._jconcept_maps.withConceptMaps(map_as_list))
+
+    def with_maps_from_directory(self, path):
+      """
+      Returns a new ConceptMaps instance with all maps read from the given
+      directory path. The directory may be anything readable from a Spark path,
+      including local filesystems, HDFS, S3, or others.
+      """
+      maps = self._jconcept_maps.withMapsFromDirectory(path)
+
+      return ConceptMaps(self._spark_session, maps)
+
+    def with_disjoint_maps_from_directory(self, path, database="ontologies"):
+      """
+      Returns a new ConceptMaps instance with all value sets read from the given
+      directory path that are disjoint with value sets stored in the given
+      database. The directory may be anything readable from a Spark path,
+      including local filesystems, HDFS, S3, or others.
+      """
+      maps = self._jconcept_maps.withDisjointMapsFromDirectory(path, database)
+
+      return ConceptMaps(self._spark_session, maps)
 
     def add_mappings(self, url, version, mappings):
         """
@@ -237,7 +258,7 @@ class ValueSets(object):
         Returns the latest version of a value set, or None if there is none.
         """
         df = get_value_sets().where(df.url == functions.lit(url))
-        results = df.agg({"valueSetVersion": "max"}).collect()
+        results = df.agg({"version": "max"}).collect()
         return results[0].min if results.count() > 0 else None
 
     def get_value_sets(self):
@@ -258,10 +279,10 @@ class ValueSets(object):
         df = DataFrame(self._jvalue_sets.getValues(), self._spark_session)
 
         if  url is not None:
-            df = df.where(df.valueSetUri == functions.lit(url))
+            df = df.where("valueseturi = '" + url + "'")
 
         if version is not None:
-            df = df.where(df.valueSetVersion == functions.lit(url))
+            df = df.where("valuesetversion = '" + version + "'")
 
         return df
 
@@ -294,6 +315,27 @@ class ValueSets(object):
 
         return ValueSets(self._spark_session,
                          self._jvalue_sets.withValueSets(value_set_as_list))
+
+    def with_value_sets_from_directory(self, path):
+      """
+      Returns a new ValueSets instance with all value sets read from the given
+      directory path. The directory may be anything readable from a Spark path,
+      including local filesystems, HDFS, S3, or others.
+      """
+      value_sets = self._jvalue_sets.withValueSetsFromDirectory(path)
+
+      return ValueSets(self._spark_session, value_sets)
+
+    def with_disjoint_value_sets_from_directory(self, path, database="ontologies"):
+      """
+      Returns a new ValueSets instance with all value sets read from the given
+      directory path that are disjoint with value sets stored in the given
+      database. The directory may be anything readable from a Spark path,
+      including local filesystems, HDFS, S3, or others.
+      """
+      value_sets = self._jvalue_sets.withDisjointValueSetsFromDirectory(path, database)
+
+      return ValueSets(self._spark_session, value_sets)
 
     def add_values(self, url, version, values):
         """

@@ -8,7 +8,7 @@ from pyspark.sql.functions import col
 
 from bunsen.codes.loinc import with_loinc_hierarchy
 from bunsen.codes.snomed import with_relationships
-from bunsen.codes import create_concept_maps, get_concept_maps, create_value_sets, create_hierarchies
+from bunsen.codes import create_concept_maps, get_concept_maps, create_value_sets, get_value_sets, create_hierarchies
 from bunsen.bundles import load_from_directory, extract_entry, save_as_database, to_bundle
 from bunsen.valuesets import push_valuesets, isa_loinc, isa_snomed, get_current_valuesets
 
@@ -64,6 +64,28 @@ def test_add_map(spark_session):
 
   assert appended.get_maps().count() == 1
   assert appended.get_mappings().where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
+
+def test_with_maps_from_directory(spark_session):
+
+  concept_maps = create_concept_maps(spark_session) \
+      .with_maps_from_directory("tests/resources/conceptmaps")
+
+  assert concept_maps.get_mappings("urn:cerner:poprec:fhir:conceptmap:demographics:gender", "0.0.1") \
+      .count() == 5
+
+def test_with_disjoint_maps_from_directory(spark_session):
+
+  spark_session.sql("CREATE DATABASE IF NOT EXISTS disjoint_maps_db")
+
+  create_concept_maps(spark_session) \
+      .with_maps_from_directory("tests/resources/conceptmaps") \
+      .write_to_database("disjoint_maps_db")
+
+  reloaded = get_concept_maps(spark_session, "disjoint_maps_db") \
+      .with_disjoint_maps_from_directory("tests/resources/conceptmaps", "disjoint_maps_db")
+
+  assert reloaded.get_mappings("urn:cerner:poprec:fhir:conceptmap:demographics:gender", "0.0.1") \
+      .count() == 5
 
 def test_get_map_as_xml(spark_session):
 
@@ -143,6 +165,28 @@ def test_get_value_set_as_xml(spark_session):
 
   root = ET.fromstring(xml_str)
   assert root.tag == '{http://hl7.org/fhir}ValueSet'
+
+def test_with_value_sets_from_directory(spark_session):
+
+  value_sets = create_value_sets(spark_session) \
+      .with_value_sets_from_directory("tests/resources/valuesets")
+
+  assert value_sets.get_values("urn:cerner:bunsen:valueset:married_maritalstatus", "0.0.1") \
+      .count() == 1
+
+def test_with_disjoint_value_sets_from_directory(spark_session):
+
+  spark_session.sql("CREATE DATABASE IF NOT EXISTS disjoint_value_sets_db")
+
+  create_value_sets(spark_session) \
+      .with_value_sets_from_directory("tests/resources/valuesets") \
+      .write_to_database("disjoint_value_sets_db")
+
+  reloaded = get_value_sets(spark_session, "disjoint_value_sets_db") \
+      .with_disjoint_value_sets_from_directory("tests/resources/valuesets", "disjoint_value_sets_db")
+
+  assert reloaded.get_values("urn:cerner:bunsen:valueset:married_maritalstatus", "0.0.1") \
+      .count() == 1
 
 # LOINC Tests
 def test_read_hierarchy_file(spark_session):
