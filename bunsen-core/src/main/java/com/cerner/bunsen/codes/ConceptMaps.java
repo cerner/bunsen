@@ -381,6 +381,12 @@ public class ConceptMaps {
     return withConceptMaps(Arrays.asList(conceptMap));
   }
 
+  /**
+   * Returns a new ConceptMaps instance that includes the given maps.
+   *
+   * @param conceptMaps concept maps to add
+   * @return a new ConceptMaps instance with the values added.
+   */
   public ConceptMaps withConceptMaps(List<ConceptMap> conceptMaps) {
 
     return withConceptMaps(this.spark.createDataset(conceptMaps, CONCEPT_MAP_ENCODER));
@@ -401,6 +407,23 @@ public class ConceptMaps {
         this.members.union(newMembers),
         this.conceptMaps.union(newMapsWithTimestamp),
         this.mappings.union(newMappings));
+  }
+
+  /**
+   * Returns a new ConceptMaps instance that includes the given map and expanded mappings.
+   * This method is convenient when mappings themselves are loaded from some ETL operation
+   * that produces them.
+   *
+   * @param conceptMap concept map to add
+   * @param mappings dataset of mappings to add to add
+   * @return a new ConceptMaps instance with the values added.
+   */
+  public ConceptMaps withExpandedMap(ConceptMap conceptMap, Dataset<Mapping> mappings) {
+
+    Dataset<ConceptMap> conceptMaps = this.spark.createDataset(Arrays.asList(conceptMap),
+        CONCEPT_MAP_ENCODER);
+
+    return withConceptMaps(conceptMaps, mappings);
   }
 
   /**

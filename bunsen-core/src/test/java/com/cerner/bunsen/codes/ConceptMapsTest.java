@@ -3,6 +3,7 @@ package com.cerner.bunsen.codes;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SparkSession;
@@ -102,6 +103,38 @@ public class ConceptMapsTest {
 
     ConceptMap secondMap = maps.getConceptMap("urn:cerner:map:othermap", "1");
     checkMap(secondMap, "urn:cerner:map:othermap", "1");
+  }
+
+  @Test
+  public void testLoadExpandedMappings() throws FHIRException {
+
+    ConceptMap map = conceptMap("urn:cerner:map:testmap", "1");
+
+    // Explicitly create a mapping dataset to simulate an ETL load from an external source.
+    Mapping mapping = new Mapping();
+
+    mapping.setConceptMapUri(map.getUrl());
+    mapping.setConceptMapVersion(map.getVersion());
+    mapping.setSourceValueSet("urn:source:valueset");
+    mapping.setTargetValue("urn:target:valueset");
+    mapping.setSourceSystem("urn:source:system");
+    mapping.setSourceValue("urn:source:code:a");
+    mapping.setTargetSystem("urn:target:system");
+    mapping.setTargetValue("urn:target:code:1");
+
+    Dataset<Mapping> mappings = spark.createDataset(Arrays.asList(mapping),
+        ConceptMaps.getMappingEncoder());
+
+    ConceptMaps maps = ConceptMaps.getEmpty(spark)
+        .withExpandedMap(map, mappings);
+
+    Dataset<Mapping> loadedMappings = maps.getMappings();
+
+    Assert.assertEquals(1, loadedMappings.count());
+
+    Mapping loadedMapping = loadedMappings.head();
+
+    Assert.assertEquals(mapping, loadedMapping);
   }
 
   @Test
