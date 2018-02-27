@@ -6,7 +6,7 @@
   <parent>
     <artifactId>bunsen-parent</artifactId>
     <groupId>com.cerner.bunsen</groupId>
-    <version>0.2.1</version>
+    <version>0.2.2-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <name>Bunsen Core</name>
