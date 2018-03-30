@@ -64,9 +64,6 @@ def push_valuesets(spark_session, valueset_map, database='ontologies'):
 
     for (name, content) in valueset_map.items():
 
-        print(name)
-        print(content)
-
         if type(content) is HierarchyPlaceholder:
 
             # Add codes belonging to the specified hierarchy
