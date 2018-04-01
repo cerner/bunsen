@@ -22,6 +22,28 @@ def load_from_directory(sparkSession, path, minPartitions=1):
     bundles = sparkSession._jvm.com.cerner.bunsen.Bundles
     return bundles.loadFromDirectory(sparkSession._jsparkSession, path, minPartitions)
 
+def from_json(df, column):
+    """
+    Takes a dataframe with JSON-encoded bundles in the given column and returns
+    a Java RDD of Bundle records. Note this
+    RDD contains Bundle records that aren't serializable in Python,
+    so users should use this class as merely a parameter to other methods
+    in this module, like extract_entry.
+    """
+    bundles = df._sc._jvm.com.cerner.bunsen.Bundles
+    return bundles.fromJson(df._jdf, column)
+
+def from_xml(df, column):
+    """
+    Takes a dataframe with XML-encoded bundles in the given column and returns
+    a Java RDD of Bundle records. Note this
+    RDD contains Bundle records that aren't serializable in Python,
+    so users should use this class as merely a parameter to other methods
+    in this module, like extract_entry.
+    """
+    bundles = df._sc._jvm.com.cerner.bunsen.Bundles
+    return bundles.fromXml(df._jdf, column)
+
 
 def extract_entry(sparkSession, javaRDD, resourceName):
     """
