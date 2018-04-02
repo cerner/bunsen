@@ -48,6 +48,14 @@ public class Bundles {
         .map(new ToBundle());
   }
 
+  /**
+   * Returns an RDD of bundles loaded from the given dataset that has JSON-encoded
+   * bundles in the given column.
+   *
+   * @param jsonBundles a dataset of JSON-encoded bundles
+   * @param column the column in which the JSON bundle is stored
+   * @return an RDD of FHIR Bundles
+   */
   public static JavaRDD<Bundle> fromJson(Dataset<Row> jsonBundles, String column) {
 
     return fromJson(jsonBundles.select(column).as(Encoders.STRING()));
@@ -65,6 +73,14 @@ public class Bundles {
     return jsonBundles.toJavaRDD().map(new StringToBundle(false));
   }
 
+  /**
+   * Returns an RDD of bundles loaded from the given dataset that has XML-encoded
+   * bundles in the given column.
+   *
+   * @param xmlBundles a dataset of XML-encoded bundles
+   * @param column the column in which the XML bundle is stored
+   * @return an RDD of FHIR Bundles
+   */
   public static JavaRDD<Bundle> fromXml(Dataset<Row> xmlBundles, String column) {
 
     return fromXml(xmlBundles.select(column).as(Encoders.STRING()));
@@ -81,8 +97,6 @@ public class Bundles {
 
     return xmlBundles.toJavaRDD().map(new StringToBundle(true));
   }
-
-
 
   /**
    * Extracts the given resource type from the RDD of bundles and returns

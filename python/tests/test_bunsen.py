@@ -224,7 +224,7 @@ def test_xml_bundles_from_df(spark_session):
 
   assert extract_entry(spark_session, bundles, 'Condition').count() == 5
 
-def test_xml_bundles_from_df(spark_session):
+def test_json_bundles_from_df(spark_session):
 
   json_bundles = spark_session.sparkContext.wholeTextFiles('tests/resources/bundles/json').toDF()
 
