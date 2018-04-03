@@ -14,6 +14,7 @@ with the full power of that platform, including with Spark SQL.
    how_bunsen_works
    pythonapis
    snomed_and_loinc
+   building
 
 Compatibility Matrix
 --------------------
