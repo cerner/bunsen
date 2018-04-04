@@ -208,7 +208,7 @@
 <div class="section" id="building-bunsen">
 <h1>Building Bunsen<a class="headerlink" href="#building-bunsen" title="Permalink to this headline">¶</a></h1>
 <p>Bunsen is built with Apache Maven 3.3 or higher running in an environment with Java 8 or newer.
-Python users will also want to create a virtual environment with at least Python 3.4.</p>
+Python users will also want to create a virtual environment with Python 2.7 or Python 3.4 or newer.</p>
 <div class="section" id="simple-builds">
 <h2>Simple Builds<a class="headerlink" href="#simple-builds" title="Permalink to this headline">¶</a></h2>
 <p>Bunsen can be built and packaged by simply running the following command in any environment
@@ -226,22 +226,24 @@ environment like this:</p>
 </div>
 <div class="section" id="running-python-tests">
 <h2>Running Python Tests<a class="headerlink" href="#running-python-tests" title="Permalink to this headline">¶</a></h2>
-<p>Running Bunsen&#8217;s Python tests requires Apache Spark to be installed on the build machine. This
-requires some additional steps.</p>
-<p>First, install PySpark, optionally in a virtual environment:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pip</span> <span class="n">install</span> <span class="n">pyspark</span>
+<p>Running Bunsen&#8217;s Python tests requires the Apache Spark and Python dependencies be available. Once
+Python itself is installed on the build machine, users may want to create a separate vitualenv for
+the project to isolate it from other usage.</p>
+<p>Installing Bunsen&#8217;s python dependencies is done by running the following command in the Bunsen project root directory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">make</span> <span class="o">--</span><span class="n">directory</span> <span class="n">python</span>
 </pre></div>
 </div>
-<p>Depending on the version of Spark you&#8217;re using, you may also need to set the SPARK_HOME environment variable.
-It can be pointed to a Spark installation that was downloaded from
-<a class="reference external" href="https://spark.apache.org/downloads.html">Apache Spark site</a>, or to the /site-packages/pyspark folder under your Python
-virtual environment.</p>
-<p>For instance, if you have a Spark 2.2.1 installation in /usr/local/spark, you can set this:</p>
+<p>After that, users can simply run the &#8220;mvn clean install&#8221; command as seen below to build, test,
+and install the project in the local Maven repository:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>Users who have an existing Spark installation they want to use can set the SPARK_HOME For instance,
+if you have a Spark installation in /usr/local/spark you want to use for the Python tests, you can
+set this before building the project:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">export</span> <span class="n">SPARK_HOME</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">spark</span>
 </pre></div>
 </div>
-<p>With these prerequisites in place, the full project including the Python tests can be run by simply
-calling &#8220;mvn clean install&#8221; in the project root.</p>
 </div>
 </div>
 
