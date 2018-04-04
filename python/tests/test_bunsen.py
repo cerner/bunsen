@@ -1,4 +1,5 @@
 import os
+import sys
 
 from tempfile import mkdtemp
 from pytest import fixture
@@ -31,8 +32,19 @@ def spark_session(request):
   # Get the shaded JAR for testing purposes.
   shaded_jar =  os.environ['SHADED_JAR_PATH']
 
+  # Following the pattern in find_spark_home.py in Spark itself, this sets
+  # the SPARK_HOME environment variable so the full Spark system is available
+  # for tests.
+  if not ('SPARK_HOME' in os.environ):
+    if sys.version < "3":
+      import imp
+      os.environ['SPARK_HOME'] = imp.find_module("pyspark")[1]
+    else:
+      from importlib.util import find_spec
+      os.environ['SPARK_HOME'] = os.path.dirname(find_spec("pyspark").origin)
+
   spark = SparkSession.builder \
-    .appName('Foresight-test') \
+    .appName('bunsen-test') \
     .master('local[2]') \
     .config('spark.jars', shaded_jar) \
     .config('hive.exec.dynamic.partition.mode', 'nonstrict') \

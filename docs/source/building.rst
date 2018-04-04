@@ -1,7 +1,7 @@
 Building Bunsen
 ===============
 Bunsen is built with Apache Maven 3.3 or higher running in an environment with Java 8 or newer.
-Python users will also want to create a virtual environment with at least Python 3.4.
+Python users will also want to create a virtual environment with Python 2.7 or Python 3.4 or newer.
 
 Simple Builds
 -------------
@@ -19,21 +19,21 @@ environment like this:
 
 Running Python Tests
 --------------------
-Running Bunsen's Python tests requires Apache Spark to be installed on the build machine. This
-requires some additional steps.
+Running Bunsen's Python tests requires the Apache Spark and Python dependencies be available. Once
+Python itself is installed on the build machine, users may want to create a separate vitualenv for
+the project to isolate it from other usage.
 
-First, install PySpark, optionally in a virtual environment:
+Installing Bunsen's python dependencies is done by running the following command in the Bunsen project root directory:
 
->>> pip install pyspark
+>>> make --directory python
 
-Depending on the version of Spark you're using, you may also need to set the SPARK_HOME environment variable.
-It can be pointed to a Spark installation that was downloaded from
-`Apache Spark site <https://spark.apache.org/downloads.html>`_, or to the /site-packages/pyspark folder under your Python
-virtual environment.
+After that, users can simply run the "mvn clean install" command as seen below to build, test,
+and install the project in the local Maven repository:
 
-For instance, if you have a Spark 2.2.1 installation in /usr/local/spark, you can set this:
+>>> mvn clean install
+
+Users who have an existing Spark installation they want to use can set the SPARK_HOME For instance,
+if you have a Spark installation in /usr/local/spark you want to use for the Python tests, you can
+set this before building the project:
 
 >>> export SPARK_HOME=/usr/local/spark
-
-With these prerequisites in place, the full project including the Python tests can be run by simply
-calling "mvn clean install" in the project root.
