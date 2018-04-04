@@ -10,7 +10,7 @@ from pyspark.sql.functions import col
 from bunsen.codes.loinc import with_loinc_hierarchy
 from bunsen.codes.snomed import with_relationships
 from bunsen.codes import create_concept_maps, get_concept_maps, create_value_sets, get_value_sets, create_hierarchies
-from bunsen.bundles import load_from_directory, extract_entry, save_as_database, to_bundle
+from bunsen.bundles import load_from_directory, extract_entry, save_as_database, to_bundle, from_xml, from_json
 from bunsen.valuesets import push_valuesets, isa_loinc, isa_snomed, get_current_valuesets
 
 import xml.etree.ElementTree as ET
@@ -223,10 +223,26 @@ def test_read_relationship_file(spark_session):
 # Bundles Tests
 @fixture(scope="session")
 def bundles(spark_session):
-  return load_from_directory(spark_session, 'tests/resources/bundles', 1)
+  return load_from_directory(spark_session, 'tests/resources/bundles/xml', 1)
 
 def test_load_from_directory(bundles):
   assert len(bundles.collect()) == 3
+
+def test_xml_bundles_from_df(spark_session):
+
+  xml_bundles = spark_session.sparkContext.wholeTextFiles('tests/resources/bundles/xml').toDF()
+
+  bundles = from_xml(xml_bundles, '_2')
+
+  assert extract_entry(spark_session, bundles, 'Condition').count() == 5
+
+def test_json_bundles_from_df(spark_session):
+
+  json_bundles = spark_session.sparkContext.wholeTextFiles('tests/resources/bundles/json').toDF()
+
+  bundles = from_json(json_bundles, '_2')
+
+  assert extract_entry(spark_session, bundles, 'Condition').count() == 5
 
 def test_extract_entry(spark_session, bundles):
   assert extract_entry(spark_session, bundles, 'Condition').count() == 5
@@ -236,7 +252,7 @@ def test_save_as_database(spark_session):
 
   save_as_database(
       spark_session,
-      'tests/resources/bundles',
+      'tests/resources/bundles/xml',
       'test_db', 'Condition', 'Patient', 'Observation',
       minPartitions=1)
 

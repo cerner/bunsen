@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SparkSession;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Condition;
@@ -15,6 +16,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import scala.Function1;
+import scala.Tuple2;
 
 /**
  * Tests work working with bundles.
@@ -141,6 +144,53 @@ public class BundlesTest {
     checkPatients(patients);
     checkConditions(conditions);
   }
+
+  @Test
+  public void testXmlBundleStrings() {
+
+    JavaRDD<String> xmlBundlesRdd = spark.sparkContext()
+        .wholeTextFiles("src/test/resources/xml/bundles", 1)
+        .toJavaRDD()
+        .map(tuple -> tuple._2());
+
+    Dataset<String> xmlBundles = spark.createDataset(xmlBundlesRdd.rdd(),
+        Encoders.STRING());
+
+    xmlBundles.write().saveAsTable("xml_bundle_table");
+
+    JavaRDD<Bundle> bundles = Bundles.fromXml(
+        spark.sql("select value from xml_bundle_table"), "value");
+
+    Dataset<Patient> patients = Bundles.extractEntry(spark,
+        bundles,
+        Patient.class);
+
+    checkPatients(patients);
+  }
+
+  @Test
+  public void testJsonBundleStrings() {
+
+    JavaRDD<String> jsonBundlesRdd = spark.sparkContext()
+        .wholeTextFiles("src/test/resources/json/bundles", 1)
+        .toJavaRDD()
+        .map(tuple -> tuple._2());
+
+    Dataset<String> jsonBundles = spark.createDataset(jsonBundlesRdd.rdd(),
+        Encoders.STRING());
+
+    jsonBundles.write().saveAsTable("json_bundle_table");
+
+    JavaRDD<Bundle> bundles = Bundles.fromJson(
+        spark.sql("select value from json_bundle_table"), "value");
+
+    Dataset<Patient> patients = Bundles.extractEntry(spark,
+        bundles,
+        Patient.class);
+
+    checkPatients(patients);
+  }
+
 
   @Test
   public void testSaveAsDatabase() {

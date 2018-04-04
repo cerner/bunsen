@@ -11,6 +11,8 @@ import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoder;
+import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Resource;
@@ -23,6 +25,10 @@ import scala.Tuple2;
 public class Bundles {
 
   private static final FhirContext FHIR_CONTEXT = FhirContext.forDstu3();
+
+  private static final IParser XML_PARSER = FHIR_CONTEXT.newXmlParser();
+
+  private static final IParser JSON_PARSER = FHIR_CONTEXT.newJsonParser();
 
   /**
    * Returns an RDD of bundles loaded from the given path.
@@ -40,6 +46,56 @@ public class Bundles {
         .wholeTextFiles(path, minPartitions)
         .toJavaRDD()
         .map(new ToBundle());
+  }
+
+  /**
+   * Returns an RDD of bundles loaded from the given dataset that has JSON-encoded
+   * bundles in the given column.
+   *
+   * @param jsonBundles a dataset of JSON-encoded bundles
+   * @param column the column in which the JSON bundle is stored
+   * @return an RDD of FHIR Bundles
+   */
+  public static JavaRDD<Bundle> fromJson(Dataset<Row> jsonBundles, String column) {
+
+    return fromJson(jsonBundles.select(column).as(Encoders.STRING()));
+  }
+
+  /**
+   * Returns an RDD of bundles loaded from the given dataset of JSON-encoded
+   * bundles.
+   *
+   * @param jsonBundles a dataset of JSON-encoded bundles
+   * @return an RDD of FHIR Bundles
+   */
+  public static JavaRDD<Bundle> fromJson(Dataset<String> jsonBundles) {
+
+    return jsonBundles.toJavaRDD().map(new StringToBundle(false));
+  }
+
+  /**
+   * Returns an RDD of bundles loaded from the given dataset that has XML-encoded
+   * bundles in the given column.
+   *
+   * @param xmlBundles a dataset of XML-encoded bundles
+   * @param column the column in which the XML bundle is stored
+   * @return an RDD of FHIR Bundles
+   */
+  public static JavaRDD<Bundle> fromXml(Dataset<Row> xmlBundles, String column) {
+
+    return fromXml(xmlBundles.select(column).as(Encoders.STRING()));
+  }
+
+  /**
+   * Returns an RDD of bundles loaded from the given dataset of XML-encoded
+   * bundles.
+   *
+   * @param xmlBundles a dataset of XML-encoded bundles
+   * @return an RDD of FHIR Bundles
+   */
+  public static JavaRDD<Bundle> fromXml(Dataset<String> xmlBundles) {
+
+    return xmlBundles.toJavaRDD().map(new StringToBundle(true));
   }
 
   /**
@@ -140,11 +196,30 @@ public class Bundles {
     }
   }
 
+  private static class StringToBundle implements Function<String, Bundle> {
+
+    private final boolean isXml;
+
+    StringToBundle(boolean isXml) {
+      this.isXml = isXml;
+    }
+
+    @Override
+    public Bundle call(String bundleString) throws Exception {
+
+      if (isXml) {
+
+        return (Bundle) XML_PARSER.parseResource(bundleString);
+
+      } else {
+
+        return (Bundle) JSON_PARSER.parseResource(bundleString);
+      }
+    }
+  }
+
   private static class ToBundle implements Function<Tuple2<String, String>, Bundle> {
 
-    private static final IParser XML_PARSER = FHIR_CONTEXT.newXmlParser();
-
-    private static final IParser JSON_PARSER = FHIR_CONTEXT.newJsonParser();
 
     @Override
     public Bundle call(Tuple2<String, String> fileContentTuple) throws Exception {
