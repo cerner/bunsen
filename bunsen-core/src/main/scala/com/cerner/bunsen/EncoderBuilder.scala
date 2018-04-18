@@ -5,13 +5,12 @@ import java.util.TimeZone
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition.ChildTypeEnum
 import ca.uhn.fhir.context._
 import ca.uhn.fhir.model.api.IValueSetEnumBinder
-import EncoderBuilder.{StaticField, StaticInvokeCatchException}
+import com.cerner.bunsen.backports._
 import org.apache.spark.sql.catalyst.analysis.{GetColumnByOrdinal, UnresolvedAttribute, UnresolvedExtractValue}
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, ExprCode}
 import org.apache.spark.sql.catalyst.expressions.objects._
-import org.apache.spark.sql.catalyst.{InternalRow, expressions}
+import org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 import org.hl7.fhir.dstu3.model._
@@ -60,169 +59,6 @@ private[bunsen] object EncoderBuilder {
       deserializer = deserializer,
       ClassTag(fhirClass))
   }
-
-  /**
-    * This is a customized version of the StaticInvoke expression that catches and re-throws
-    * an exception.
-    *
-    * Invokes a static function, returning the result.  By default, any of the arguments being null
-    * will result in returning null instead of calling the function.
-    *
-    * @param staticObject  The target of the static call.  This can either be the object itself
-    *                      (methods defined on scala objects), or the class object
-    *                      (static methods defined in java).
-    * @param dataType      The expected return type of the function call
-    * @param functionName  The name of the method to call.
-    * @param arguments     An optional list of expressions to pass as arguments to the function.
-    * @param propagateNull When true, and any of the arguments is null, null will be returned instead
-    *                      of calling the function.
-    */
-  case class StaticInvokeCatchException(
-                                         staticObject: Class[_],
-                                         dataType: DataType,
-                                         functionName: String,
-                                         arguments: Seq[Expression] = Nil,
-                                         propagateNull: Boolean = true) extends Expression with NonSQLExpression {
-
-    val objectName = staticObject.getName.stripSuffix("$")
-
-    override def nullable: Boolean = true
-
-    override def children: Seq[Expression] = arguments
-
-    override def eval(input: InternalRow): Any =
-      throw new UnsupportedOperationException("Only code-generated evaluation is supported.")
-
-    override def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
-      val javaType = ctx.javaType(dataType)
-      val argGen = arguments.map(_.genCode(ctx))
-      val argString = argGen.map(_.value).mkString(", ")
-
-      val callFunc = s"$objectName.$functionName($argString)"
-
-      val setIsNull = if (propagateNull && arguments.nonEmpty) {
-        s"boolean ${ev.isNull} = ${argGen.map(_.isNull).mkString(" || ")};"
-      } else {
-        s"boolean ${ev.isNull} = false;"
-      }
-
-      // If the function can return null, we do an extra check to make sure our null bit is still set
-      // correctly.
-      val postNullCheck = if (ctx.defaultValue(dataType) == "null") {
-        s"${ev.isNull} = ${ev.value} == null;"
-      } else {
-        ""
-      }
-
-      ctx.addMutableState(javaType, ev.value, s"${ev.value} = ${ctx.defaultValue(dataType)};")
-
-      val code =
-        s"""
-      ${argGen.map(_.code).mkString("\n")}
-      $setIsNull
-      try {
-      ${ev.value} = ${ev.isNull} ? ${ctx.defaultValue(dataType)} : $callFunc;
-      } catch (Exception e) {
-         org.apache.spark.unsafe.Platform.throwException(e);
-      }
-      $postNullCheck
-     """
-      ev.copy(code = code)
-    }
-  }
-
-  /**
-    * Invokes a static function, returning the result.  By default, any of the arguments being null
-    * will result in returning null instead of calling the function.
-    *
-    * @param staticObject The target of the static call.  This can either be the object itself
-    *                     (methods defined on scala objects), or the class object
-    *                     (static methods defined in java).
-    * @param dataType     The expected type of the static field
-    * @param fieldName    The name of the field to retrieve
-    */
-  private[bunsen] case class StaticField(staticObject: Class[_],
-                                       dataType: DataType,
-                                       fieldName: String) extends Expression with NonSQLExpression {
-
-    val objectName = staticObject.getName.stripSuffix("$")
-
-    override def nullable: Boolean = false
-
-    override def children: Seq[Expression] = Nil
-
-    override def eval(input: InternalRow): Any =
-      throw new UnsupportedOperationException("Only code-generated evaluation is supported.")
-
-    override def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
-      val javaType = ctx.javaType(dataType)
-
-      val code =
-        s"""
-      final $javaType ${ev.value} = $objectName.$fieldName;
-        """
-      ev.copy(code = code, isNull = "false")
-    }
-  }
-
-  /**
-    * Returns the value if it is of the specified type, or null otherwise
-    *
-    * @param value       The value to returned
-    * @param checkedType The type to check against the value via instanceOf
-    * @param dataType    The type returned by the expression
-    */
-  private[bunsen] case class ValueIfType(value: Expression,
-                                       checkedType: Class[_],
-                                       dataType: DataType) extends Expression with NonSQLExpression {
-
-    override def nullable: Boolean = true
-
-    override def eval(input: InternalRow): Any =
-      throw new UnsupportedOperationException("Only code-generated evaluation is supported.")
-
-    override def children: Seq[Expression] = value :: Nil
-
-    override protected def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
-
-      val javaType = ctx.javaType(dataType)
-      val obj = value.genCode(ctx)
-
-      val code =
-        s"""
-        ${obj.code}
-      final $javaType ${ev.value} = ${obj.value} instanceof ${checkedType.getName} ? (${checkedType.getName}) ${obj.value} : null;
-
-         """
-
-      ev.copy(code = code, isNull = s"(${obj.isNull} || !(${obj.value} instanceof ${checkedType.getName}))")
-    }
-  }
-
-  /**
-    * Casts an expression to another object.
-    *
-    * @param value      The value to cast
-    * @param resultType The type the value should be cast to.
-    */
-  private[bunsen] case class ObjectCast(value: Expression,
-                                      resultType: DataType) extends Expression with NonSQLExpression {
-
-    override def nullable: Boolean = value.nullable
-
-    override def eval(input: InternalRow): Any =
-      throw new UnsupportedOperationException("Only code-generated evaluation is supported.")
-
-    override def dataType: DataType = resultType
-
-    override def children: Seq[Expression] = value :: Nil
-
-    override protected def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
-
-      value.genCode(ctx)
-    }
-  }
-
 }
 
 /**
@@ -238,9 +74,15 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
     // Get the value and initialize the instance.
     val utfToString = Invoke(getPath, "toString", ObjectType(classOf[String]), Nil)
 
-    StaticInvokeCatchException(enumeration.getBoundEnumType,
+    val enumFactory = Class.forName(enumeration.getBoundEnumType.getName + "EnumFactory")
+
+    // Creates a new enum factory instance for each invocation, but this is cheap
+    // on modern JVMs and probably more efficient than attempting to pool the underlying
+    // FHIR enum factory ourselves.
+    val factoryInstance = NewInstance(enumFactory, Nil, false, ObjectType(enumFactory), None)
+
+    Invoke(factoryInstance, "fromCode",
       ObjectType(enumeration.getBoundEnumType),
-      "fromCode",
       List(utfToString))
   }
 
@@ -415,9 +257,9 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
 
         val choiceChildDefinition = choice.getChildByName(childName)
 
-        val childObject = EncoderBuilder.ValueIfType(choiceObject,
-          choiceChildDefinition.getImplementingClass,
-          ObjectType(choiceChildDefinition.getImplementingClass))
+        val childObject = If(InstanceOf(choiceObject, choiceChildDefinition.getImplementingClass),
+          ObjectCast(choiceObject, ObjectType(choiceChildDefinition.getImplementingClass)),
+          Literal.create(null, ObjectType(choiceChildDefinition.getImplementingClass)))
 
         val childExpr = choiceChildDefinition match {
 
@@ -637,7 +479,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
         case primitive: RuntimePrimitiveDatatypeDefinition => primitiveToDeserializer(primitive.getImplementingClass, Some(childPath))
       }
 
-      val child = EncoderBuilder.ObjectCast(deserializer, ObjectType(classOf[org.hl7.fhir.dstu3.model.Type]))
+      val child = ObjectCast(deserializer, ObjectType(classOf[org.hl7.fhir.dstu3.model.Type]))
 
       // If this item is not null, deserialize it. Otherwise attempt other choices.
       expressions.If(IsNotNull(childPath),
@@ -734,7 +576,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
 
     // Construct a bound code instance with the value set based on the enumeration.
     val boundCodeInstance = NewInstance(boundCode.getDatatype,
-      EncoderBuilder.StaticField(boundCode.getBoundEnumType,
+      StaticField(boundCode.getBoundEnumType,
         ObjectType(classOf[IValueSetEnumBinder[_]]),
         "VALUESET_BINDER") :: Nil,
       ObjectType(boundCode.getDatatype))
@@ -751,7 +593,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
                                                  path: Option[Expression]): Expression = {
 
     val boundCodeInstance = NewInstance(boundCodeable.getDatatype,
-      EncoderBuilder.StaticField(boundCodeable.getBoundEnumType,
+      StaticField(boundCodeable.getBoundEnumType,
         ObjectType(classOf[IValueSetEnumBinder[_]]),
         "VALUESET_BINDER") :: Nil,
       ObjectType(boundCodeable.getDatatype))
