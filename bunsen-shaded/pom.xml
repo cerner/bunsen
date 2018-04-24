@@ -33,11 +33,15 @@
 
                   <!-- Include the Bunsen artifacts. -->
                   <include>com.cerner.bunsen:bunsen-core</include>
+                  <include>com.cerner.bunsen:bunsen-stu3</include>
 
-                  <!-- Include the FHIR APIs -->
+                  <!-- Include the FHIR base APIS -->
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-base</include>
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-utilities</include>
+
+                  <!-- Include STU3 FHIR Support -->
                   <include>ca.uhn.hapi.fhir:hapi-fhir-structures-dstu3</include>
                   <include>ca.uhn.hapi.fhir:hapi-fhir-validation-resources-dstu3</include>
-                  <include>ca.uhn.hapi.fhir:hapi-fhir-base</include>
 
                 </includes>
               </artifactSet>
@@ -66,6 +70,10 @@
     <dependency>
       <groupId>com.cerner.bunsen</groupId>
       <artifactId>bunsen-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-stu3</artifactId>
     </dependency>
   </dependencies>
 </project>

@@ -1,4 +1,4 @@
-package com.cerner.bunsen;
+package com.cerner.bunsen.stu3;
 
 import org.hl7.fhir.dstu3.model.Annotation;
 import org.hl7.fhir.dstu3.model.CodeableConcept;

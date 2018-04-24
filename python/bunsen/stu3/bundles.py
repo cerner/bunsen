@@ -11,6 +11,9 @@ See the methods below for details.
 from pyspark.sql import DataFrame
 import json
 
+def _bundles(jvm):
+    return jvm.com.cerner.bunsen.Bundles.forStu3()
+
 def load_from_directory(sparkSession, path, minPartitions=1):
     """
     Returns a Java RDD of bundles loaded from the given path. Note this
@@ -19,7 +22,7 @@ def load_from_directory(sparkSession, path, minPartitions=1):
     in this module, like extract_entry.
     """
 
-    bundles = sparkSession._jvm.com.cerner.bunsen.Bundles
+    bundles = _bundles(sparkSession._jvm)
     return bundles.loadFromDirectory(sparkSession._jsparkSession, path, minPartitions)
 
 def from_json(df, column):
@@ -30,7 +33,7 @@ def from_json(df, column):
     so users should use this class as merely a parameter to other methods
     in this module, like extract_entry.
     """
-    bundles = df._sc._jvm.com.cerner.bunsen.Bundles
+    bundles = _bundles(df._sc._jvm)
     return bundles.fromJson(df._jdf, column)
 
 def from_xml(df, column):
@@ -41,20 +44,18 @@ def from_xml(df, column):
     so users should use this class as merely a parameter to other methods
     in this module, like extract_entry.
     """
-    bundles = df._sc._jvm.com.cerner.bunsen.Bundles
+    bundles = _bundles(df._sc._jvm)
     return bundles.fromXml(df._jdf, column)
-
 
 def extract_entry(sparkSession, javaRDD, resourceName):
     """
     Returns a dataset for the given entry type from the bundles.
     """
 
-    bundles = sparkSession._jvm.com.cerner.bunsen.Bundles
+    bundles = _bundles(sparkSession._jvm)
     return DataFrame(
-            bundles.extractEntry(sparkSession._jsparkSession, javaRDD, resourceName), 
+            bundles.extractEntry(sparkSession._jsparkSession, javaRDD, resourceName),
             sparkSession)
-
 
 def save_as_database(sparkSession, path, databaseName, *resourceNames, **kwargs):
     """
@@ -72,7 +73,7 @@ def save_as_database(sparkSession, path, databaseName, *resourceNames, **kwargs)
     if (kwargs.get('cache', True)):
         rdd.cache()
 
-    bundles = sparkSession._jvm.com.cerner.bunsen.Bundles
+    bundles = _bundles(sparkSession._jvm)
 
     bundles.saveAsDatabase(sparkSession._jsparkSession, rdd, databaseName, namesArray)
 
@@ -87,6 +88,6 @@ def to_bundle(sparkSession, dataset):
 
     jvm = sparkSession._jvm
 
-    json_string = jvm.com.cerner.bunsen.python.Functions.toJsonBundle(dataset._jdf)
+    json_string = jvm.com.cerner.bunsen.stu3.python.Functions.toJsonBundle(dataset._jdf)
 
     return json.loads(json_string)

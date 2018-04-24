@@ -5,7 +5,7 @@ in Spark queries.
 
 from collections import namedtuple
 
-from bunsen.codes import get_value_sets, get_hierarchies
+from bunsen.stu3.codes import get_value_sets, get_hierarchies
 
 # Placeholder record to load a particular value set
 ValueSetPlaceholder = namedtuple("ValueSetPlaceholder",

@@ -1,6 +1,9 @@
-package com.cerner.bunsen.codes.broadcast;
+package com.cerner.bunsen.stu3.codes.broadcast;
 
-import com.google.common.collect.ImmutableList;
+import com.cerner.bunsen.codes.broadcast.BroadcastableConceptMap;
+import com.cerner.bunsen.codes.broadcast.BroadcastableMappings;
+import com.cerner.bunsen.stu3.codes.ConceptMaps;
+import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.SparkSession;
@@ -61,8 +64,11 @@ public class BroadcastableMappingsTest {
             .setMode(ConceptMapGroupUnmappedMode.OTHERMAP)
             .setUrl("uri:test:concept:map"));
 
-    broadcast = BroadcastableMappings.broadcast(spark,
-        ImmutableList.of(conceptMap, delegatingMap));
+    broadcast = ConceptMaps.getEmpty(spark)
+        .withConceptMaps(conceptMap, delegatingMap)
+        .broadcast(ImmutableMap.of(
+            "uri:test:concept:map", "0",
+            "uri:test:concept:delegating", "0"));
   }
 
   /**

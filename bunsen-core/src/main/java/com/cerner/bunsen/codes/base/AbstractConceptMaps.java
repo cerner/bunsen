@@ -1,15 +1,17 @@
-package com.cerner.bunsen.codes;
+package com.cerner.bunsen.codes.base;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.lit;
 
-import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.parser.IParser;
 import com.cerner.bunsen.FhirEncoders;
+import com.cerner.bunsen.codes.Mapping;
+import com.cerner.bunsen.codes.UrlAndVersion;
+import com.cerner.bunsen.codes.broadcast.BroadcastableMappings;
+import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +21,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoder;
@@ -29,53 +30,28 @@ import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.catalyst.analysis.NoSuchTableException;
 import org.apache.spark.sql.functions;
-import org.hl7.fhir.dstu3.model.ConceptMap;
-import org.hl7.fhir.dstu3.model.ConceptMap.ConceptMapGroupComponent;
-import org.hl7.fhir.dstu3.model.ConceptMap.SourceElementComponent;
-import org.hl7.fhir.dstu3.model.ConceptMap.TargetElementComponent;
-import org.hl7.fhir.dstu3.model.UriType;
-import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import scala.Tuple2;
 
 /**
- * An immutable collection of FHIR ConceptMaps. This class is used to import concept
- * map content, explore it, and persist it to a database.
+ * This is a partial implementation of logic to manage FHIR ConceptMaps. It is designed to
+ * encapsulate as much functionality as possible while remaining independent of specific FHIR
+ * versions. Users should generally not use this class directly, but rather consume the subclass
+ * that corresponds to the FHIR version they are using.
+ *
+ * @param <T> the type of the FHIR ConceptMap objects being used
+ * @param <C> the type of the subclass of this class being used.
  */
-public class ConceptMaps {
-
-  private static final FhirContext FHIR_CONTEXT = FhirContext.forDstu3();
+public abstract class AbstractConceptMaps<T extends IBaseResource,
+    C extends AbstractConceptMaps<T,C>> {
 
   /**
    * An encoder for serializing mappings.
    */
-  private static final Encoder<Mapping> MAPPING_ENCODER = Encoders.bean(Mapping.class);
+  protected static final Encoder<Mapping> MAPPING_ENCODER = Encoders.bean(Mapping.class);
 
-  private static final Encoder<ConceptMap> CONCEPT_MAP_ENCODER = FhirEncoders.forStu3()
-      .getOrCreate()
-      .of(ConceptMap.class);
-
-  private static final Encoder<UrlAndVersion> URL_AND_VERSION_ENCODER =
+  protected static final Encoder<UrlAndVersion> URL_AND_VERSION_ENCODER =
       Encoders.bean(UrlAndVersion.class);
-
-  /**
-   * Returns the encoder for mappings.
-   *
-   * @return an encoder for mappings.
-   */
-  public static Encoder<Mapping> getMappingEncoder() {
-
-    return MAPPING_ENCODER;
-  }
-
-  /**
-   * Returns the encoder for concept maps.
-   *
-   * @return an encoder for concept maps.
-   */
-  public static Encoder<ConceptMap> getConceptMapEncoder() {
-
-    return CONCEPT_MAP_ENCODER;
-  }
 
   /**
    * Returns the encoder for UrlAndVersion tuples.
@@ -99,364 +75,89 @@ public class ConceptMaps {
   /**
    * Defalt table name where concept maps are stored.
    */
-  public static final String CONCEPT_MAP_TABLE = "conceptmaps";
+  protected static final String CONCEPT_MAP_TABLE = "conceptmaps";
 
-  private static final Pattern TABLE_NAME_PATTERN =
+  protected static final Pattern TABLE_NAME_PATTERN =
       Pattern.compile("[A-Za-z][A-Za-z0-9_]*\\.?[A-Za-z0-9_]*");
 
-  private final SparkSession spark;
+  protected final SparkSession spark;
 
-  private final Dataset<ConceptMap> conceptMaps;
+  protected final FhirVersionEnum fhirVersion;
 
-  private final Dataset<Mapping> mappings;
+  protected final Dataset<UrlAndVersion> members;
 
-  private final Dataset<UrlAndVersion> members;
+  protected final Dataset<T> conceptMaps;
 
-  private ConceptMaps(SparkSession spark,
+  protected final Dataset<Mapping> mappings;
+
+  protected final Encoder<T> conceptMapEncoder;
+
+  protected AbstractConceptMaps(SparkSession spark,
+      FhirVersionEnum fhirVersion,
       Dataset<UrlAndVersion> members,
-      Dataset<ConceptMap> conceptMaps,
-      Dataset<Mapping> mappings) {
+      Dataset<T> conceptMaps,
+      Dataset<Mapping> mappings,
+      Encoder<T> conceptMapEncoder) {
 
     this.spark = spark;
+    this.fhirVersion = fhirVersion;
     this.members = members;
     this.conceptMaps = conceptMaps;
     this.mappings = mappings;
-  }
-
-  /**
-   * Returns the collection of concept maps from the default database and tables.
-   *
-   * @param spark the spark session
-   * @return a ConceptMaps instance.
-   */
-  public static ConceptMaps getDefault(SparkSession spark) {
-
-    return getFromDatabase(spark, MAPPING_DATABASE);
-  }
-
-  /**
-   * Returns the collection of concept maps from the tables in the given database.
-   *
-   * @param spark the spark session
-   * @param databaseName name of the database containing the conceptmaps and mappings tables.
-   * @return a ConceptMaps instance.
-   */
-  public static ConceptMaps getFromDatabase(SparkSession spark, String databaseName) {
-
-    Dataset<Mapping> mappings = spark.sql(
-        "SELECT * FROM " + databaseName + "." + MAPPING_TABLE).as(MAPPING_ENCODER);
-
-    Dataset<ConceptMap> conceptMaps = spark
-        .sql("SELECT * FROM " + databaseName + "." + CONCEPT_MAP_TABLE)
-        .as(CONCEPT_MAP_ENCODER);
-
-    return new ConceptMaps(spark,
-        spark.emptyDataset(URL_AND_VERSION_ENCODER),
-        conceptMaps,
-        mappings);
-  }
-
-  /**
-   * Returns an empty ConceptMaps instance.
-   *
-   * @param spark the spark session
-   * @return an empty ConceptMaps instance.
-   */
-  public static ConceptMaps getEmpty(SparkSession spark) {
-
-    Dataset<ConceptMap> emptyConceptMaps = spark.emptyDataset(CONCEPT_MAP_ENCODER)
-        .withColumn("timestamp", lit(null).cast("timestamp"))
-        .as(CONCEPT_MAP_ENCODER);
-
-    return new ConceptMaps(spark,
-        spark.emptyDataset(URL_AND_VERSION_ENCODER),
-        emptyConceptMaps,
-        spark.emptyDataset(MAPPING_ENCODER));
-  }
-
-  /**
-   * Adds the given mappings to the concept map.
-   *
-   * @param map the concept map
-   * @param mappings the mappings to add
-   */
-  private static void addToConceptMap(ConceptMap map, Dataset<Mapping> mappings) {
-
-    // Sort the items so they are grouped together optimally, and so
-    // we consistently produce the same ordering, therefore making
-    // inspection and comparison of the concept maps easier.
-    List<Mapping> sortedMappings = mappings.sort("sourceSystem",
-        "targetSystem",
-        "sourceValue",
-        "targetValue")
-        .collectAsList();
-
-    ConceptMapGroupComponent currentGroup = null;
-    SourceElementComponent element = null;
-
-    // Workaround for the decoder producing an immutable array by
-    // replacing it with a mutable one.
-    map.setGroup(new ArrayList<>(map.getGroup()));
-    for (Mapping mapping: sortedMappings) {
-
-      // Add a new group if we don't match the previous one.
-      if (currentGroup == null
-          || !mapping.getSourceSystem().equals(currentGroup.getSource())
-          || !mapping.getTargetSystem().equals(currentGroup.getTarget())) {
-
-        currentGroup = null;
-
-        // Find a matching group.
-        for (ConceptMapGroupComponent candidate: map.getGroup()) {
-
-          if (mapping.getSourceSystem().equals(candidate.getSource())
-              && mapping.getTargetSystem().equals(candidate.getTarget())) {
-
-            currentGroup = candidate;
-
-            // Workaround for the decoder producing an immutable array by
-            // replacing it with a mutable one.
-            currentGroup.setElement(new ArrayList<>(currentGroup.getElement()));
-            break;
-          }
-        }
-
-        // No matching group found, so add it.
-        if (currentGroup == null) {
-          currentGroup = map.addGroup();
-
-          currentGroup.setSource(mapping.getSourceSystem());
-          currentGroup.setTarget(mapping.getTargetSystem());
-
-          // Ensure a new element is created for the newly created group.
-          element = null;
-        }
-      }
-
-      // There is an element for each distinct source value in the map,
-      // so add one if it does not match the previous.
-      if (element == null
-          || !mapping.getSourceValue().equals(element.getCode())) {
-
-        element = currentGroup.addElement();
-        element.setCode(mapping.getSourceValue());
-      }
-
-      element.addTarget().setCode(mapping.getTargetValue());
-    }
-  }
-
-  /**
-   * Given a concept map, returns a list of mapping records it contains.
-   *
-   * @param map a concept map
-   * @return a list of Mapping records.
-   */
-  public static List<Mapping> expandMappings(ConceptMap map) {
-
-    List<Mapping> mappings = new ArrayList<>();
-
-    expandMappingsIterator(map).forEachRemaining(mappings::add);
-
-    return mappings;
-  }
-
-  private static Iterator<Mapping> expandMappingsIterator(ConceptMap map) {
-
-    List<Mapping> mappings = new ArrayList<>();
-
-    for (ConceptMapGroupComponent group: map.getGroup()) {
-
-      for (SourceElementComponent element: group.getElement()) {
-
-        for (TargetElementComponent target: element.getTarget()) {
-
-          Mapping mapping = new Mapping();
-
-          mapping.setConceptMapUri(map.getUrl());
-          mapping.setConceptMapVersion(map.getVersion());
-
-          try {
-            String sourceValue = map.getSource() instanceof UriType
-                ? map.getSourceUriType().getValue()
-                : map.getSourceReference().getReference();
-
-            mapping.setSourceValueSet(sourceValue);
-
-            String targetValue = map.getTarget() instanceof UriType
-                ? map.getTargetUriType().getValue()
-                : map.getTargetReference().getReference();
-
-            mapping.setTargetValueSet(targetValue);
-
-          } catch (FHIRException fhirException) {
-
-            // This should not happen because we check the types,
-            // but rethrow to avoid any possibility of swallowing
-            // an exception.
-            throw new RuntimeException(fhirException);
-          }
-
-          mapping.setSourceSystem(group.getSource());
-          mapping.setSourceValue(element.getCode());
-
-          mapping.setTargetSystem(group.getTarget());
-          mapping.setTargetValue(target.getCode());
-
-          if (target.getEquivalence() != null) {
-            mapping.setEquivalence(target.getEquivalence().toCode());
-          }
-
-          mappings.add(mapping);
-        }
-      }
-    }
-
-    return mappings.iterator();
+    this.conceptMapEncoder = conceptMapEncoder;
   }
 
   /**
    * Returns a simple dataset of URL and versions of concept maps.
    */
-  private Dataset<UrlAndVersion> getUrlAndVersions(Dataset<ConceptMap> conceptMaps) {
+  protected Dataset<UrlAndVersion> getUrlAndVersions(Dataset<T> conceptMaps) {
 
     return conceptMaps.select(functions.col("url"), functions.col("version"))
         .distinct()
         .as(URL_AND_VERSION_ENCODER);
   }
 
-  /**
-   * Returns a new ConceptMaps instance that includes the given maps.
-   *
-   * @param conceptMaps concept maps to add to the returned collection.
-   * @return a new ConceptMaps instance with the values added.
-   */
-  public ConceptMaps withConceptMaps(Dataset<ConceptMap> conceptMaps) {
+  private static class ToConceptMap<T> implements Function<Tuple2<String, String>, T> {
 
-    Dataset<UrlAndVersion> newMembers = getUrlAndVersions(conceptMaps);
+    private FhirVersionEnum fhirVersion;
 
-    if (hasDuplicateUrlAndVersions(newMembers) || conceptMaps.count() != newMembers.count()) {
+    private transient IParser xmlParser;
 
-      throw new IllegalArgumentException(
-          "Cannot add concept maps having duplicate conceptMapUri and conceptMapVersion");
+    private transient IParser jsonParser;
+
+    ToConceptMap(FhirVersionEnum fhirVersion) {
+      this.fhirVersion = fhirVersion;
+
+      xmlParser = FhirEncoders.contextFor(fhirVersion).newXmlParser();
+      jsonParser = FhirEncoders.contextFor(fhirVersion).newJsonParser();
     }
 
-    // Remove the concept contents for persistence. This is most easily done in the ConceptMap
-    // object by setting the group to an empty list.
-    Dataset<ConceptMap> withoutConcepts = conceptMaps
-        .map((MapFunction<ConceptMap,ConceptMap>) conceptMap -> {
+    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
 
-          // Remove the elements rather than the groups to preserved the
-          // "unmapped" structure in a group that can refer to other
-          // concept maps.
-          ConceptMap withoutElements = conceptMap.copy();
+      stream.defaultWriteObject();
+    }
 
-          List<ConceptMapGroupComponent> updatedGroups = new ArrayList<>();
+    private void readObject(java.io.ObjectInputStream stream) throws IOException,
+        ClassNotFoundException {
 
-          for (ConceptMapGroupComponent group: withoutElements.getGroup()) {
+      stream.defaultReadObject();
 
-            group.setElement(new ArrayList<>());
-            updatedGroups.add(group);
-          }
-
-          withoutElements.setGroup(updatedGroups);
-
-          return withoutElements;
-        }, CONCEPT_MAP_ENCODER);
-
-    Dataset<Mapping> newMappings = conceptMaps.flatMap(ConceptMaps::expandMappingsIterator,
-        MAPPING_ENCODER);
-
-    return withConceptMaps(withoutConcepts, newMappings);
-  }
-
-  /**
-   * Returns a new ConceptMaps instance that includes the given map.
-   *
-   * @param conceptMap concept maps to add
-   * @return a new ConceptMaps instance with the values added.
-   */
-  public ConceptMaps withConceptMaps(ConceptMap... conceptMap) {
-
-    return withConceptMaps(Arrays.asList(conceptMap));
-  }
-
-  /**
-   * Returns a new ConceptMaps instance that includes the given maps.
-   *
-   * @param conceptMaps concept maps to add
-   * @return a new ConceptMaps instance with the values added.
-   */
-  public ConceptMaps withConceptMaps(List<ConceptMap> conceptMaps) {
-
-    return withConceptMaps(this.spark.createDataset(conceptMaps, CONCEPT_MAP_ENCODER));
-  }
-
-  private ConceptMaps withConceptMaps(Dataset<ConceptMap> newMaps, Dataset<Mapping> newMappings) {
-
-    Dataset<UrlAndVersion> newMembers = getUrlAndVersions(newMaps);
-
-    // Instantiating a new composite ConceptMaps requires a new timestamp
-    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-
-    Dataset<ConceptMap> newMapsWithTimestamp = newMaps
-        .withColumn("timestamp", lit(timestamp.toString()).cast("timestamp"))
-        .as(CONCEPT_MAP_ENCODER);
-
-    return new ConceptMaps(spark,
-        this.members.union(newMembers),
-        this.conceptMaps.union(newMapsWithTimestamp),
-        this.mappings.union(newMappings));
-  }
-
-  /**
-   * Returns a new ConceptMaps instance that includes the given map and expanded mappings.
-   * This method is convenient when mappings themselves are loaded from some ETL operation
-   * that produces them.
-   *
-   * @param conceptMap concept map to add
-   * @param mappings dataset of mappings to add to add
-   * @return a new ConceptMaps instance with the values added.
-   */
-  public ConceptMaps withExpandedMap(ConceptMap conceptMap, Dataset<Mapping> mappings) {
-
-    Dataset<ConceptMap> conceptMaps = this.spark.createDataset(Arrays.asList(conceptMap),
-        CONCEPT_MAP_ENCODER);
-
-    return withConceptMaps(conceptMaps, mappings);
-  }
-
-  /**
-   * Reads all concept maps from a given directory and adds them to
-   * our collection. The directory may be anything readable from a Spark path,
-   * including local filesystems, HDFS, S3, or others.
-   *
-   * @param path a path from which concept maps will be loaded
-   * @return a instance of ConceptMaps that includes the contents from that directory.
-   */
-  public ConceptMaps withMapsFromDirectory(String path) {
-
-    return withConceptMaps(conceptMapsDatasetFromDirectory(path));
-  }
-
-  private static class ToConceptMap implements Function<Tuple2<String, String>, ConceptMap> {
-
-    private static final IParser XML_PARSER = FHIR_CONTEXT.newXmlParser();
-
-    private static final IParser JSON_PARSER = FHIR_CONTEXT.newJsonParser();
+      xmlParser = FhirEncoders.contextFor(fhirVersion).newXmlParser();
+      jsonParser = FhirEncoders.contextFor(fhirVersion).newJsonParser();
+    }
 
     @Override
-    public ConceptMap call(Tuple2<String, String> fileContentTuple) throws Exception {
+    public T call(Tuple2<String, String> fileContentTuple) throws Exception {
 
       String filePath = fileContentTuple._1.toLowerCase();
 
       if (filePath.endsWith(".xml")) {
 
-        return (ConceptMap) XML_PARSER.parseResource(fileContentTuple._2());
+        return (T) xmlParser.parseResource(fileContentTuple._2());
 
       } else if (filePath.endsWith(".json")) {
 
-        return (ConceptMap) JSON_PARSER.parseResource(fileContentTuple._2());
+        return (T) jsonParser.parseResource(fileContentTuple._2());
 
       } else {
 
@@ -465,15 +166,15 @@ public class ConceptMaps {
     }
   }
 
-  private Dataset<ConceptMap> conceptMapsDatasetFromDirectory(String path) {
+  private Dataset<T> conceptMapsDatasetFromDirectory(String path) {
 
     JavaRDD<Tuple2<String,String>> fileNamesAndContents = this.spark.sparkContext()
         .wholeTextFiles(path, 1)
         .toJavaRDD();
 
     return this.spark.createDataset(fileNamesAndContents
-        .map(new ToConceptMap())
-        .rdd(), CONCEPT_MAP_ENCODER);
+        .map(new ToConceptMap(fhirVersion))
+        .rdd(), conceptMapEncoder);
   }
 
   /**
@@ -485,7 +186,7 @@ public class ConceptMaps {
    * @return an instance of ConceptMaps that includes content from that directory that is disjoint
    *         with content already contained in the default database.
    */
-  public ConceptMaps withDisjointMapsFromDirectory(String path) {
+  public C withDisjointMapsFromDirectory(String path) {
 
     return withDisjointMapsFromDirectory(path, MAPPING_DATABASE);
   }
@@ -500,22 +201,115 @@ public class ConceptMaps {
    * @return an instance of ConceptMaps that includes content from that directory that is disjoint
    *         with content already contained in the default database.
    */
-  public ConceptMaps withDisjointMapsFromDirectory(String path, String database) {
+  public C withDisjointMapsFromDirectory(String path, String database) {
 
     Dataset<UrlAndVersion> currentMembers = this.spark
         .sql("SELECT url, version FROM " + database + "." + CONCEPT_MAP_TABLE)
         .as(URL_AND_VERSION_ENCODER)
         .alias("current");
 
-    Dataset<ConceptMap> maps = conceptMapsDatasetFromDirectory(path)
+    Dataset<T> maps = conceptMapsDatasetFromDirectory(path)
         .alias("new")
         .join(currentMembers, col("new.url").equalTo(col("current.url"))
-            .and(col("new.version").equalTo(col("current.version"))),
+                .and(col("new.version").equalTo(col("current.version"))),
             "leftanti")
-        .as(CONCEPT_MAP_ENCODER);
+        .as(conceptMapEncoder);
 
     return withConceptMaps(maps);
   }
+
+  /**
+   * Reads all concept maps from a given directory and adds them to
+   * our collection. The directory may be anything readable from a Spark path,
+   * including local filesystems, HDFS, S3, or others.
+   *
+   * @param path a path from which concept maps will be loaded
+   * @return a instance of ConceptMaps that includes the contents from that directory.
+   */
+  public C withMapsFromDirectory(String path) {
+
+    return withConceptMaps(conceptMapsDatasetFromDirectory(path));
+  }
+
+  /**
+   * Returns a new ConceptMaps instance that includes the given maps.
+   *
+   * @param conceptMaps concept maps to add to the returned collection.
+   * @return a new ConceptMaps instance with the values added.
+   */
+  public abstract C withConceptMaps(Dataset<T> conceptMaps);
+
+  /**
+   * Returns a new ConceptMaps instance that includes the given map.
+   *
+   * @param conceptMap concept maps to add
+   * @return a new ConceptMaps instance with the values added.
+   */
+  public C withConceptMaps(T... conceptMap) {
+
+    return withConceptMaps(Arrays.asList(conceptMap));
+  }
+
+  /**
+   * Returns a new ConceptMaps instance that includes the given maps.
+   *
+   * @param conceptMaps concept maps to add
+   * @return a new ConceptMaps instance with the values added.
+   */
+  public C withConceptMaps(List<T> conceptMaps) {
+
+    return withConceptMaps(this.spark.createDataset(conceptMaps, conceptMapEncoder));
+  }
+
+  protected C withConceptMaps(Dataset<T> newMaps, Dataset<Mapping> newMappings) {
+
+    Dataset<UrlAndVersion> newMembers = getUrlAndVersions(newMaps);
+
+    // Instantiating a new composite ConceptMaps requires a new timestamp
+    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+    Dataset<T> newMapsWithTimestamp = newMaps
+        .withColumn("timestamp", lit(timestamp.toString()).cast("timestamp"))
+        .as(conceptMapEncoder);
+
+    return newInstance(spark,
+        this.members.union(newMembers),
+        this.conceptMaps.union(newMapsWithTimestamp),
+        this.mappings.union(newMappings));
+  }
+
+  /**
+   * Returns a new instance of this ConceptMaps type with the given parameters.
+   */
+  protected abstract C newInstance(SparkSession spark,
+      Dataset<UrlAndVersion> members,
+      Dataset<T> conceptMaps,
+      Dataset<Mapping> mappings);
+
+  /**
+   * Returns a new ConceptMaps instance that includes the given map and expanded mappings.
+   * This method is convenient when mappings themselves are loaded from some ETL operation
+   * that produces them.
+   *
+   * @param conceptMap concept map to add
+   * @param mappings dataset of mappings to add to add
+   * @return a new ConceptMaps instance with the values added.
+   */
+  public C withExpandedMap(T conceptMap, Dataset<Mapping> mappings) {
+
+    Dataset<T> conceptMaps = this.spark.createDataset(Arrays.asList(conceptMap),
+        conceptMapEncoder);
+
+    return withConceptMaps(conceptMaps, mappings);
+  }
+
+  /**
+   * Adds the given mappings to the concept map.
+   *
+   * @param map the concept map
+   * @param mappings the mappings to add
+   */
+  protected abstract void addToConceptMap(T map, Dataset<Mapping> mappings);
 
   /**
    * Returns the concept map with the given uri and version, or null if there is no such map.
@@ -524,13 +318,13 @@ public class ConceptMaps {
    * @param version the version of the map to return
    * @return the specified concept map.
    */
-  public ConceptMap getConceptMap(String uri, String version) {
+  public T getConceptMap(String uri, String version) {
 
     // Load the concept maps, which may contain zero items
     // if the map does not exist.
 
     // Typecast necessary to placate the Java compiler calling this Scala function.
-    ConceptMap[] maps = (ConceptMap[]) this.conceptMaps.filter(
+    T[] maps = (T[]) this.conceptMaps.filter(
         functions.col("url").equalTo(lit(uri))
             .and(functions.col("version").equalTo(lit(version))))
         .head(1);
@@ -541,7 +335,7 @@ public class ConceptMaps {
 
     } else {
 
-      ConceptMap map = maps[0];
+      T map = maps[0];
 
       Dataset<Mapping> filteredMappings = getMappings(uri, version);
 
@@ -559,7 +353,7 @@ public class ConceptMaps {
    *
    * @return a dataset of concept maps that do not contain mappings.
    */
-  public Dataset<ConceptMap> getMaps() {
+  public Dataset<T> getMaps() {
     return this.conceptMaps;
   }
 
@@ -672,7 +466,7 @@ public class ConceptMaps {
    * Returns true if the UrlAndVersions of new value sets contains duplicates with the current
    * ValueSets.
    */
-  private boolean hasDuplicateUrlAndVersions(Dataset<UrlAndVersion> membersToCheck) {
+  protected boolean hasDuplicateUrlAndVersions(Dataset<UrlAndVersion> membersToCheck) {
 
     return this.members.intersect(membersToCheck).count() > 0;
   }
@@ -823,7 +617,7 @@ public class ConceptMaps {
       createMappingTable(this.spark, mappingsTable, null);
 
       // Create a concept map table by writing empty data having the proper schema and properties
-      this.spark.emptyDataset(CONCEPT_MAP_ENCODER)
+      this.spark.emptyDataset(conceptMapEncoder)
           .withColumn("timestamp", lit(null).cast("timestamp"))
           .write()
           .format("parquet")
@@ -848,4 +642,33 @@ public class ConceptMaps {
         .mode(SaveMode.ErrorIfExists)
         .insertInto(conceptMapTable);
   }
+
+  /**
+   * Broadcast mappings stored in the given conceptMaps instance that match the given
+   * conceptMapUris.
+   *
+   * @param conceptMapUris the URIs to broadcast.
+   * @param includeExperimental flag to include experimental map versions in the broadcast.
+   * @return a broadcast variable containing a mappings object usable in UDFs.
+   */
+  public Broadcast<BroadcastableMappings> broadcast(Set<String> conceptMapUris,
+      boolean includeExperimental) {
+
+    // Load all maps because we must transitively pull in delegated maps, and since
+    // there are relatively few maps we can simply do so in one pass.
+    Map<String, String> latest = getLatestVersions(includeExperimental);
+
+    return broadcast(latest);
+  }
+
+  /**
+   * Broadcast mappings stored in the given conceptMaps instance that match the given
+   * conceptMapUris.
+   *
+   * @param conceptMapUriToVersion map of the concept map URIs to broadcast to their versions.
+   * @return a broadcast variable containing a mappings object usable in UDFs.
+   */
+  public abstract Broadcast<BroadcastableMappings> broadcast(
+      Map<String,String> conceptMapUriToVersion);
 }
+

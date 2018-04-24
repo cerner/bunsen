@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 
 from tempfile import mkdtemp
 from pytest import fixture
@@ -9,9 +10,9 @@ from pyspark.sql.functions import col
 
 from bunsen.codes.loinc import with_loinc_hierarchy
 from bunsen.codes.snomed import with_relationships
-from bunsen.codes import create_concept_maps, get_concept_maps, create_value_sets, get_value_sets, create_hierarchies
-from bunsen.bundles import load_from_directory, extract_entry, save_as_database, to_bundle, from_xml, from_json
-from bunsen.valuesets import push_valuesets, isa_loinc, isa_snomed, get_current_valuesets
+from bunsen.stu3.codes import create_concept_maps, get_concept_maps, create_value_sets, get_value_sets, create_hierarchies
+from bunsen.stu3.bundles import load_from_directory, extract_entry, save_as_database, to_bundle, from_xml, from_json
+from bunsen.stu3.valuesets import push_valuesets, isa_loinc, isa_snomed, get_current_valuesets
 
 import xml.etree.ElementTree as ET
 
@@ -28,6 +29,9 @@ def spark_session(request):
   Fixture for creating a Spark Session available for all tests in this
   testing session.
   """
+
+  gateway_log = logging.getLogger('java_gateway')
+  gateway_log.setLevel(logging.ERROR)
 
   # Get the shaded JAR for testing purposes.
   shaded_jar =  os.environ['SHADED_JAR_PATH']
@@ -226,7 +230,7 @@ def bundles(spark_session):
   return load_from_directory(spark_session, 'tests/resources/bundles/xml', 1)
 
 def test_load_from_directory(bundles):
-  assert len(bundles.collect()) == 3
+  assert bundles.count() == 3
 
 def test_xml_bundles_from_df(spark_session):
 
@@ -282,7 +286,7 @@ def test_isa_loinc(spark_session):
   push_valuesets(spark_session,
                  {'leukocytes' : isa_loinc('LP14738-6')},
                  database='isa_loinc_ontologies')
-  
+
   expected = {'leukocytes' : [('http://loinc.org', '5821-4'),
                               ('http://loinc.org', 'LP14738-6'),
                               ('http://loinc.org', 'LP14419-3')]}
@@ -323,7 +327,7 @@ def test_isa_custom(spark_session, bundles):
   push_valuesets(spark_session,
                  blood_pressure,
                  database='custom_ontologies')
-  
+
   results = spark_session.sql("SELECT subject.reference, "
       + "effectiveDateTime, "
       + "valueQuantity.value "

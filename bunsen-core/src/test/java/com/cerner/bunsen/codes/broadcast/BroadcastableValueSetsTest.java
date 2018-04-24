@@ -1,7 +1,10 @@
 package com.cerner.bunsen.codes.broadcast;
 
+import ca.uhn.fhir.context.FhirContext;
+import com.cerner.bunsen.FhirEncoders;
+import com.cerner.bunsen.MockValueSets;
+import com.cerner.bunsen.TestDataTypeMappings;
 import com.cerner.bunsen.codes.Hierarchies;
-import com.cerner.bunsen.codes.ValueSets;
 import com.cerner.bunsen.codes.systems.Loinc;
 import com.cerner.bunsen.codes.systems.Snomed;
 import com.google.common.collect.ImmutableSet;
@@ -20,7 +23,15 @@ import org.junit.Test;
  */
 public class BroadcastableValueSetsTest {
 
+  private static FhirEncoders encoders = new FhirEncoders(FhirContext.forDstu3(),
+      new TestDataTypeMappings());
+
   private static SparkSession spark;
+
+
+  static MockValueSets emptyValueSets;
+
+  static MockValueSets mockValueSets;
 
   /**
    * Sets up Spark and loads test value sets.
@@ -43,6 +54,8 @@ public class BroadcastableValueSetsTest {
             Files.createTempDirectory("spark_warehouse").toString())
         .getOrCreate();
 
+    emptyValueSets = new MockValueSets(spark, encoders);
+
     spark.sql("CREATE DATABASE ontologies");
 
     Hierarchies withLoinc = Loinc.withLoincHierarchy(spark,
@@ -57,9 +70,7 @@ public class BroadcastableValueSetsTest {
 
     withLoincAndSnomed.writeToDatabase(Hierarchies.HIERARCHIES_DATABASE);
 
-    ValueSets.getEmpty(spark)
-        .withValueSetsFromDirectory("src/test/resources/xml/valuesets")
-        .writeToDatabase(ValueSets.VALUE_SETS_DATABASE);
+    mockValueSets = MockValueSets.createWithTestValue(spark, encoders);
   }
 
   /**
@@ -78,7 +89,7 @@ public class BroadcastableValueSetsTest {
         .addCode("testparent", "urn:cerner:system", "123")
         .addCode("testparent", "urn:cerner:system", "456")
         .addCode("testother", "urn:cerner:system", "789")
-        .build(spark, ValueSets.getEmpty(spark), Hierarchies.getEmpty(spark));
+        .build(spark, emptyValueSets, Hierarchies.getEmpty(spark));
 
     Assert.assertTrue(valueSets.hasCode("testparent",
         "urn:cerner:system",
@@ -110,7 +121,7 @@ public class BroadcastableValueSetsTest {
             "LP14419-3",
             Loinc.LOINC_HIERARCHY_URI,
             "2.56")
-        .build(spark, ValueSets.getEmpty(spark), Hierarchies.getDefault(spark));
+        .build(spark, emptyValueSets, Hierarchies.getDefault(spark));
 
     Assert.assertTrue(valueSets.hasCode("leukocytes",
         Loinc.LOINC_CODE_SYSTEM_URI,
@@ -136,7 +147,7 @@ public class BroadcastableValueSetsTest {
             Loinc.LOINC_CODE_SYSTEM_URI,
             "LP14419-3",
             Loinc.LOINC_HIERARCHY_URI)
-        .build(spark, ValueSets.getEmpty(spark), Hierarchies.getDefault(spark));
+        .build(spark, emptyValueSets, Hierarchies.getDefault(spark));
 
     Assert.assertTrue(valueSets.hasCode("leukocytes",
         Loinc.LOINC_CODE_SYSTEM_URI,
@@ -158,7 +169,7 @@ public class BroadcastableValueSetsTest {
         .addReference("married",
             "urn:cerner:bunsen:valueset:married_maritalstatus",
             "0.0.1")
-        .build(spark, ValueSets.getDefault(spark), Hierarchies.getEmpty(spark));
+        .build(spark, mockValueSets, Hierarchies.getEmpty(spark));
 
     Assert.assertTrue(valueSets.hasCode("married",
         "http://hl7.org/fhir/v3/MaritalStatus",
@@ -175,7 +186,7 @@ public class BroadcastableValueSetsTest {
     BroadcastableValueSets valueSets = BroadcastableValueSets.newBuilder()
         .addReference("married",
             "urn:cerner:bunsen:valueset:married_maritalstatus")
-        .build(spark, ValueSets.getDefault(spark), Hierarchies.getEmpty(spark));
+        .build(spark, mockValueSets, Hierarchies.getEmpty(spark));
 
     Assert.assertTrue(valueSets.hasCode("married",
         "http://hl7.org/fhir/v3/MaritalStatus",
@@ -199,7 +210,7 @@ public class BroadcastableValueSetsTest {
             Loinc.LOINC_HIERARCHY_URI)
         .addReference("married",
             "urn:cerner:bunsen:valueset:married_maritalstatus")
-        .build(spark, ValueSets.getDefault(spark), Hierarchies.getDefault(spark));
+        .build(spark, mockValueSets, Hierarchies.getDefault(spark));
 
     Assert.assertTrue(ImmutableSet.of("bp", "leukocytes", "married")
         .containsAll(valueSets.getReferenceNames()));

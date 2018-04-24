@@ -38,7 +38,7 @@ public class BroadcastableConceptMap implements Serializable {
    * @param delegates The maps to which this concept map should delegate if it cannot
    *     resolve its code values.
    */
-  BroadcastableConceptMap(String conceptMapUri,
+  public BroadcastableConceptMap(String conceptMapUri,
       List<Mapping> mappings,
       List<BroadcastableConceptMap> delegates) {
 

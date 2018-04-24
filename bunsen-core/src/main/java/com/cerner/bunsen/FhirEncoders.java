@@ -1,9 +1,13 @@
 package com.cerner.bunsen;
 
+import static ca.uhn.fhir.context.FhirVersionEnum.DSTU3;
+import static ca.uhn.fhir.context.FhirVersionEnum.R4;
+
 import ca.uhn.fhir.context.BaseRuntimeElementCompositeDefinition;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
+import com.cerner.bunsen.datatypes.DataTypeMappings;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
@@ -17,18 +21,119 @@ public class FhirEncoders {
   /**
    * Cache of Encoders instances.
    */
-  private static Map<EncodersKey, FhirEncoders> ENCODERS = new HashMap<>();
+  private static final Map<EncodersKey, FhirEncoders> ENCODERS = new HashMap<>();
+
   /**
-   * The FHIR context used to define the data models.
+   * Cache of mappings between Spark and FHIR types.
+   */
+  private static final  Map<FhirVersionEnum, DataTypeMappings> DATA_TYPE_MAPPINGS = new HashMap();
+
+  /**
+   * Cache of FHIR contexts.
+   */
+  private static final Map<FhirVersionEnum, FhirContext> FHIR_CONTEXTS = new HashMap();
+
+  /**
+   * The FHIR context used by the encoders instance.
    */
   private final FhirContext context;
+
+  /**
+   * The data type mappings used by the encoders instance.
+   */
+  private final DataTypeMappings mappings;
+
   /**
    * Cached encoders to avoid having to re-create them.
    */
   private final Map<Class, ExpressionEncoder> encoderCache = new HashMap<>();
 
-  FhirEncoders(FhirContext context) {
+  /**
+   * Consumers should generally use the {@link #forStu3()} or {@link #forR4()}
+   * methods, but this is made available for test purposes and additional
+   * experimental mappings.
+   *
+   * @param context the FHIR context to use.
+   * @param mappings mappings between Spark and FHIR data types.
+   */
+  public FhirEncoders(FhirContext context, DataTypeMappings mappings) {
     this.context = context;
+    this.mappings = mappings;
+  }
+
+  /**
+   * Returns the FHIR context for the given version. This is effectively a cache
+   * so consuming code does not need to recreate the context repeatedly.
+   *
+   * @param fhirVersion the version of FHIR to use
+   * @return the FhirContext
+   */
+  public static FhirContext contextFor(FhirVersionEnum fhirVersion) {
+
+    synchronized (FHIR_CONTEXTS) {
+
+      FhirContext context = FHIR_CONTEXTS.get(fhirVersion);
+
+      if (context == null) {
+
+        context = new FhirContext(fhirVersion);
+
+        FHIR_CONTEXTS.put(fhirVersion, context);
+      }
+
+      return context;
+    }
+  }
+
+  /**
+   * Returns the {@link DataTypeMappings} instance for the given FHIR version.
+   *
+   * @param fhirVersion the FHIR version for the data type mappings.
+   * @return a DataTypeMappings instance.
+   */
+  static DataTypeMappings mappingsFor(FhirVersionEnum fhirVersion) {
+
+    synchronized (DATA_TYPE_MAPPINGS) {
+
+      DataTypeMappings mappings = DATA_TYPE_MAPPINGS.get(fhirVersion);
+
+      if (mappings == null) {
+        String dataTypesClassName;
+
+        switch (fhirVersion)  {
+
+          case DSTU3 :
+            dataTypesClassName = "com.cerner.bunsen.stu3.Stu3DataTypeMappings";
+            break;
+
+          case R4:
+            dataTypesClassName = "com.cerner.bunsen.r4.R4DataTypeMappings";
+            break;
+
+          default:
+            throw new IllegalArgumentException("Unsupported FHIR version: " + fhirVersion);
+        }
+
+        try {
+
+          mappings = (DataTypeMappings) Class.forName(dataTypesClassName).newInstance();
+
+          DATA_TYPE_MAPPINGS.put(fhirVersion, mappings);
+
+        } catch (Exception createClassException) {
+
+          throw new IllegalStateException("Unable to create the data mappings "
+              + dataTypesClassName
+              + ". This is typically because the HAPI FHIR dependencies for "
+              + "the underlying data model are note present. Make sure the "
+              + " hapi-fhir-structures-* and hapi-fhir-validation-resources-* "
+              + " jars for the desired FHIR version are available on the class path.",
+              createClassException);
+        }
+      }
+
+      return mappings;
+    }
   }
 
   /**
@@ -39,7 +144,29 @@ public class FhirEncoders {
    */
   public static Builder forStu3() {
 
-    return new Builder(FhirVersionEnum.DSTU3);
+    return forVersion(DSTU3);
+  }
+
+  /**
+   * Returns a builder to create encoders
+   * for FHIR R4.
+   *
+   * @return a builder for encoders.
+   */
+  public static Builder forR4() {
+
+    return forVersion(R4);
+  }
+
+  /**
+   * Returns a builder to create encoders for the
+   * given FHIR version.
+   *
+   * @param fhirVersion the version of FHIR to use.
+   * @return a builder for encoders.
+   */
+  public static Builder forVersion(FhirVersionEnum fhirVersion) {
+    return new Builder(fhirVersion);
   }
 
   /**
@@ -63,7 +190,8 @@ public class FhirEncoders {
         encoder = (ExpressionEncoder<T>)
             EncoderBuilder.of(definition,
                 context,
-                new SchemaConverter(context));
+                mappings,
+                new SchemaConverter(context, mappings));
 
         encoderCache.put(type, encoder);
       }
@@ -118,7 +246,18 @@ public class FhirEncoders {
   }
 
   /**
-   * Encoder builder.
+   * Returns the version of FHIR used by encoders produced by this instance.
+   *
+   * @return the version of FHIR used by encoders produced by this instance.
+   */
+  public FhirVersionEnum getFhirVersion() {
+
+    return context.getVersion().getVersion();
+  }
+
+  /**
+   * Encoder builder. Today only the FHIR version is specified, but
+   * future builders may allow customization of the profile used.
    */
   public static class Builder {
 
@@ -147,9 +286,10 @@ public class FhirEncoders {
         // so create one.
         if (encoders == null) {
 
-          FhirContext context = new FhirContext(fhirVersion);
+          FhirContext context = contextFor(fhirVersion);
+          DataTypeMappings mappings = mappingsFor(fhirVersion);
 
-          encoders = new FhirEncoders(context);
+          encoders = new FhirEncoders(context, mappings);
 
           ENCODERS.put(key, encoders);
         }

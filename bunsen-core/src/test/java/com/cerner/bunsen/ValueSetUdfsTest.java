@@ -1,8 +1,7 @@
 package com.cerner.bunsen;
 
-import com.cerner.bunsen.codes.ConceptMaps;
+import ca.uhn.fhir.context.FhirContext;
 import com.cerner.bunsen.codes.Hierarchies;
-import com.cerner.bunsen.codes.ValueSets;
 import com.cerner.bunsen.codes.broadcast.BroadcastableValueSets;
 import com.cerner.bunsen.codes.systems.Loinc;
 import com.cerner.bunsen.codes.systems.Snomed;
@@ -26,8 +25,12 @@ import org.junit.Test;
  */
 public class ValueSetUdfsTest {
 
-  private static final FhirEncoders encoders = FhirEncoders.forStu3().getOrCreate();
+  private static final FhirEncoders encoders = new FhirEncoders(FhirContext.forDstu3(),
+      new TestDataTypeMappings());
+
   private static SparkSession spark;
+
+
 
   private static CodeableConcept codeable(String system, String value) {
 
@@ -93,7 +96,7 @@ public class ValueSetUdfsTest {
             Files.createTempDirectory("spark_warehouse").toString())
         .getOrCreate();
 
-    spark.sql("create database " + ConceptMaps.MAPPING_DATABASE);
+    spark.sql("create database ontologies");
 
     Hierarchies withLoinc = Loinc.withLoincHierarchy(spark,
         Hierarchies.getEmpty(spark),
@@ -105,8 +108,7 @@ public class ValueSetUdfsTest {
         "src/test/resources/SNOMED_RELATIONSHIP_SAMPLE.TXT",
         "20160901");
 
-    ValueSets withGender = ValueSets.getEmpty(spark)
-        .withValueSetsFromDirectory("src/test/resources/xml/valuesets");
+    MockValueSets mockValueSets = MockValueSets.createWithTestValue(spark, encoders);
 
     BroadcastableValueSets valueSets = BroadcastableValueSets.newBuilder()
         .addCode("bp",
@@ -133,7 +135,7 @@ public class ValueSetUdfsTest {
             Snomed.SNOMED_CODE_SYSTEM_URI,
             "312850006",
             Snomed.SNOMED_HIERARCHY_URI)
-        .build(spark, withGender, withLoincAndSnomed);
+        .build(spark, mockValueSets, withLoincAndSnomed);
 
     ValueSetUdfs.pushUdf(spark, valueSets);
 

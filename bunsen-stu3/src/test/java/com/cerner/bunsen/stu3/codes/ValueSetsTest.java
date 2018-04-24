@@ -1,5 +1,6 @@
-package com.cerner.bunsen.codes;
+package com.cerner.bunsen.stu3.codes;
 
+import com.cerner.bunsen.codes.Value;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.nio.file.Files;

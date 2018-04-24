@@ -1,11 +1,10 @@
 package com.cerner.bunsen
 
-import java.util.TimeZone
-
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition.ChildTypeEnum
 import ca.uhn.fhir.context._
 import ca.uhn.fhir.model.api.IValueSetEnumBinder
 import com.cerner.bunsen.backports._
+import com.cerner.bunsen.datatypes.DataTypeMappings
 import org.apache.spark.sql.catalyst.analysis.{GetColumnByOrdinal, UnresolvedAttribute, UnresolvedExtractValue}
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.catalyst.expressions._
@@ -13,8 +12,7 @@ import org.apache.spark.sql.catalyst.expressions.objects._
 import org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
-import org.hl7.fhir.dstu3.model._
-import org.hl7.fhir.instance.model.api.{IBase, IBaseDatatype, IIdType}
+import org.hl7.fhir.instance.model.api.{IBase, IBaseDatatype}
 import org.hl7.fhir.utilities.xhtml.XhtmlNode
 
 import scala.collection.JavaConversions._
@@ -35,6 +33,7 @@ private[bunsen] object EncoderBuilder {
 
   def of(definition: BaseRuntimeElementCompositeDefinition[_],
          context: FhirContext,
+         mappings: DataTypeMappings,
          converter: SchemaConverter): ExpressionEncoder[_] = {
 
     val fhirClass = definition.getImplementingClass()
@@ -43,7 +42,9 @@ private[bunsen] object EncoderBuilder {
 
     val inputObject = BoundReference(0, ObjectType(fhirClass), nullable = true)
 
-    val encoderBuilder = new EncoderBuilder(context, converter)
+    val encoderBuilder = new EncoderBuilder(context,
+      mappings,
+      converter)
 
     val serializers = encoderBuilder.serializer(inputObject, definition)
 
@@ -64,7 +65,9 @@ private[bunsen] object EncoderBuilder {
 /**
   * Spark encoder for FHIR resources.
   */
-private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: SchemaConverter) {
+private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
+                                     dataTypeMappings: DataTypeMappings,
+                                     schemaConverter: SchemaConverter) {
 
   def enumerationToDeserializer(enumeration: RuntimeChildPrimitiveEnumerationDatatypeDefinition,
                                 path: Option[Expression]): Expression = {
@@ -98,53 +101,6 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
       List(Invoke(inputObject,
         "getValueAsString",
         ObjectType(classOf[String]))))
-  }
-
-  /**
-    * Converts primitive-derived types that inherit from IPrimitiveType
-    */
-  private def primitiveToExpr(inputObject: Expression,
-                              primitive: RuntimePrimitiveDatatypeDefinition): Expression = {
-
-    primitive.getImplementingClass match {
-
-      // If the FHIR primitive is serialized as a string, convert it to UTF8.
-      case cls if SchemaConverter.fhirPrimitiveToSparkTypes.get(cls) == DataTypes.StringType =>
-        dataTypeToUtf8Expr(inputObject)
-
-      case boolClass if boolClass == classOf[org.hl7.fhir.dstu3.model.BooleanType] =>
-        Invoke(inputObject, "getValue", DataTypes.BooleanType)
-
-      case tsClass if tsClass == classOf[org.hl7.fhir.dstu3.model.InstantType] =>
-
-        Cast(dataTypeToUtf8Expr(inputObject), DataTypes.TimestampType).withTimeZone("UTC")
-
-      case base64Class if base64Class == classOf[org.hl7.fhir.dstu3.model.Base64BinaryType] =>
-
-        Invoke(inputObject, "getValue", DataTypes.BinaryType)
-
-      case intClass if intClass == classOf[org.hl7.fhir.dstu3.model.IntegerType] =>
-
-        Invoke(inputObject, "getValue", DataTypes.IntegerType)
-
-      case unsignedIntClass if unsignedIntClass == classOf[org.hl7.fhir.dstu3.model.UnsignedIntType] =>
-
-        Invoke(inputObject, "getValue", DataTypes.IntegerType)
-
-      case unsignedIntClass if unsignedIntClass == classOf[org.hl7.fhir.dstu3.model.PositiveIntType] =>
-
-        Invoke(inputObject, "getValue", DataTypes.IntegerType)
-
-      case decimalClass if decimalClass == classOf[org.hl7.fhir.dstu3.model.DecimalType] =>
-
-        StaticInvoke(classOf[Decimal],
-          SchemaConverter.decimalType,
-          "apply",
-          Invoke(inputObject, "getValue", ObjectType(classOf[java.math.BigDecimal])) :: Nil)
-
-      case unknown =>
-        throw new IllegalArgumentException("Cannot serialize unknown primitive type: " + unknown.getName)
-    }
   }
 
   /**
@@ -264,7 +220,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
         val childExpr = choiceChildDefinition match {
 
           case composite: BaseRuntimeElementCompositeDefinition[_] => compositeToExpr(childObject, composite)
-          case primitive: RuntimePrimitiveDatatypeDefinition => primitiveToExpr(childObject, primitive);
+          case primitive: RuntimePrimitiveDatatypeDefinition => dataTypeMappings.primitiveEncoderExpression(childObject, primitive);
         }
 
         List(Literal(childName), childExpr)
@@ -284,7 +240,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
 
         val elementExpr = definition match {
           case composite: BaseRuntimeElementCompositeDefinition[_] => (elem: Expression) => compositeToExpr(elem, composite)
-          case primitive: RuntimePrimitiveDatatypeDefinition => (elem: Expression) => primitiveToExpr(elem, primitive)
+          case primitive: RuntimePrimitiveDatatypeDefinition => (elem: Expression) => dataTypeMappings.primitiveEncoderExpression(elem, primitive)
         }
 
         val childExpr = MapObjects(elementExpr,
@@ -302,7 +258,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
 
         val childExpr = definition match {
           case composite: BaseRuntimeElementCompositeDefinition[_] => compositeToExpr(childObject, composite)
-          case primitive: RuntimePrimitiveDatatypeDefinition => primitiveToExpr(childObject, primitive);
+          case primitive: RuntimePrimitiveDatatypeDefinition => dataTypeMappings.primitiveEncoderExpression(childObject, primitive);
           case narrative: RuntimePrimitiveDatatypeNarrativeDefinition => dataTypeToUtf8Expr(childObject);
           case htmlHl7Org: RuntimePrimitiveDatatypeXhtmlHl7OrgDefinition => dataTypeToUtf8Expr(childObject)
         }
@@ -317,67 +273,16 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
 
     // Handle references as special cases, since they include a recursive structure
     // that can't be mapped onto a dataframe
-    val fields: Seq[Expression] =
-    if (definition.getImplementingClass == classOf[Reference]) {
+    val fields =  dataTypeMappings.overrideCompositeExpression(inputObject, definition) match {
 
-      // Reference type, so return only supported fields.
-      // We also explicitly use the IIDType for the reference element,
-      // since that differs from the conventions used to infer
-      // other types.
-      val reference = dataTypeToUtf8Expr(
-        Invoke(inputObject,
-          "getReferenceElement",
-          ObjectType(classOf[IIdType])))
+      case Some(fields) => fields;
+      case None => {
 
-      val display = dataTypeToUtf8Expr(
-        Invoke(inputObject,
-          "getDisplayElement",
-          ObjectType(classOf[org.hl7.fhir.dstu3.model.StringType])))
-
-      List(Literal("reference"), reference,
-        Literal("display"), display)
-
-    } else if (definition.getImplementingClass == classOf[ValueSet.ValueSetExpansionContainsComponent]) {
-
-      val system = dataTypeToUtf8Expr(
-        Invoke(inputObject,
-          "getSystemElement",
-          ObjectType(classOf[UriType])))
-
-      val abstract_ = Invoke(inputObject,
-        "getAbstract",
-        DataTypes.BooleanType)
-
-      val inactive = Invoke(inputObject,
-        "getInactive",
-        DataTypes.BooleanType)
-
-      val version = dataTypeToUtf8Expr(
-        Invoke(inputObject,
-          "getVersionElement",
-          ObjectType(classOf[org.hl7.fhir.dstu3.model.StringType])))
-
-      val code = dataTypeToUtf8Expr(
-        Invoke(inputObject,
-          "getCodeElement",
-          ObjectType(classOf[org.hl7.fhir.dstu3.model.CodeType])))
-
-      val display = dataTypeToUtf8Expr(
-        Invoke(inputObject,
-          "getDisplayElement",
-          ObjectType(classOf[org.hl7.fhir.dstu3.model.StringType])))
-
-      List(Literal("system"), system,
-        Literal("abstract"), abstract_,
-        Literal("inactive"), inactive,
-        Literal("version"), version,
-        Literal("code"), code,
-        Literal("display"), display)
-
-    } else {
-      // Map to (name, value, name, value) expressions for child elements.
-      definition.getChildren
-        .flatMap(child => childToExpr(inputObject, child))
+        // Map to (name, value, name, value) expressions for child elements.
+        definition.getChildren
+          .filter(child => !dataTypeMappings.skipField(definition, child))
+          .flatMap(child => childToExpr(inputObject, child))
+      }
     }
 
     val createStruct = CreateNamedStruct(fields)
@@ -420,11 +325,11 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
       }
 
       case primitive: RuntimePrimitiveDatatypeDefinition => {
-        val elementType = schemaConverter.primitiveToDataType(primitive)
+        val elementType = dataTypeMappings.primitiveToDataType(primitive)
 
         Invoke(
           MapObjects(element =>
-            primitiveToDeserializer(primitive.getImplementingClass, Some(element)),
+            dataTypeMappings.primitiveDecoderExpression(primitive.getImplementingClass, Some(element)),
             path,
             elementType),
           "array",
@@ -457,7 +362,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
     if (fhirChildTypes.isEmpty) {
 
       // No remaining choices, so return null.
-      Literal.create(null, ObjectType(classOf[org.hl7.fhir.dstu3.model.Type]))
+      Literal.create(null, ObjectType(dataTypeMappings.baseType()))
 
     } else {
 
@@ -476,10 +381,10 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
       val deserializer = choiceField match {
 
         case composite: BaseRuntimeElementCompositeDefinition[_] => compositeToDeserializer(composite, Some(childPath))
-        case primitive: RuntimePrimitiveDatatypeDefinition => primitiveToDeserializer(primitive.getImplementingClass, Some(childPath))
+        case primitive: RuntimePrimitiveDatatypeDefinition => dataTypeMappings.primitiveDecoderExpression(primitive.getImplementingClass, Some(childPath))
       }
 
-      val child = ObjectCast(deserializer, ObjectType(classOf[org.hl7.fhir.dstu3.model.Type]))
+      val child = ObjectCast(deserializer, ObjectType(dataTypeMappings.baseType()))
 
       // If this item is not null, deserialize it. Otherwise attempt other choices.
       expressions.If(IsNotNull(childPath),
@@ -557,7 +462,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
           val definition = childDefinition.getChildByName(childDefinition.getElementName)
 
           definition match {
-            case primitive: RuntimePrimitiveDatatypeDefinition => primitiveToDeserializer(primitive.getImplementingClass, childPath)
+            case primitive: RuntimePrimitiveDatatypeDefinition => dataTypeMappings.primitiveDecoderExpression(primitive.getImplementingClass, childPath)
             case htmlHl7: RuntimePrimitiveDatatypeXhtmlHl7OrgDefinition => xhtmlHl7ToDeserializer(htmlHl7, childPath)
           }
         }
@@ -628,70 +533,6 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
         stringValue)))
   }
 
-
-  /**
-    * Returns an expression that deserializes the given FHIR primitive type.
-    */
-  private def primitiveToDeserializer(primitiveClass: Class[_],
-                                      path: Option[Expression]): Expression = {
-
-    def getPath: Expression = path.getOrElse(GetColumnByOrdinal(0, ObjectType(primitiveClass)))
-
-    primitiveClass match {
-
-      // If the FHIR primitive is represented as a string type, read it from UTF8 and
-      // set the value.
-      case cls if SchemaConverter.fhirPrimitiveToSparkTypes.get(cls) == DataTypes.StringType => {
-
-        val newInstance = NewInstance(primitiveClass,
-          Nil,
-          ObjectType(primitiveClass))
-
-        // Convert UTF8String to a regular string.
-        InitializeJavaBean(newInstance, Map("setValueAsString" ->
-          Invoke(getPath, "toString", ObjectType(classOf[String]), Nil)))
-      }
-
-      // Classes that can be directly encoded as their primitive type.
-      case cls if cls == classOf[org.hl7.fhir.dstu3.model.BooleanType] ||
-        cls == classOf[org.hl7.fhir.dstu3.model.Base64BinaryType] ||
-        cls == classOf[org.hl7.fhir.dstu3.model.IntegerType] ||
-        cls == classOf[org.hl7.fhir.dstu3.model.UnsignedIntType] ||
-        cls == classOf[org.hl7.fhir.dstu3.model.PositiveIntType] =>
-        NewInstance(primitiveClass,
-          List(getPath),
-          ObjectType(primitiveClass))
-
-      case decimalClass if decimalClass == classOf[org.hl7.fhir.dstu3.model.DecimalType] =>
-
-        NewInstance(primitiveClass,
-          List(Invoke(getPath, "toJavaBigDecimal", ObjectType(classOf[java.math.BigDecimal]))),
-          ObjectType(primitiveClass))
-
-      case instantClass if instantClass == classOf[org.hl7.fhir.dstu3.model.InstantType] => {
-
-        val millis = StaticField(classOf[TemporalPrecisionEnum],
-          ObjectType(classOf[TemporalPrecisionEnum]),
-          "MILLI")
-
-        val UTCZone = StaticInvoke(classOf[TimeZone],
-          ObjectType(classOf[TimeZone]),
-          "getTimeZone",
-          Literal("UTC", ObjectType(classOf[String])) :: Nil)
-
-        NewInstance(primitiveClass,
-          List(NewInstance(classOf[java.sql.Timestamp],
-            getPath :: Nil,
-            ObjectType(classOf[java.sql.Timestamp])),
-            millis,
-            UTCZone),
-          ObjectType(primitiveClass))
-      }
-
-      case unknown => throw new IllegalArgumentException("Cannot deserialize unknown primitive type: " + unknown.getName)
-    }
-  }
-
   /**
     * Returns an expression for deserializing a composite structure at the given path.
     */
@@ -707,11 +548,7 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext, schemaConverter: 
 
     // Map to (name, value, name, value) expressions for child elements.
     val childExpressions: Map[String, Expression] = definition.getChildren
-      .filter(child => definition.getImplementingClass != classOf[Reference] ||
-        child.getElementName == "reference" ||
-        child.getElementName == "display")
-      .filter(child => definition.getImplementingClass != classOf[ValueSet.ValueSetExpansionContainsComponent] ||
-        child.getElementName != "contains")
+      .filter(child => !dataTypeMappings.skipField(definition, child))
       .flatMap(child => childToDeserializer(child, path)).toMap
 
     val compositeInstance = NewInstance(definition.getImplementingClass,

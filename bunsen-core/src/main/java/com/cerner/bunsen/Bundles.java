@@ -1,9 +1,11 @@
 package com.cerner.bunsen;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import ca.uhn.fhir.parser.IParser;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.spark.api.java.JavaRDD;
@@ -14,8 +16,8 @@ import org.apache.spark.sql.Encoder;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.hl7.fhir.dstu3.model.Bundle;
-import org.hl7.fhir.dstu3.model.Resource;
+
+import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import scala.Tuple2;
 
@@ -24,11 +26,83 @@ import scala.Tuple2;
  */
 public class Bundles {
 
-  private static final FhirContext FHIR_CONTEXT = FhirContext.forDstu3();
+  /**
+   * A wrapper class for bundles that supports the use of Bundles from various
+   * FHIR versions in Spark RDDs.
+   */
+  public static class BundleContainer implements Serializable {
 
-  private static final IParser XML_PARSER = FHIR_CONTEXT.newXmlParser();
+    private FhirVersionEnum fhirVersion;
 
-  private static final IParser JSON_PARSER = FHIR_CONTEXT.newJsonParser();
+    private transient IBaseBundle bundle;
+
+    BundleContainer(IBaseBundle bundle, FhirVersionEnum fhirVersion) {
+
+      this.bundle = bundle;
+      this.fhirVersion = fhirVersion;
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
+
+      stream.defaultWriteObject();
+
+      String encodedBundle = FhirEncoders.contextFor(fhirVersion)
+          .newJsonParser()
+          .encodeResourceToString(bundle);
+
+      stream.writeUTF(encodedBundle);
+    }
+
+    private void readObject(java.io.ObjectInputStream stream) throws IOException,
+        ClassNotFoundException {
+
+      stream.defaultReadObject();
+
+      String encodedBundle = stream.readUTF();
+
+      bundle = (IBaseBundle) FhirEncoders.contextFor(fhirVersion)
+          .newJsonParser()
+          .parseResource(encodedBundle);
+    }
+
+    /**
+     * Returns a list containing the resources of the given name
+     * that exist in the bundle.
+     *
+     * @param name the name of the FHIR resource to return
+     * @return the resources of the given name that exist in the bundle.
+     */
+    public List<IBaseResource> extractResource(String name)  {
+
+      return FhirEncoders.mappingsFor(fhirVersion).extractEntryFromBundle(bundle, name);
+    }
+
+    /**
+     * Returns the contained FHIR bundle.
+     *
+     * @return the contained bundle.
+     */
+    public IBaseBundle getBundle() {
+      return bundle;
+    }
+
+  }
+
+  private final FhirVersionEnum fhirVersion;
+
+  private Bundles(FhirVersionEnum fhirVersion) {
+    this.fhirVersion = fhirVersion;
+  }
+
+  public static Bundles forStu3() {
+
+    return new Bundles(FhirVersionEnum.DSTU3);
+  }
+
+  public static Bundles forR4() {
+
+    return new Bundles(FhirVersionEnum.R4);
+  }
 
   /**
    * Returns an RDD of bundles loaded from the given path.
@@ -38,14 +112,14 @@ public class Bundles {
    * @param minPartitions a suggested value for the minimal number of partitions
    * @return an RDD of FHIR Bundles
    */
-  public static JavaRDD<Bundle> loadFromDirectory(SparkSession spark,
+  public JavaRDD<BundleContainer> loadFromDirectory(SparkSession spark,
       String path,
       int minPartitions) {
 
     return spark.sparkContext()
         .wholeTextFiles(path, minPartitions)
         .toJavaRDD()
-        .map(new ToBundle());
+        .map(new ToBundle(fhirVersion));
   }
 
   /**
@@ -56,7 +130,7 @@ public class Bundles {
    * @param column the column in which the JSON bundle is stored
    * @return an RDD of FHIR Bundles
    */
-  public static JavaRDD<Bundle> fromJson(Dataset<Row> jsonBundles, String column) {
+  public JavaRDD<BundleContainer> fromJson(Dataset<Row> jsonBundles, String column) {
 
     return fromJson(jsonBundles.select(column).as(Encoders.STRING()));
   }
@@ -68,9 +142,9 @@ public class Bundles {
    * @param jsonBundles a dataset of JSON-encoded bundles
    * @return an RDD of FHIR Bundles
    */
-  public static JavaRDD<Bundle> fromJson(Dataset<String> jsonBundles) {
+  public JavaRDD<BundleContainer> fromJson(Dataset<String> jsonBundles) {
 
-    return jsonBundles.toJavaRDD().map(new StringToBundle(false));
+    return jsonBundles.toJavaRDD().map(new StringToBundle(false, fhirVersion));
   }
 
   /**
@@ -81,7 +155,7 @@ public class Bundles {
    * @param column the column in which the XML bundle is stored
    * @return an RDD of FHIR Bundles
    */
-  public static JavaRDD<Bundle> fromXml(Dataset<Row> xmlBundles, String column) {
+  public JavaRDD<BundleContainer> fromXml(Dataset<Row> xmlBundles, String column) {
 
     return fromXml(xmlBundles.select(column).as(Encoders.STRING()));
   }
@@ -93,9 +167,9 @@ public class Bundles {
    * @param xmlBundles a dataset of XML-encoded bundles
    * @return an RDD of FHIR Bundles
    */
-  public static JavaRDD<Bundle> fromXml(Dataset<String> xmlBundles) {
+  public JavaRDD<BundleContainer> fromXml(Dataset<String> xmlBundles) {
 
-    return xmlBundles.toJavaRDD().map(new StringToBundle(true));
+    return xmlBundles.toJavaRDD().map(new StringToBundle(true, fhirVersion));
   }
 
   /**
@@ -108,11 +182,12 @@ public class Bundles {
    * @param <T> the type of the resource being extracted from the bundles.
    * @return a dataset of the given resource
    */
-  public static <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
-      JavaRDD<Bundle> bundles,
+  public <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
+      JavaRDD<BundleContainer> bundles,
       Class<T> resourceClass) {
 
-    RuntimeResourceDefinition definition = FHIR_CONTEXT.getResourceDefinition(resourceClass);
+    RuntimeResourceDefinition definition = FhirEncoders.contextFor(fhirVersion)
+        .getResourceDefinition(resourceClass);
 
     return extractEntry(spark, bundles, definition.getName());
   }
@@ -128,14 +203,14 @@ public class Bundles {
    * @param <T> the type of the resource being extracted from the bundles.
    * @return a dataset of the given resource
    */
-  public static <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
-      JavaRDD<Bundle> bundles,
+  public <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
+      JavaRDD<BundleContainer> bundles,
       String resourceName) {
 
     return extractEntry(spark,
         bundles,
         resourceName,
-        FhirEncoders.forStu3().getOrCreate());
+        FhirEncoders.forVersion(fhirVersion).getOrCreate());
   }
 
   /**
@@ -150,14 +225,18 @@ public class Bundles {
    * @param <T> the type of the resource being extracted from the bundles.
    * @return a dataset of the given resource
    */
-  public static <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
-      JavaRDD<Bundle> bundles,
+  public  <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
+      JavaRDD<BundleContainer> bundles,
       String resourceName,
       FhirEncoders encoders) {
 
-    RuntimeResourceDefinition def = FHIR_CONTEXT.getResourceDefinition(resourceName);
+    FhirContext context = FhirEncoders.contextFor(encoders.getFhirVersion());
 
-    JavaRDD<T> resourceRdd = bundles.flatMap(new ToResource<T>(def.getName()));
+    RuntimeResourceDefinition def = context.getResourceDefinition(resourceName);
+
+    JavaRDD<T> resourceRdd = bundles.flatMap(
+        new ToResource<T>(def.getName(),
+          encoders.getFhirVersion()));
 
     Encoder<T> encoder = encoders.of((Class<T>) def.getImplementingClass());
 
@@ -181,8 +260,8 @@ public class Bundles {
    * @param database the name of the database to write to
    * @param resourceNames names of resources to be extracted from the bundle and written
    */
-  public static void saveAsDatabase(SparkSession spark,
-      JavaRDD<Bundle> bundles,
+  public void saveAsDatabase(SparkSession spark,
+      JavaRDD<BundleContainer> bundles,
       String database,
       String... resourceNames) {
 
@@ -196,43 +275,90 @@ public class Bundles {
     }
   }
 
-  private static class StringToBundle implements Function<String, Bundle> {
+  private static class StringToBundle implements Function<String, BundleContainer> {
 
-    private final boolean isXml;
+    private boolean isXml;
 
-    StringToBundle(boolean isXml) {
+    private FhirVersionEnum fhirVersion;
+
+    private transient IParser parser;
+
+    StringToBundle(boolean isXml, FhirVersionEnum fhirVersion) {
       this.isXml = isXml;
+      this.fhirVersion = fhirVersion;
+
+      parser = isXml
+          ? FhirEncoders.contextFor(fhirVersion).newXmlParser()
+          : FhirEncoders.contextFor(fhirVersion).newJsonParser();
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
+
+      stream.defaultWriteObject();
+    }
+
+    private void readObject(java.io.ObjectInputStream stream) throws IOException,
+        ClassNotFoundException {
+
+      stream.defaultReadObject();
+
+      parser = isXml
+          ? FhirEncoders.contextFor(fhirVersion).newXmlParser()
+          : FhirEncoders.contextFor(fhirVersion).newJsonParser();
     }
 
     @Override
-    public Bundle call(String bundleString) throws Exception {
+    public BundleContainer call(String bundleString) throws Exception {
 
-      if (isXml) {
+      IBaseBundle bundle = (IBaseBundle) parser.parseResource(bundleString);
 
-        return (Bundle) XML_PARSER.parseResource(bundleString);
-
-      } else {
-
-        return (Bundle) JSON_PARSER.parseResource(bundleString);
-      }
+      return new BundleContainer(bundle, fhirVersion);
     }
   }
 
-  private static class ToBundle implements Function<Tuple2<String, String>, Bundle> {
+  private static class ToBundle implements Function<Tuple2<String, String>, BundleContainer> {
 
+    private FhirVersionEnum fhirVersion;
+
+    private transient IParser xmlParser;
+
+    private transient IParser jsonParser;
+
+    ToBundle(FhirVersionEnum fhirVersion) {
+      this.fhirVersion = fhirVersion;
+
+      xmlParser = FhirEncoders.contextFor(fhirVersion).newXmlParser();
+      jsonParser = FhirEncoders.contextFor(fhirVersion).newJsonParser();
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
+
+      stream.defaultWriteObject();
+    }
+
+    private void readObject(java.io.ObjectInputStream stream) throws IOException,
+        ClassNotFoundException {
+
+      stream.defaultReadObject();
+
+      xmlParser = FhirEncoders.contextFor(fhirVersion).newXmlParser();
+      jsonParser = FhirEncoders.contextFor(fhirVersion).newJsonParser();
+    }
 
     @Override
-    public Bundle call(Tuple2<String, String> fileContentTuple) throws Exception {
+    public BundleContainer call(Tuple2<String, String> fileContentTuple) throws Exception {
 
       String filePath = fileContentTuple._1.toLowerCase();
 
       if (filePath.endsWith(".xml")) {
 
-        return (Bundle) XML_PARSER.parseResource(fileContentTuple._2());
+        return new BundleContainer((IBaseBundle) xmlParser.parseResource(fileContentTuple._2()),
+            fhirVersion);
 
       } else if (filePath.endsWith(".json")) {
 
-        return (Bundle) JSON_PARSER.parseResource(fileContentTuple._2());
+        return new BundleContainer((IBaseBundle) jsonParser.parseResource(fileContentTuple._2()),
+            fhirVersion);
 
       } else {
 
@@ -241,32 +367,24 @@ public class Bundles {
     }
   }
 
-  private static class ToResource<T> implements FlatMapFunction<Bundle, T> {
+  private static class ToResource<T> implements FlatMapFunction<BundleContainer, T> {
 
     private String resourceName;
 
-    ToResource(String resourceName) {
+    private FhirVersionEnum fhirVersion;
+
+    ToResource(String resourceName, FhirVersionEnum fhirVersion) {
       this.resourceName = resourceName;
+      this.fhirVersion = fhirVersion;
     }
 
     @Override
-    public Iterator<T> call(Bundle bundle) throws Exception {
+    public Iterator<T> call(BundleContainer bundle) throws Exception {
 
-      List<T> items = new ArrayList<>();
+      List<T> resources = (List<T>) FhirEncoders.mappingsFor(fhirVersion)
+          .extractEntryFromBundle(bundle.bundle, resourceName);
 
-      for (Bundle.BundleEntryComponent component : bundle.getEntry()) {
-
-        Resource resource = component.getResource();
-
-        if (resource != null
-            && resourceName.equals(resource.getResourceType().name())) {
-
-          items.add((T) resource);
-        }
-
-      }
-
-      return items.iterator();
+      return resources.iterator();
     }
   }
 }
