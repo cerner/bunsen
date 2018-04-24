@@ -1,7 +1,8 @@
-package com.cerner.bunsen;
+package com.cerner.bunsen.stu3.python;
 
 import ca.uhn.fhir.context.FhirContext;
-import com.cerner.bunsen.python.Functions;
+import com.cerner.bunsen.FhirEncoders;
+import com.cerner.bunsen.stu3.python.Functions;
 import com.google.common.collect.ImmutableList;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SparkSession;
@@ -23,7 +24,8 @@ public class FunctionsTest {
 
   private static FhirEncoders encoders = FhirEncoders.forStu3().getOrCreate();
 
-  private static Condition condition = TestData.newCondition();
+  private static Condition condition;
+
   private static Dataset<Condition> conditions;
 
   /**
@@ -35,6 +37,10 @@ public class FunctionsTest {
         .master("local[*]")
         .appName("testing")
         .getOrCreate();
+
+    condition = new Condition();
+
+    condition.setId("Condition/testid");
 
     conditions = spark.createDataset(ImmutableList.of(condition),
         encoders.of(Condition.class));

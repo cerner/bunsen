@@ -3,7 +3,7 @@ package com.cerner.bunsen.codes.broadcast;
 import static org.apache.spark.sql.functions.col;
 
 import com.cerner.bunsen.codes.Hierarchies;
-import com.cerner.bunsen.codes.ValueSets;
+import com.cerner.bunsen.codes.base.AbstractValueSets;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -194,7 +194,7 @@ public class BroadcastableValueSets implements Serializable {
      *
      * @param valueSets the value sets to use
      */
-    private void addReferenceVersions(ValueSets valueSets) {
+    private void addReferenceVersions(AbstractValueSets valueSets) {
 
       // Identify references without versions and load the latest for the value set uri
       Set<String> latestValueSets = this.references.stream()
@@ -247,11 +247,12 @@ public class BroadcastableValueSets implements Serializable {
      * the default value sets.
      *
      * @param spark the Spark session used to load reference data
+     * @param valueSets a {@link AbstractValueSets} instance defining the value set data to load
      * @return a {@link BroadcastableValueSets} instance.
      */
-    public BroadcastableValueSets build(SparkSession spark) {
+    public BroadcastableValueSets build(SparkSession spark, AbstractValueSets valueSets) {
 
-      return build(spark, ValueSets.getDefault(spark), Hierarchies.getDefault(spark));
+      return build(spark, valueSets, Hierarchies.getDefault(spark));
     }
 
     /**
@@ -259,13 +260,13 @@ public class BroadcastableValueSets implements Serializable {
      * the given value sets.
      *
      * @param spark the Spark session used to load reference data
-     * @param valueSets a {@link ValueSets} instance defining the value set reference data to load
+     * @param valueSets a {@link AbstractValueSets} instance defining the value set data to load
      * @param hierarchies a {@link Hierarchies} instance defining hierarchical reference data to
      *        load
      * @return a {@link BroadcastableValueSets} instance.
      */
     public BroadcastableValueSets build(SparkSession spark,
-        ValueSets valueSets,
+        AbstractValueSets valueSets,
         Hierarchies hierarchies) {
 
       // Add pending references and the codes contained in those references' value sets

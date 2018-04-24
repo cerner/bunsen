@@ -1,6 +1,7 @@
-package com.cerner.bunsen;
+package com.cerner.bunsen.stu3;
 
 import ca.uhn.fhir.context.FhirContext;
+import com.cerner.bunsen.SchemaConverter;
 import java.util.Arrays;
 import org.apache.spark.sql.types.ArrayType;
 import org.apache.spark.sql.types.BooleanType;
@@ -18,7 +19,8 @@ import org.junit.Test;
 
 public class SchemaConverterTest {
 
-  static SchemaConverter converter = new SchemaConverter(FhirContext.forDstu3());
+  static SchemaConverter converter = new SchemaConverter(FhirContext.forDstu3(),
+      new Stu3DataTypeMappings());
 
   static StructType conditionSchema = converter.resourceSchema(Condition.class);
 

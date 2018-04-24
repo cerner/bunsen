@@ -10,60 +10,6 @@ from pyspark.sql import functions, DataFrame
 import collections
 import datetime
 
-def get_concept_maps(spark_session, database='ontologies'):
-    """
-    Returns a :class:`ConceptMaps` instance for the given database.
-    """
-    jconcept_maps = spark_session._jvm.com.cerner.bunsen.codes \
-      .ConceptMaps.getFromDatabase(spark_session._jsparkSession, database)
-
-    return ConceptMaps(spark_session, jconcept_maps)
-
-def create_concept_maps(spark_session):
-    """
-    Creates a new, empty :py:class:`ConceptMaps` instance.
-    """
-    jconcept_maps = spark_session._jvm.com.cerner.bunsen.codes \
-      .ConceptMaps.getEmpty(spark_session._jsparkSession)
-
-    return ConceptMaps(spark_session, jconcept_maps)
-
-def get_value_sets(spark_session, database='ontologies'):
-    """
-    Returns a :class:`ValueSets` instance for the given database.
-    """
-    jvalue_sets = spark_session._jvm.com.cerner.bunsen.codes \
-      .ValueSets.getFromDatabase(spark_session._jsparkSession, database)
-
-    return ValueSets(spark_session, jvalue_sets)
-
-def create_value_sets(spark_session):
-    """
-    Creates a new, empty :class:`ValueSets` instance.
-    """
-    jvalue_sets = spark_session._jvm.com.cerner.bunsen.codes \
-      .ValueSets.getEmpty(spark_session._jsparkSession)
-
-    return ValueSets(spark_session, jvalue_sets)
-
-def get_hierarchies(spark_session, database='ontologies'):
-    """
-    Returns a :class:`Hierarchies` instance for the given database.
-    """
-    jhierarchies = spark_session._jvm.com.cerner.bunsen.codes \
-        .Hierarchies.getFromDatabase(spark_session._jsparkSession, database)
-
-    return Hierarchies(spark_session, jhierarchies)
-
-def create_hierarchies(spark_session):
-    """
-    Creates a new, empty :class:`Hierarchies` instance.
-    """
-    jhierarchies = spark_session._jvm.com.cerner.bunsen.codes \
-        .Hierarchies.getEmpty(spark_session._jsparkSession)
-
-    return Hierarchies(spark_session, jhierarchies)
-
 def _add_mappings_to_map(jvm, concept_map, mappings):
     """
     Helper function to add a collection of mappings in the form of a list of
@@ -119,17 +65,18 @@ def _add_values_to_value_set(jvm, value_set, values):
         inclusion.setVersion(version)
 
         for value in values:
-            inclusion.addConcept().setCode(value) 
+            inclusion.addConcept().setCode(value)
 
 class ConceptMaps(object):
     """
     An immutable collection of FHIR Concept Maps to be used to map value sets.
     """
 
-    def __init__(self, spark_session, jconcept_maps):
+    def __init__(self, spark_session, jconcept_maps, jfunctions):
         self._spark_session = spark_session
         self._jvm = spark_session._jvm
         self._jconcept_maps = jconcept_maps
+        self._jfunctions = jfunctions
 
     def latest_version(self, url):
         """
@@ -169,7 +116,7 @@ class ConceptMaps(object):
         Returns an XML string containing the specified concept map.
         """
         concept_map = self._jconcept_maps.getConceptMap(url, version)
-        return self._jvm.com.cerner.bunsen.python.Functions.resourceToXml(concept_map)
+        return self._jfunctions.resourceToXml(concept_map)
 
     def with_new_map(self,
                      url,
@@ -197,7 +144,8 @@ class ConceptMaps(object):
         map_as_list = self._jvm.java.util.Collections.singletonList(concept_map)
 
         return ConceptMaps(self._spark_session,
-                           self._jconcept_maps.withConceptMaps(map_as_list))
+                           self._jconcept_maps.withConceptMaps(map_as_list),
+                           self._jfunctions)
 
     def with_maps_from_directory(self, path):
       """
@@ -207,7 +155,7 @@ class ConceptMaps(object):
       """
       maps = self._jconcept_maps.withMapsFromDirectory(path)
 
-      return ConceptMaps(self._spark_session, maps)
+      return ConceptMaps(self._spark_session, maps, self._jfunctions)
 
     def with_disjoint_maps_from_directory(self, path, database="ontologies"):
       """
@@ -218,7 +166,7 @@ class ConceptMaps(object):
       """
       maps = self._jconcept_maps.withDisjointMapsFromDirectory(path, database)
 
-      return ConceptMaps(self._spark_session, maps)
+      return ConceptMaps(self._spark_session, maps, self._jfunctions)
 
     def add_mappings(self, url, version, mappings):
         """
@@ -233,7 +181,8 @@ class ConceptMaps(object):
         map_as_list = self._jvm.java.util.Collections.singletonList(concept_map)
 
         return ConceptMaps(self._spark_session,
-                           self._jconcept_maps.withConceptMaps(map_as_list))
+                           self._jconcept_maps.withConceptMaps(map_as_list),
+                           self._jfunctions)
 
     def write_to_database(self, database):
         """
@@ -248,10 +197,11 @@ class ValueSets(object):
     ontologically-based queries.
     """
 
-    def __init__(self, spark_session, jvalue_sets):
+    def __init__(self, spark_session, jvalue_sets, jfunctions):
         self._spark_session = spark_session
         self._jvm = spark_session._jvm
         self._jvalue_sets = jvalue_sets
+        self._jfunctions = jfunctions
 
     def latest_version(self, url):
         """
@@ -291,7 +241,7 @@ class ValueSets(object):
         Returns an XML string containing the specified value set.
         """
         value_set = self._jvalue_sets.getValueSet(url, version)
-        return self._jvm.com.cerner.bunsen.python.Functions.resourceToXml(value_set)
+        return self._jfunctions.resourceToXml(value_set)
 
     def with_new_value_set(self,
                            url,
@@ -305,7 +255,7 @@ class ValueSets(object):
         value_set = self._jvm.org.hl7.fhir.dstu3.model.ValueSet()
         value_set.setUrl(url)
         value_set.setVersion(version)
-        
+
         if (experimental):
             value_set.setExperimental(True)
 
@@ -314,7 +264,8 @@ class ValueSets(object):
         value_set_as_list = self._jvm.java.util.Collections.singletonList(value_set)
 
         return ValueSets(self._spark_session,
-                         self._jvalue_sets.withValueSets(value_set_as_list))
+                         self._jvalue_sets.withValueSets(value_set_as_list),
+                         self._jfunctions)
 
     def with_value_sets_from_directory(self, path):
       """
@@ -324,7 +275,7 @@ class ValueSets(object):
       """
       value_sets = self._jvalue_sets.withValueSetsFromDirectory(path)
 
-      return ValueSets(self._spark_session, value_sets)
+      return ValueSets(self._spark_session, value_sets, self._jfunctions)
 
     def with_disjoint_value_sets_from_directory(self, path, database="ontologies"):
       """
@@ -335,7 +286,7 @@ class ValueSets(object):
       """
       value_sets = self._jvalue_sets.withDisjointValueSetsFromDirectory(path, database)
 
-      return ValueSets(self._spark_session, value_sets)
+      return ValueSets(self._spark_session, value_sets, self._jfunctions)
 
     def add_values(self, url, version, values):
         """
@@ -346,11 +297,12 @@ class ValueSets(object):
         value_set = self._jvalue_sets.getValueSet(url, version)
 
         _add_values_to_value_set(self._jvm, value_set, values)
-        
+
         value_set_as_list = self._jvm.java.util.Collections.singletonList(value_set)
 
         return ValueSets(self._spark_session,
-                         self._jvalue_sets.withValueSets(value_set_as_list))
+                         self._jvalue_sets.withValueSets(value_set_as_list),
+                         self._jfunctions)
 
     def write_to_database(self, database):
         """

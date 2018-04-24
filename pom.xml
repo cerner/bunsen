@@ -22,11 +22,11 @@
     <compile.source>1.8</compile.source>
 
     <!-- Spark -->
-    <spark.version>2.2.0</spark.version>
+    <spark.version>2.2.1</spark.version>
     <scala.version>2.11.8</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
     <parquet.version>1.7.0</parquet.version>
-    <hapi.fhir.version>2.5</hapi.fhir.version>
+    <hapi.fhir.version>3.3.0</hapi.fhir.version>
     <junit.version>4.11</junit.version>
     <scm.url>http://github.com/cerner/bunsen/tree/master/</scm.url>
     <scm.connection>scm:git:git@github.com/cerner/bunsen.git</scm.connection>
@@ -37,6 +37,7 @@
 
   <modules>
     <module>bunsen-core</module>
+    <module>bunsen-stu3</module>
     <module>bunsen-shaded</module>
     <module>python</module>
     <module>assembly</module>
@@ -264,7 +265,7 @@
 
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.6</version>
+          <version>3.1.0</version>
         </plugin>
 
         <plugin>
@@ -276,7 +277,7 @@
         <plugin>
           <groupId>net.alchim31.maven</groupId>
           <artifactId>scala-maven-plugin</artifactId>
-          <version>3.2.1</version>
+          <version>3.3.2</version>
           <executions>
             <execution>
               <id>scala-compile-first</id>
@@ -284,6 +285,13 @@
               <goals>
                 <goal>add-source</goal>
                 <goal>compile</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>scala-test-compile</id>
+              <phase>process-test-resources</phase>
+              <goals>
+                <goal>testCompile</goal>
               </goals>
             </execution>
           </executions>
@@ -460,6 +468,12 @@
 
       <dependency>
         <groupId>com.cerner.bunsen</groupId>
+        <artifactId>bunsen-stu3</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.cerner.bunsen</groupId>
         <artifactId>bunsen-shaded</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -498,7 +512,19 @@
       </dependency>
 
       <!-- FHIR dependencies -->
-      <!-- HAPI FHIR -->
+      <dependency>
+        <groupId>ca.uhn.hapi.fhir</groupId>
+        <artifactId>hapi-fhir-base</artifactId>
+        <version>${hapi.fhir.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ca.uhn.hapi.fhir</groupId>
+        <artifactId>hapi-fhir-utilities</artifactId>
+        <version>${hapi.fhir.version}</version>
+      </dependency>
+
+      <!-- HAPI FHIR DSTU3 -->
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-validation-resources-dstu3</artifactId>
@@ -511,12 +537,31 @@
         <version>${hapi.fhir.version}</version>
       </dependency>
 
+      <!-- HAPI FHIR R4 -->
+      <dependency>
+        <groupId>ca.uhn.hapi.fhir</groupId>
+        <artifactId>hapi-fhir-validation-resources-r4</artifactId>
+        <version>${hapi.fhir.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ca.uhn.hapi.fhir</groupId>
+        <artifactId>hapi-fhir-structures-r4</artifactId>
+        <version>${hapi.fhir.version}</version>
+      </dependency>
+
       <!-- Test dependencies -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId> org.apache.hadoop</groupId>
+        <artifactId>hadoop-client</artifactId>
+        <version>2.7.3</version>
       </dependency>
       
     </dependencies>

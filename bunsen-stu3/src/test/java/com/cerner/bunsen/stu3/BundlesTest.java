@@ -1,5 +1,8 @@
-package com.cerner.bunsen;
+package com.cerner.bunsen.stu3;
 
+import com.cerner.bunsen.Bundles;
+import com.cerner.bunsen.Bundles.BundleContainer;
+import com.cerner.bunsen.FhirEncoders;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,8 +19,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import scala.Function1;
-import scala.Tuple2;
 
 /**
  * Tests work working with bundles.
@@ -26,7 +27,8 @@ public class BundlesTest {
 
   private static final FhirEncoders encoders = FhirEncoders.forStu3().getOrCreate();
   private static SparkSession spark;
-  private static JavaRDD<Bundle> bundles;
+  private static Bundles bundles;
+  private static JavaRDD<BundleContainer> bundlesRdd;
 
   /**
    * Sets up Spark.
@@ -40,7 +42,10 @@ public class BundlesTest {
             Files.createTempDirectory("spark_warehouse").toString())
         .getOrCreate();
 
-    bundles = Bundles.loadFromDirectory(spark, "src/test/resources/xml/bundles", 1).cache();
+    bundles = Bundles.forStu3();
+
+    bundlesRdd = bundles.loadFromDirectory(spark,
+        "src/test/resources/xml/bundles", 1).cache();
   }
 
   /**
@@ -56,24 +61,34 @@ public class BundlesTest {
   public void testLoadBundleXml() {
 
     Assert.assertEquals(3,
-        bundles.collect().size());
+        bundlesRdd.count());
   }
 
   @Test
   public void testLoadBundleJson() {
 
-    JavaRDD<Bundle> bundles = Bundles.loadFromDirectory(spark,
+    JavaRDD<BundleContainer> bundles = BundlesTest.bundles.loadFromDirectory(spark,
         "src/test/resources/json/bundles", 1);
 
     Assert.assertEquals(3,
-        bundles.collect().size());
+        bundles.count());
+  }
+
+  @Test
+  public void testRetrieveBundle() {
+    BundleContainer container = bundlesRdd.first();
+
+    Bundle bundle = (Bundle) container.getBundle();
+
+    Assert.assertNotNull(bundle);
+    Assert.assertTrue(bundle.getEntry().size() > 0);
   }
 
   @Test
   public void getGetConditions() {
 
-    Dataset<Condition> conditions = Bundles.extractEntry(spark,
-        bundles,
+    Dataset<Condition> conditions = bundles.extractEntry(spark,
+        bundlesRdd,
         Condition.class);
 
     Assert.assertEquals(5, conditions.count());
@@ -118,8 +133,8 @@ public class BundlesTest {
   @Test
   public void testGetResourcesByClass() {
 
-    Dataset<Patient> patients = Bundles.extractEntry(spark, bundles, Patient.class);
-    Dataset<Condition> conditions = Bundles.extractEntry(spark, bundles, Condition.class);
+    Dataset<Patient> patients = bundles.extractEntry(spark, bundlesRdd, Patient.class);
+    Dataset<Condition> conditions = bundles.extractEntry(spark, bundlesRdd, Condition.class);
 
     checkPatients(patients);
     checkConditions(conditions);
@@ -128,8 +143,8 @@ public class BundlesTest {
   @Test
   public void testGetResourcesByName() {
 
-    Dataset<Patient> patients = Bundles.extractEntry(spark, bundles, "Patient");
-    Dataset<Condition> conditions = Bundles.extractEntry(spark, bundles, "Condition");
+    Dataset<Patient> patients = bundles.extractEntry(spark, bundlesRdd, "Patient");
+    Dataset<Condition> conditions = bundles.extractEntry(spark, bundlesRdd, "Condition");
 
     checkPatients(patients);
     checkConditions(conditions);
@@ -138,8 +153,8 @@ public class BundlesTest {
   @Test
   public void testGetCaseInsensitive() {
 
-    Dataset<Patient> patients = Bundles.extractEntry(spark, bundles, "patIENt");
-    Dataset<Condition> conditions = Bundles.extractEntry(spark, bundles, "conDiTion");
+    Dataset<Patient> patients = bundles.extractEntry(spark, bundlesRdd, "patIENt");
+    Dataset<Condition> conditions = bundles.extractEntry(spark, bundlesRdd, "conDiTion");
 
     checkPatients(patients);
     checkConditions(conditions);
@@ -158,10 +173,10 @@ public class BundlesTest {
 
     xmlBundles.write().saveAsTable("xml_bundle_table");
 
-    JavaRDD<Bundle> bundles = Bundles.fromXml(
+    JavaRDD<BundleContainer> bundles = BundlesTest.bundles.fromXml(
         spark.sql("select value from xml_bundle_table"), "value");
 
-    Dataset<Patient> patients = Bundles.extractEntry(spark,
+    Dataset<Patient> patients = BundlesTest.bundles.extractEntry(spark,
         bundles,
         Patient.class);
 
@@ -181,11 +196,11 @@ public class BundlesTest {
 
     jsonBundles.write().saveAsTable("json_bundle_table");
 
-    JavaRDD<Bundle> bundles = Bundles.fromJson(
+    JavaRDD<BundleContainer> bundlesRdd = bundles.fromJson(
         spark.sql("select value from json_bundle_table"), "value");
 
-    Dataset<Patient> patients = Bundles.extractEntry(spark,
-        bundles,
+    Dataset<Patient> patients = BundlesTest.bundles.extractEntry(spark,
+        bundlesRdd,
         Patient.class);
 
     checkPatients(patients);
@@ -195,8 +210,8 @@ public class BundlesTest {
   @Test
   public void testSaveAsDatabase() {
 
-    Bundles.saveAsDatabase(spark,
-        bundles,
+    bundles.saveAsDatabase(spark,
+        bundlesRdd,
         "bundlesdb",
         "patient", "condition", "observation");
 

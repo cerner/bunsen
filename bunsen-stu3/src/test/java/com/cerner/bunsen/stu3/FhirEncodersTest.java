@@ -1,5 +1,6 @@
-package com.cerner.bunsen;
+package com.cerner.bunsen.stu3;
 
+import com.cerner.bunsen.FhirEncoders;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.math.BigDecimal;
