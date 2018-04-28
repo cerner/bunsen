@@ -8,12 +8,12 @@ def get_concept_maps(spark_session, database='ontologies'):
     """
     Returns a :class:`ConceptMaps` instance for the given database.
     """
-    jconcept_maps = spark_session._jvm.com.cerner.bunsen.stu3.codes \
+    jconcept_maps = spark_session._jvm.com.cerner.bunsen.r4.codes \
       .ConceptMaps.getFromDatabase(spark_session._jsparkSession, database)
 
-    jfunctions = spark_session._jvm.com.cerner.bunsen.stu3.python.Functions
+    jfunctions = spark_session._jvm.com.cerner.bunsen.r4.python.Functions
 
-    java_package = spark_session._jvm.org.hl7.fhir.dstu3.model
+    java_package = spark_session._jvm.org.hl7.fhir.r4.model
 
     return ConceptMaps(spark_session,
                        jconcept_maps,
@@ -24,12 +24,12 @@ def create_concept_maps(spark_session):
     """
     Creates a new, empty :py:class:`ConceptMaps` instance.
     """
-    jconcept_maps = spark_session._jvm.com.cerner.bunsen.stu3.codes \
+    jconcept_maps = spark_session._jvm.com.cerner.bunsen.r4.codes \
       .ConceptMaps.getEmpty(spark_session._jsparkSession)
 
-    jfunctions = spark_session._jvm.com.cerner.bunsen.stu3.python.Functions
+    jfunctions = spark_session._jvm.com.cerner.bunsen.r4.python.Functions
 
-    java_package = spark_session._jvm.org.hl7.fhir.dstu3.model
+    java_package = spark_session._jvm.org.hl7.fhir.r4.model
 
     return ConceptMaps(spark_session,
                        jconcept_maps,
@@ -40,12 +40,12 @@ def get_value_sets(spark_session, database='ontologies'):
     """
     Returns a :class:`ValueSets` instance for the given database.
     """
-    jvalue_sets = spark_session._jvm.com.cerner.bunsen.stu3.codes \
+    jvalue_sets = spark_session._jvm.com.cerner.bunsen.r4.codes \
       .ValueSets.getFromDatabase(spark_session._jsparkSession, database)
 
-    jfunctions = spark_session._jvm.com.cerner.bunsen.stu3.python.Functions
+    jfunctions = spark_session._jvm.com.cerner.bunsen.r4.python.Functions
 
-    java_package = spark_session._jvm.org.hl7.fhir.dstu3.model
+    java_package = spark_session._jvm.org.hl7.fhir.r4.model
 
     return ValueSets(spark_session,
                      jvalue_sets,
@@ -56,12 +56,12 @@ def create_value_sets(spark_session):
     """
     Creates a new, empty :class:`ValueSets` instance.
     """
-    jvalue_sets = spark_session._jvm.com.cerner.bunsen.stu3.codes \
+    jvalue_sets = spark_session._jvm.com.cerner.bunsen.r4.codes \
       .ValueSets.getEmpty(spark_session._jsparkSession)
 
-    jfunctions = spark_session._jvm.com.cerner.bunsen.stu3.python.Functions
+    jfunctions = spark_session._jvm.com.cerner.bunsen.r4.python.Functions
 
-    java_package = spark_session._jvm.org.hl7.fhir.dstu3.model
+    java_package = spark_session._jvm.org.hl7.fhir.r4.model
 
     return ValueSets(spark_session,
                      jvalue_sets,
