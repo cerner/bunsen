@@ -23,7 +23,7 @@ EXPECTED_COLUMNS = {'uri',
                     'ancestorSystem',
                     'ancestorValue'}
 
-@fixture(scope="session")
+@fixture(scope="module")
 def spark_session(request):
   """
   Fixture for creating a Spark Session available for all tests in this
@@ -225,7 +225,7 @@ def test_read_relationship_file(spark_session):
   assert set(ancestors.columns) == EXPECTED_COLUMNS
 
 # Bundles Tests
-@fixture(scope="session")
+@fixture(scope="module")
 def bundles(spark_session):
   return load_from_directory(spark_session, 'tests/resources/bundles/xml', 1)
 
