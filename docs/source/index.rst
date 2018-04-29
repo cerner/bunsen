@@ -11,8 +11,10 @@ with the full power of that platform, including with Spark SQL.
 
    introduction
    java_usage
+   fhir_versions
    how_bunsen_works
-   pythonapis
+   stu3_pythonapis
+   r4_pythonapis
    snomed_and_loinc
    building
 

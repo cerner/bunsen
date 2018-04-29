@@ -55,29 +55,9 @@ functions for details.
 >>> # in Bunsen's valueset functions.
 >>> hierarchies.write_to_database('ontologies')
 
-STU3 FHIR ValueSet and ConceptMap APIs
---------------------------------------
 
-.. automodule:: bunsen.stu3.codes
-    :members:
-    :undoc-members:
-
-R4 FHIR ValueSet and ConceptMap APIs
-------------------------------------
-
-.. automodule:: bunsen.r4.codes
-    :members:
-    :undoc-members:
-
-Common ValueSet and ConceptMap APIs
-------------------------------------
-
-.. automodule:: bunsen.codes
-    :members:
-    :undoc-members:
-
-SNOMED and LOINC Impoart APIs
------------------------------
+SNOMED and LOINC Import APIs
+----------------------------
 
 .. automodule:: bunsen.codes.loinc
     :members:
