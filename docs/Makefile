@@ -25,4 +25,11 @@ deploy:
 %: Makefile
 		@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	mvn -f ../bunsen-core/pom.xml package -DskipTests=true
-	cp -r ../bunsen-core/target/apidocs $(BUILDDIR)/html/apidocs
+	mkdir -p $(BUILDDIR)/html/core
+	cp -r ../bunsen-core/target/apidocs $(BUILDDIR)/html/core/apidocs
+	mvn -f ../bunsen-stu3/pom.xml package -DskipTests=true
+	mkdir -p $(BUILDDIR)/html/stu3
+	cp -r ../bunsen-stu3/target/apidocs $(BUILDDIR)/html/stu3/apidocs
+	mkdir -p $(BUILDDIR)/html/r4
+	mvn -f ../bunsen-r4/pom.xml package -DskipTests=true
+	cp -r ../bunsen-r4/target/apidocs $(BUILDDIR)/html/r4/apidocs

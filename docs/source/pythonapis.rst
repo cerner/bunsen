@@ -6,16 +6,31 @@ Bunsen offers Python APIs for PySpark users working with FHIR datasets. This inc
 .. toctree::
    :maxdepth: 2
 
-FHIR Bundles
-------------
+STU3 FHIR Bundles
+-----------------
 
-.. automodule:: bunsen.bundles
+.. automodule:: bunsen.stu3.bundles
     :members:
     :undoc-members:
 
-FHIR Valuesets
---------------
+STU3 FHIR Valuesets
+-------------------
 
-.. automodule:: bunsen.valuesets
+.. automodule:: bunsen.stu3.valuesets
+    :members:
+    :undoc-members:
+
+
+R4 FHIR Bundles
+---------------
+
+.. automodule:: bunsen.r4.bundles
+    :members:
+    :undoc-members:
+
+R4 FHIR Valuesets
+-----------------
+
+.. automodule:: bunsen.r4.valuesets
     :members:
     :undoc-members:

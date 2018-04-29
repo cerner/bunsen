@@ -15,7 +15,7 @@ environment like this:
 
 >>> unzip bunsen-assembly-0.x.y-dist.zip
 >>> export PYTHONPATH=$PWD/bunsen-assembly-0.x.y/python:$PYTHONPATH
->>> pyspark --jars bunsen-assembly-0.1.0/jars/bunsen-shaded-0.x.y.jar
+>>> pyspark --jars bunsen-assembly-0.x.y/jars/bunsen-shaded-0.x.y.jar
 
 Running Python Tests
 --------------------

@@ -13,11 +13,11 @@ Scala or Java users of Spark  can simply add the bunsen-shaded JAR to the Spark 
 users wanting to use the provided wrapper functions will also need to include the Python files
 in the PYTHONPATH, all of which can be found in the assembly:
 
->>> unzip bunsen-assembly-0.1.0-dist.zip
->>> export PYTHONPATH=$PWD/bunsen-assembly-0.1.0/python:$PYTHONPATH
->>> pyspark --jars bunsen-assembly-0.1.0/jars/bunsen-shaded-0.1.0.jar
+>>> unzip bunsen-assembly-0.x.y-dist.zip
+>>> export PYTHONPATH=$PWD/bunsen-assembly-0.x.y/python:$PYTHONPATH
+>>> pyspark --jars bunsen-assembly-0.x.y/jars/bunsen-shaded-0.x.y.jar
 
-Bunsen currently uses FHIR STU3 and Spark 2.1. The assembly itself can be downloaded from the
+Bunsen currently uses FHIR versions STU3 and R4 and Spark 2.2. The assembly itself can be downloaded from the
 releases in `Maven Central <http://repo.maven.apache.org/maven2/com/cerner/bunsen/bunsen-assembly/>`_.
 
 Simple Queries
@@ -29,7 +29,7 @@ Java APIs.
 
 Here's a simple example loading test bundles from a directory:
 
->>> from bunsen.bundles import load_from_directory, extract_entry
+>>> from bunsen..stu3.bundles import load_from_directory, extract_entry
 >>>
 >>> bundles = load_from_directory(spark, 'path/to/test/bundles')
 >>>
@@ -49,7 +49,7 @@ Here's a simple example loading test bundles from a directory:
 +---------------+-------------------------------------+
 
 
-See the :py:mod:`~bunsen.bundles` module for details on use.
+See the :py:mod:`~bunsen.stu3.bundles` module for details on use.
 
 Spark SQL Integration
 ---------------------
@@ -71,7 +71,7 @@ in the given termoniology.
 >>>                 'stroke'               : isa_snomed('230690007')})
 
 Now we can query our data with standard Spark SQL using the in_valueset user-defined function
-to reference the valuesets used above. See the :py:mod:`~bunsen.valuesets` module for details on use.
+to reference the valuesets used above. See the :py:mod:`~bunsen.stu3.valuesets` module for details on use.
 
 >>> spark.sql("""
 >>> select subject.reference,
@@ -97,7 +97,7 @@ The above examples show is-a relationships in standard ontologies, but users can
 bring their own datasets or import them from sources like the Value Set Authority Center.
 
 To do so, import the value set into a list of (code system, code value) tuples,
-then use the push :py:func:`~bunsen.valuesets.push_valuesets` function to broadcast
+then use the push :py:func:`~bunsen.stu3.valuesets.push_valuesets` function to broadcast
 them to the cluster. Here's an example:
 
 >>> hypertension_meds = \
