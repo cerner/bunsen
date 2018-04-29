@@ -6,7 +6,7 @@ from bunsen.codes import ConceptMaps, ValueSets, Hierarchies
 
 def get_concept_maps(spark_session, database='ontologies'):
     """
-    Returns a :class:`ConceptMaps` instance for the given database.
+    Returns a :class:`bunsen.codes.ConceptMaps` instance for the given database.
     """
     jconcept_maps = spark_session._jvm.com.cerner.bunsen.stu3.codes \
       .ConceptMaps.getFromDatabase(spark_session._jsparkSession, database)
@@ -22,7 +22,7 @@ def get_concept_maps(spark_session, database='ontologies'):
 
 def create_concept_maps(spark_session):
     """
-    Creates a new, empty :py:class:`ConceptMaps` instance.
+    Creates a new, empty :py:class:`bunsen.codes.ConceptMaps` instance.
     """
     jconcept_maps = spark_session._jvm.com.cerner.bunsen.stu3.codes \
       .ConceptMaps.getEmpty(spark_session._jsparkSession)
@@ -38,7 +38,7 @@ def create_concept_maps(spark_session):
 
 def get_value_sets(spark_session, database='ontologies'):
     """
-    Returns a :class:`ValueSets` instance for the given database.
+    Returns a :class:`bunsen.codes.ValueSets` instance for the given database.
     """
     jvalue_sets = spark_session._jvm.com.cerner.bunsen.stu3.codes \
       .ValueSets.getFromDatabase(spark_session._jsparkSession, database)
@@ -54,7 +54,7 @@ def get_value_sets(spark_session, database='ontologies'):
 
 def create_value_sets(spark_session):
     """
-    Creates a new, empty :class:`ValueSets` instance.
+    Creates a new, empty :class:`bunsen.codes.ValueSets` instance.
     """
     jvalue_sets = spark_session._jvm.com.cerner.bunsen.stu3.codes \
       .ValueSets.getEmpty(spark_session._jsparkSession)
@@ -70,7 +70,7 @@ def create_value_sets(spark_session):
 
 def get_hierarchies(spark_session, database='ontologies'):
     """
-    Returns a :class:`Hierarchies` instance for the given database.
+    Returns a :class:`bunsen.codes.Hierarchies` instance for the given database.
     """
     jhierarchies = spark_session._jvm.com.cerner.bunsen.codes \
         .Hierarchies.getFromDatabase(spark_session._jsparkSession, database)
@@ -79,7 +79,7 @@ def get_hierarchies(spark_session, database='ontologies'):
 
 def create_hierarchies(spark_session):
     """
-    Creates a new, empty :class:`Hierarchies` instance.
+    Creates a new, empty :class:`bunsen.codes.Hierarchies` instance.
     """
     jhierarchies = spark_session._jvm.com.cerner.bunsen.codes \
         .Hierarchies.getEmpty(spark_session._jsparkSession)

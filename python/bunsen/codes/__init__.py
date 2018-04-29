@@ -2,7 +2,7 @@
 Core library for working with `Concept Maps <https://www.hl7.org/fhir/conceptmap.html>`_
 and `Value Sets <https://www.hl7.org/fhir/valueset.html>`_, and hierarchical code systems
 in Bunsen. See the :py:class:`~bunsen.codes.ConceptMaps` class,
-:py:class `~bunsen.codes.ValueSets` class, and :py:class `~bunsen.codes.Hierarchies`
+:py:class:`~bunsen.codes.ValueSets` class, and :py:class:`~bunsen.codes.Hierarchies`
 class for details.
 """
 
@@ -70,6 +70,7 @@ def _add_values_to_value_set(jvm, value_set, values):
 class ConceptMaps(object):
     """
     An immutable collection of FHIR Concept Maps to be used to map value sets.
+    These instances are typically created via the :py:module `bunsen.codes.stu3`
     """
 
     def __init__(self, spark_session, jconcept_maps, jfunctions, java_package):
