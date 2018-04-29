@@ -29,7 +29,7 @@ Java APIs.
 
 Here's a simple example loading test bundles from a directory:
 
->>> from bunsen..stu3.bundles import load_from_directory, extract_entry
+>>> from bunsen.stu3.bundles import load_from_directory, extract_entry
 >>>
 >>> bundles = load_from_directory(spark, 'path/to/test/bundles')
 >>>
