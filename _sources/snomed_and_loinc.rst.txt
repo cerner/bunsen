@@ -1,5 +1,5 @@
-Importing SNOMED and LOINC
-==========================
+Working with SNOMED, LOINC, and Other Ontologies
+================================================
 
 Bunsen supports querying data with arbitrary code systems, but includes specialized support for
 importing SNOMED and LOINC since they are prevalent in a number of FHIR-related use cases.
@@ -33,7 +33,7 @@ Once the content is downloaded, users can import it with the following commands.
 :py:func:`~bunsen.codes.loinc.with_loinc_hierarchy` and :py:func:`~bunsen.codes.snomed.with_relationships`
 functions for details.
 
->>> from bunsen.codes import create_hierarchies
+>>> from bunsen.stu3.codes import create_hierarchies
 >>> from bunsen.codes.loinc import with_loinc_hierarchy
 >>> from bunsen.codes.snomed import with_relationships
 >>>
@@ -56,12 +56,8 @@ functions for details.
 >>> hierarchies.write_to_database('ontologies')
 
 
-FHIR ValueSet and ConceptMap APIs, and APIs for hierarchical systems
---------------------------------------------------------------------
-
-.. automodule:: bunsen.codes
-    :members:
-    :undoc-members:
+SNOMED and LOINC Import APIs
+----------------------------
 
 .. automodule:: bunsen.codes.loinc
     :members:

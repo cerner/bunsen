@@ -11,8 +11,10 @@ with the full power of that platform, including with Spark SQL.
 
    introduction
    java_usage
+   fhir_versions
    how_bunsen_works
-   pythonapis
+   stu3_pythonapis
+   r4_pythonapis
    snomed_and_loinc
    building
 
@@ -21,13 +23,15 @@ Compatibility Matrix
 The table below shows which versions of Spark and FHIR are
 supported with Bunsen.
 
-+--------------+-------------+----+
-|Bunsen release|Spark version|FHIR|
-+--------------+-------------+----+
-|         0.2.0|          2.2|STU3|
-+--------------+-------------+----+
-|         0.1.0|          2.1|STU3|
-+--------------+-------------+----+
++--------------+-------------+--------+
+|Bunsen release|Spark version|FHIR    |
++--------------+-------------+--------+
+|         0.3.0|          2.2|STU3, R4|
++--------------+-------------+--------+
+|         0.2.0|          2.2|    STU3|
++--------------+-------------+--------+
+|         0.1.0|          2.1|    STU3|
++--------------+-------------+--------+
 
 References
 ==========

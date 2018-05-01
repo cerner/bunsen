@@ -25,28 +25,20 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Bunsen latest documentation" href="index.html"/>
-        <link rel="next" title="Core Python APIs" href="pythonapis.html"/>
-        <link rel="prev" title="Java Usage" href="java_usage.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="STU3 Python APIs" href="stu3_pythonapis.html" />
+    <link rel="prev" title="FHIR Versions" href="fhir_versions.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -96,16 +88,18 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">How Bunsen Works</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pythonapis.html">Core Python APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Importing SNOMED and LOINC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
 </ul>
 
             
           
 <li>
-  <a href="apidocs/index.html">Java Docs</a>
+  <a href="apidocs/index.html">JavaDocs</a>
   <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
 </li>
 
@@ -116,7 +110,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">Bunsen</a>
@@ -124,9 +118,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -212,7 +207,7 @@ that can be analysed at petabyte scale. Those datasets can then be saved or mani
 Spark data.</p>
 <p>Because the Apache Spark schema and encoder bytecode is generated directly from the FHIR definitions,
 the resulting Spark dataset is a faithful representation of the original data. To illustrate, this,
-here is a excerpt of calling Spark&#8217;s printSchema() method on the observations dataset we created earlier.
+here is a excerpt of calling Spark’s printSchema() method on the observations dataset we created earlier.
 Notice that every field is a one-to-one mapping to its FHIR equivalent:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">observations</span><span class="o">.</span><span class="n">printSchema</span><span class="p">()</span>
 <span class="go">root</span>
@@ -253,24 +248,22 @@ Notice that every field is a one-to-one mapping to its FHIR equivalent:</p>
 <span class="go">&lt;snip&gt;</span>
 </pre></div>
 </div>
-<p>By encoding FHIR in this native Spark format, Bunsen can take advantages of Spark&#8217;s performance and scalability traits.
+<p>By encoding FHIR in this native Spark format, Bunsen can take advantages of Spark’s performance and scalability traits.
 For instance, analytic queries over hundreds of millions of results typically complete in single-digit seconds.</p>
 </div>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="pythonapis.html" class="btn btn-neutral float-right" title="Core Python APIs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="stu3_pythonapis.html" class="btn btn-neutral float-right" title="STU3 Python APIs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="java_usage.html" class="btn btn-neutral" title="Java Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="fhir_versions.html" class="btn btn-neutral" title="FHIR Versions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -283,7 +276,7 @@ For instance, analytic queries over hundreds of millions of results typically co
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -302,6 +295,7 @@ For instance, analytic queries over hundreds of millions of results typically co
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'latest',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -320,14 +314,13 @@ For instance, analytic queries over hundreds of millions of results typically co
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

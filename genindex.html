@@ -26,26 +26,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="#"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Bunsen latest documentation" href="index.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -95,16 +87,18 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pythonapis.html">Core Python APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Importing SNOMED and LOINC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
 </ul>
 
             
           
 <li>
-  <a href="apidocs/index.html">Java Docs</a>
+  <a href="apidocs/index.html">JavaDocs</a>
   <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
 </li>
 
@@ -115,7 +109,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">Bunsen</a>
@@ -123,9 +117,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -173,6 +168,7 @@
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
@@ -187,11 +183,11 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps.add_mappings">add_mappings() (bunsen.codes.ConceptMaps method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps.add_mappings">add_mappings() (bunsen.codes.ConceptMaps method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps.add_mappings">[1]</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets.add_values">add_values() (bunsen.codes.ValueSets method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets.add_values">add_values() (bunsen.codes.ValueSets method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets.add_values">[1]</a>
 </li>
   </ul></td>
 </tr></table>
@@ -199,17 +195,25 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pythonapis.html#module-bunsen.bundles">bunsen.bundles (module)</a>
+      <li><a href="r4_pythonapis.html#module-bunsen.codes">bunsen.codes (module)</a>, <a href="stu3_pythonapis.html#module-bunsen.codes">[1]</a>
 </li>
-      <li><a href="snomed_and_loinc.html#module-bunsen.codes">bunsen.codes (module)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="snomed_and_loinc.html#module-bunsen.codes.loinc">bunsen.codes.loinc (module)</a>
 </li>
       <li><a href="snomed_and_loinc.html#module-bunsen.codes.snomed">bunsen.codes.snomed (module)</a>
 </li>
-      <li><a href="pythonapis.html#module-bunsen.valuesets">bunsen.valuesets (module)</a>
+      <li><a href="r4_pythonapis.html#module-bunsen.r4.bundles">bunsen.r4.bundles (module)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="r4_pythonapis.html#module-bunsen.r4.codes">bunsen.r4.codes (module)</a>
+</li>
+      <li><a href="r4_pythonapis.html#module-bunsen.r4.valuesets">bunsen.r4.valuesets (module)</a>
+</li>
+      <li><a href="stu3_pythonapis.html#module-bunsen.stu3.bundles">bunsen.stu3.bundles (module)</a>
+</li>
+      <li><a href="stu3_pythonapis.html#module-bunsen.stu3.codes">bunsen.stu3.codes (module)</a>
+</li>
+      <li><a href="stu3_pythonapis.html#module-bunsen.stu3.valuesets">bunsen.stu3.valuesets (module)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -217,55 +221,105 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps">ConceptMaps (class in bunsen.codes)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps">ConceptMaps (class in bunsen.codes)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps">[1]</a>
 </li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.create_concept_maps">create_concept_maps() (in module bunsen.codes)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.codes.create_concept_maps">create_concept_maps() (in module bunsen.r4.codes)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.codes.create_concept_maps">(in module bunsen.stu3.codes)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.create_hierarchies">create_hierarchies() (in module bunsen.codes)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.codes.create_hierarchies">create_hierarchies() (in module bunsen.r4.codes)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.codes.create_hierarchies">(in module bunsen.stu3.codes)</a>
 </li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.create_value_sets">create_value_sets() (in module bunsen.codes)</a>
+      </ul></li>
+      <li><a href="r4_pythonapis.html#bunsen.r4.codes.create_value_sets">create_value_sets() (in module bunsen.r4.codes)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.codes.create_value_sets">(in module bunsen.stu3.codes)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pythonapis.html#bunsen.bundles.extract_entry">extract_entry() (in module bunsen.bundles)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.bundles.extract_entry">extract_entry() (in module bunsen.r4.bundles)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.bundles.extract_entry">(in module bunsen.stu3.bundles)</a>
 </li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="r4_pythonapis.html#bunsen.r4.bundles.from_json">from_json() (in module bunsen.r4.bundles)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.bundles.from_json">(in module bunsen.stu3.bundles)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="r4_pythonapis.html#bunsen.r4.bundles.from_xml">from_xml() (in module bunsen.r4.bundles)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.bundles.from_xml">(in module bunsen.stu3.bundles)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.Hierarchies.get_ancestors">get_ancestors() (bunsen.codes.Hierarchies method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.Hierarchies.get_ancestors">get_ancestors() (bunsen.codes.Hierarchies method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.Hierarchies.get_ancestors">[1]</a>
 </li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.get_concept_maps">get_concept_maps() (in module bunsen.codes)</a>
-</li>
-      <li><a href="pythonapis.html#bunsen.valuesets.get_current_valuesets">get_current_valuesets() (in module bunsen.valuesets)</a>
-</li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.get_hierarchies">get_hierarchies() (in module bunsen.codes)</a>
-</li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps.get_map_as_xml">get_map_as_xml() (bunsen.codes.ConceptMaps method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps.get_mappings">get_mappings() (bunsen.codes.ConceptMaps method)</a>
-</li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps.get_maps">get_maps() (bunsen.codes.ConceptMaps method)</a>
-</li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets.get_value_set_as_xml">get_value_set_as_xml() (bunsen.codes.ValueSets method)</a>
-</li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets.get_value_sets">get_value_sets() (bunsen.codes.ValueSets method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.codes.get_concept_maps">get_concept_maps() (in module bunsen.r4.codes)</a>
 
       <ul>
-        <li><a href="snomed_and_loinc.html#bunsen.codes.get_value_sets">(in module bunsen.codes)</a>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.codes.get_concept_maps">(in module bunsen.stu3.codes)</a>
 </li>
       </ul></li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets.get_values">get_values() (bunsen.codes.ValueSets method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.valuesets.get_current_valuesets">get_current_valuesets() (in module bunsen.r4.valuesets)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.valuesets.get_current_valuesets">(in module bunsen.stu3.valuesets)</a>
+</li>
+      </ul></li>
+      <li><a href="r4_pythonapis.html#bunsen.r4.codes.get_hierarchies">get_hierarchies() (in module bunsen.r4.codes)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.codes.get_hierarchies">(in module bunsen.stu3.codes)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps.get_map_as_xml">get_map_as_xml() (bunsen.codes.ConceptMaps method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps.get_map_as_xml">[1]</a>
+</li>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps.get_mappings">get_mappings() (bunsen.codes.ConceptMaps method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps.get_mappings">[1]</a>
+</li>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps.get_maps">get_maps() (bunsen.codes.ConceptMaps method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps.get_maps">[1]</a>
+</li>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets.get_value_set_as_xml">get_value_set_as_xml() (bunsen.codes.ValueSets method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets.get_value_set_as_xml">[1]</a>
+</li>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets.get_value_sets">get_value_sets() (bunsen.codes.ValueSets method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets.get_value_sets">[1]</a>
+
+      <ul>
+        <li><a href="r4_pythonapis.html#bunsen.r4.codes.get_value_sets">(in module bunsen.r4.codes)</a>
+</li>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.codes.get_value_sets">(in module bunsen.stu3.codes)</a>
+</li>
+      </ul></li>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets.get_values">get_values() (bunsen.codes.ValueSets method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets.get_values">[1]</a>
 </li>
   </ul></td>
 </tr></table>
@@ -273,7 +327,7 @@
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.Hierarchies">Hierarchies (class in bunsen.codes)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.Hierarchies">Hierarchies (class in bunsen.codes)</a>, <a href="stu3_pythonapis.html#bunsen.codes.Hierarchies">[1]</a>
 </li>
   </ul></td>
 </tr></table>
@@ -281,65 +335,93 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pythonapis.html#bunsen.valuesets.isa_loinc">isa_loinc() (in module bunsen.valuesets)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.valuesets.isa_loinc">isa_loinc() (in module bunsen.r4.valuesets)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.valuesets.isa_loinc">(in module bunsen.stu3.valuesets)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pythonapis.html#bunsen.valuesets.isa_snomed">isa_snomed() (in module bunsen.valuesets)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.valuesets.isa_snomed">isa_snomed() (in module bunsen.r4.valuesets)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.valuesets.isa_snomed">(in module bunsen.stu3.valuesets)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps.latest_version">latest_version() (bunsen.codes.ConceptMaps method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps.latest_version">latest_version() (bunsen.codes.ConceptMaps method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps.latest_version">[1]</a>
 
       <ul>
-        <li><a href="snomed_and_loinc.html#bunsen.codes.Hierarchies.latest_version">(bunsen.codes.Hierarchies method)</a>
+        <li><a href="r4_pythonapis.html#bunsen.codes.Hierarchies.latest_version">(bunsen.codes.Hierarchies method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.Hierarchies.latest_version">[1]</a>
 </li>
-        <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets.latest_version">(bunsen.codes.ValueSets method)</a>
+        <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets.latest_version">(bunsen.codes.ValueSets method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets.latest_version">[1]</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pythonapis.html#bunsen.bundles.load_from_directory">load_from_directory() (in module bunsen.bundles)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.bundles.load_from_directory">load_from_directory() (in module bunsen.r4.bundles)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.bundles.load_from_directory">(in module bunsen.stu3.bundles)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pythonapis.html#bunsen.valuesets.pop_valuesets">pop_valuesets() (in module bunsen.valuesets)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.valuesets.pop_valuesets">pop_valuesets() (in module bunsen.r4.valuesets)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.valuesets.pop_valuesets">(in module bunsen.stu3.valuesets)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pythonapis.html#bunsen.valuesets.push_valuesets">push_valuesets() (in module bunsen.valuesets)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.valuesets.push_valuesets">push_valuesets() (in module bunsen.r4.valuesets)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.valuesets.push_valuesets">(in module bunsen.stu3.valuesets)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pythonapis.html#bunsen.bundles.save_as_database">save_as_database() (in module bunsen.bundles)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.bundles.save_as_database">save_as_database() (in module bunsen.r4.bundles)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.bundles.save_as_database">(in module bunsen.stu3.bundles)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pythonapis.html#bunsen.bundles.to_bundle">to_bundle() (in module bunsen.bundles)</a>
+      <li><a href="r4_pythonapis.html#bunsen.r4.bundles.to_bundle">to_bundle() (in module bunsen.r4.bundles)</a>
+
+      <ul>
+        <li><a href="stu3_pythonapis.html#bunsen.stu3.bundles.to_bundle">(in module bunsen.stu3.bundles)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets">ValueSets (class in bunsen.codes)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets">ValueSets (class in bunsen.codes)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets">[1]</a>
 </li>
   </ul></td>
 </tr></table>
@@ -347,30 +429,30 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps.with_disjoint_maps_from_directory">with_disjoint_maps_from_directory() (bunsen.codes.ConceptMaps method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps.with_disjoint_maps_from_directory">with_disjoint_maps_from_directory() (bunsen.codes.ConceptMaps method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps.with_disjoint_maps_from_directory">[1]</a>
 </li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets.with_disjoint_value_sets_from_directory">with_disjoint_value_sets_from_directory() (bunsen.codes.ValueSets method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets.with_disjoint_value_sets_from_directory">with_disjoint_value_sets_from_directory() (bunsen.codes.ValueSets method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets.with_disjoint_value_sets_from_directory">[1]</a>
 </li>
       <li><a href="snomed_and_loinc.html#bunsen.codes.loinc.with_loinc_hierarchy">with_loinc_hierarchy() (in module bunsen.codes.loinc)</a>
 </li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps.with_maps_from_directory">with_maps_from_directory() (bunsen.codes.ConceptMaps method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps.with_maps_from_directory">with_maps_from_directory() (bunsen.codes.ConceptMaps method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps.with_maps_from_directory">[1]</a>
 </li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps.with_new_map">with_new_map() (bunsen.codes.ConceptMaps method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps.with_new_map">with_new_map() (bunsen.codes.ConceptMaps method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps.with_new_map">[1]</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets.with_new_value_set">with_new_value_set() (bunsen.codes.ValueSets method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets.with_new_value_set">with_new_value_set() (bunsen.codes.ValueSets method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets.with_new_value_set">[1]</a>
 </li>
       <li><a href="snomed_and_loinc.html#bunsen.codes.snomed.with_relationships">with_relationships() (in module bunsen.codes.snomed)</a>
 </li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets.with_value_sets_from_directory">with_value_sets_from_directory() (bunsen.codes.ValueSets method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets.with_value_sets_from_directory">with_value_sets_from_directory() (bunsen.codes.ValueSets method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets.with_value_sets_from_directory">[1]</a>
 </li>
-      <li><a href="snomed_and_loinc.html#bunsen.codes.ConceptMaps.write_to_database">write_to_database() (bunsen.codes.ConceptMaps method)</a>
+      <li><a href="r4_pythonapis.html#bunsen.codes.ConceptMaps.write_to_database">write_to_database() (bunsen.codes.ConceptMaps method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ConceptMaps.write_to_database">[1]</a>
 
       <ul>
-        <li><a href="snomed_and_loinc.html#bunsen.codes.Hierarchies.write_to_database">(bunsen.codes.Hierarchies method)</a>
+        <li><a href="r4_pythonapis.html#bunsen.codes.Hierarchies.write_to_database">(bunsen.codes.Hierarchies method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.Hierarchies.write_to_database">[1]</a>
 </li>
-        <li><a href="snomed_and_loinc.html#bunsen.codes.ValueSets.write_to_database">(bunsen.codes.ValueSets method)</a>
+        <li><a href="r4_pythonapis.html#bunsen.codes.ValueSets.write_to_database">(bunsen.codes.ValueSets method)</a>, <a href="stu3_pythonapis.html#bunsen.codes.ValueSets.write_to_database">[1]</a>
 </li>
       </ul></li>
   </ul></td>
@@ -379,9 +461,7 @@
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -394,7 +474,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -413,6 +493,7 @@
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'latest',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -431,14 +512,13 @@
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

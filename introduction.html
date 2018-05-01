@@ -25,28 +25,20 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Bunsen latest documentation" href="index.html"/>
-        <link rel="next" title="Java Usage" href="java_usage.html"/>
-        <link rel="prev" title="Bunsen: FHIR Data with Apache Spark" href="index.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Java Usage" href="java_usage.html" />
+    <link rel="prev" title="Bunsen: FHIR Data with Apache Spark" href="index.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -102,16 +94,18 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pythonapis.html">Core Python APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Importing SNOMED and LOINC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
 </ul>
 
             
           
 <li>
-  <a href="apidocs/index.html">Java Docs</a>
+  <a href="apidocs/index.html">JavaDocs</a>
   <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
 </li>
 
@@ -122,7 +116,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">Bunsen</a>
@@ -130,9 +124,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -219,12 +214,12 @@ describes the steps to get started with them.</p>
 <p>Scala or Java users of Spark  can simply add the bunsen-shaded JAR to the Spark job. PySpark
 users wanting to use the provided wrapper functions will also need to include the Python files
 in the PYTHONPATH, all of which can be found in the assembly:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; unzip bunsen-assembly-0.1.0-dist.zip
-&gt;&gt;&gt; export PYTHONPATH=$PWD/bunsen-assembly-0.1.0/python:$PYTHONPATH
-&gt;&gt;&gt; pyspark --jars bunsen-assembly-0.1.0/jars/bunsen-shaded-0.1.0.jar
+<div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; unzip bunsen-assembly-0.x.y-dist.zip
+&gt;&gt;&gt; export PYTHONPATH=$PWD/bunsen-assembly-0.x.y/python:$PYTHONPATH
+&gt;&gt;&gt; pyspark --jars bunsen-assembly-0.x.y/jars/bunsen-shaded-0.x.y.jar
 </pre></div>
 </div>
-<p>Bunsen currently uses FHIR STU3 and Spark 2.1. The assembly itself can be downloaded from the
+<p>Bunsen currently uses FHIR versions STU3 and R4 and Spark 2.2. The assembly itself can be downloaded from the
 releases in <a class="reference external" href="http://repo.maven.apache.org/maven2/com/cerner/bunsen/bunsen-assembly/">Maven Central</a>.</p>
 </div>
 <div class="section" id="simple-queries">
@@ -233,8 +228,8 @@ releases in <a class="reference external" href="http://repo.maven.apache.org/mav
 with Bunsen is simply to pull in some existing FHIR bundles. Bunsen offers a convenience method
 to load a collection of bundles from a given directory, or users can provide their own data via Python or
 Java APIs.</p>
-<p>Here&#8217;s a simple example loading test bundles from a directory:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.bundles</span> <span class="k">import</span> <span class="n">load_from_directory</span><span class="p">,</span> <span class="n">extract_entry</span>
+<p>Here’s a simple example loading test bundles from a directory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.stu3.bundles</span> <span class="k">import</span> <span class="n">load_from_directory</span><span class="p">,</span> <span class="n">extract_entry</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bundles</span> <span class="o">=</span> <span class="n">load_from_directory</span><span class="p">(</span><span class="n">spark</span><span class="p">,</span> <span class="s1">&#39;path/to/test/bundles&#39;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -254,7 +249,7 @@ Java APIs.</p>
 <span class="go">+---------------+-------------------------------------+</span>
 </pre></div>
 </div>
-<p>See the <a class="reference internal" href="pythonapis.html#module-bunsen.bundles" title="bunsen.bundles"><code class="xref py py-mod docutils literal"><span class="pre">bundles</span></code></a> module for details on use.</p>
+<p>See the <a class="reference internal" href="stu3_pythonapis.html#module-bunsen.stu3.bundles" title="bunsen.stu3.bundles"><code class="xref py py-mod docutils literal"><span class="pre">bundles</span></code></a> module for details on use.</p>
 </div>
 <div class="section" id="spark-sql-integration">
 <h2>Spark SQL Integration<a class="headerlink" href="#spark-sql-integration" title="Permalink to this headline">¶</a></h2>
@@ -275,7 +270,7 @@ in the given termoniology.</p>
 </pre></div>
 </div>
 <p>Now we can query our data with standard Spark SQL using the in_valueset user-defined function
-to reference the valuesets used above. See the <a class="reference internal" href="pythonapis.html#module-bunsen.valuesets" title="bunsen.valuesets"><code class="xref py py-mod docutils literal"><span class="pre">valuesets</span></code></a> module for details on use.</p>
+to reference the valuesets used above. See the <a class="reference internal" href="stu3_pythonapis.html#module-bunsen.stu3.valuesets" title="bunsen.stu3.valuesets"><code class="xref py py-mod docutils literal"><span class="pre">valuesets</span></code></a> module for details on use.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="s2">select subject.reference,</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="s2">       effectiveDateTime,</span>
@@ -301,8 +296,8 @@ to reference the valuesets used above. See the <a class="reference internal" hre
 <p>The above examples show is-a relationships in standard ontologies, but users can also
 bring their own datasets or import them from sources like the Value Set Authority Center.</p>
 <p>To do so, import the value set into a list of (code system, code value) tuples,
-then use the push <a class="reference internal" href="pythonapis.html#bunsen.valuesets.push_valuesets" title="bunsen.valuesets.push_valuesets"><code class="xref py py-func docutils literal"><span class="pre">push_valuesets()</span></code></a> function to broadcast
-them to the cluster. Here&#8217;s an example:</p>
+then use the push <a class="reference internal" href="stu3_pythonapis.html#bunsen.stu3.valuesets.push_valuesets" title="bunsen.stu3.valuesets.push_valuesets"><code class="xref py py-func docutils literal"><span class="pre">push_valuesets()</span></code></a> function to broadcast
+them to the cluster. Here’s an example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hypertension_meds</span> <span class="o">=</span> \
 <span class="gp">&gt;&gt;&gt; </span> <span class="p">[(</span><span class="s1">&#39;http://snomed.info/sct&#39;</span><span class="p">,</span> <span class="s1">&#39;68180051503&#39;</span><span class="p">),</span>
 <span class="gp">&gt;&gt;&gt; </span>  <span class="p">(</span><span class="s1">&#39;http://snomed.info/sct&#39;</span><span class="p">,</span> <span class="s1">&#39;68180048003&#39;</span><span class="p">)]</span>
@@ -337,9 +332,7 @@ like any other:</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -361,7 +354,7 @@ like any other:</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -380,6 +373,7 @@ like any other:</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'latest',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -398,14 +392,13 @@ like any other:</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

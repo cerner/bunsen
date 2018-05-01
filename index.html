@@ -25,27 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Bunsen latest documentation" href="#"/>
-        <link rel="next" title="Getting Started" href="introduction.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Started" href="introduction.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -95,16 +87,18 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pythonapis.html">Core Python APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Importing SNOMED and LOINC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
 </ul>
 
             
           
 <li>
-  <a href="apidocs/index.html">Java Docs</a>
+  <a href="apidocs/index.html">JavaDocs</a>
   <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
 </li>
 
@@ -115,7 +109,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="#">Bunsen</a>
@@ -123,9 +117,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -210,9 +205,11 @@ with the full power of that platform, including with Spark SQL.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pythonapis.html">Core Python APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Importing SNOMED and LOINC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
 </ul>
 </div>
@@ -222,20 +219,24 @@ with the full power of that platform, including with Spark SQL.</p>
 supported with Bunsen.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="45%" />
-<col width="42%" />
-<col width="13%" />
+<col width="40%" />
+<col width="37%" />
+<col width="23%" />
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td>Bunsen release</td>
 <td>Spark version</td>
 <td>FHIR</td>
 </tr>
-<tr class="row-even"><td>0.2.0</td>
+<tr class="row-even"><td>0.3.0</td>
+<td>2.2</td>
+<td>STU3, R4</td>
+</tr>
+<tr class="row-odd"><td>0.2.0</td>
 <td>2.2</td>
 <td>STU3</td>
 </tr>
-<tr class="row-odd"><td>0.1.0</td>
+<tr class="row-even"><td>0.1.0</td>
 <td>2.1</td>
 <td>STU3</td>
 </tr>
@@ -253,9 +254,7 @@ supported with Bunsen.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -275,7 +274,7 @@ supported with Bunsen.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -294,6 +293,7 @@ supported with Bunsen.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'latest',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -312,14 +312,13 @@ supported with Bunsen.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

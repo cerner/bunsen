@@ -25,27 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Bunsen latest documentation" href="index.html"/>
-        <link rel="prev" title="Importing SNOMED and LOINC" href="snomed_and_loinc.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Working with SNOMED, LOINC, and Other Ontologies" href="snomed_and_loinc.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -95,9 +87,11 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pythonapis.html">Core Python APIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Importing SNOMED and LOINC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Building Bunsen</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#simple-builds">Simple Builds</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-python-tests">Running Python Tests</a></li>
@@ -108,7 +102,7 @@
             
           
 <li>
-  <a href="apidocs/index.html">Java Docs</a>
+  <a href="apidocs/index.html">JavaDocs</a>
   <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
 </li>
 
@@ -119,7 +113,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">Bunsen</a>
@@ -127,9 +121,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -220,20 +215,20 @@ where Maven is installed:</p>
 environment like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; unzip bunsen-assembly-0.x.y-dist.zip
 &gt;&gt;&gt; export PYTHONPATH=$PWD/bunsen-assembly-0.x.y/python:$PYTHONPATH
-&gt;&gt;&gt; pyspark --jars bunsen-assembly-0.1.0/jars/bunsen-shaded-0.x.y.jar
+&gt;&gt;&gt; pyspark --jars bunsen-assembly-0.x.y/jars/bunsen-shaded-0.x.y.jar
 </pre></div>
 </div>
 </div>
 <div class="section" id="running-python-tests">
 <h2>Running Python Tests<a class="headerlink" href="#running-python-tests" title="Permalink to this headline">¶</a></h2>
-<p>Running Bunsen&#8217;s Python tests requires the Apache Spark and Python dependencies be available. Once
+<p>Running Bunsen’s Python tests requires the Apache Spark and Python dependencies be available. Once
 Python itself is installed on the build machine, users may want to create a separate vitualenv for
 the project to isolate it from other usage.</p>
-<p>Installing Bunsen&#8217;s python dependencies is done by running the following command in the Bunsen project root directory:</p>
+<p>Installing Bunsen’s python dependencies is done by running the following command in the Bunsen project root directory:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">make</span> <span class="o">--</span><span class="n">directory</span> <span class="n">python</span>
 </pre></div>
 </div>
-<p>After that, users can simply run the &#8220;mvn clean install&#8221; command as seen below to build, test,
+<p>After that, users can simply run the “mvn clean install” command as seen below to build, test,
 and install the project in the local Maven repository:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span>
 </pre></div>
@@ -249,16 +244,14 @@ set this before building the project:</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="snomed_and_loinc.html" class="btn btn-neutral" title="Importing SNOMED and LOINC" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="snomed_and_loinc.html" class="btn btn-neutral" title="Working with SNOMED, LOINC, and Other Ontologies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -271,7 +264,7 @@ set this before building the project:</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -290,6 +283,7 @@ set this before building the project:</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'latest',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -308,14 +302,13 @@ set this before building the project:</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

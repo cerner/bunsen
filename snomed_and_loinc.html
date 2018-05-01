@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Importing SNOMED and LOINC &mdash; Bunsen latest documentation</title>
+  <title>Working with SNOMED, LOINC, and Other Ontologies &mdash; Bunsen latest documentation</title>
   
 
   
@@ -25,28 +25,20 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Bunsen latest documentation" href="index.html"/>
-        <link rel="next" title="Building Bunsen" href="building.html"/>
-        <link rel="prev" title="Core Python APIs" href="pythonapis.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Building Bunsen" href="building.html" />
+    <link rel="prev" title="R4 Python APIs" href="r4_pythonapis.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -96,13 +88,15 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pythonapis.html">Core Python APIs</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Importing SNOMED and LOINC</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Working with SNOMED, LOINC, and Other Ontologies</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#obtaining-loinc">Obtaining LOINC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#obtaining-snomed">Obtaining SNOMED</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#loading-the-ontologies">Loading the Ontologies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-bunsen.codes">FHIR ValueSet and ConceptMap APIs, and APIs for hierarchical systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-bunsen.codes.loinc">SNOMED and LOINC Import APIs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
@@ -111,7 +105,7 @@
             
           
 <li>
-  <a href="apidocs/index.html">Java Docs</a>
+  <a href="apidocs/index.html">JavaDocs</a>
   <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
 </li>
 
@@ -122,7 +116,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">Bunsen</a>
@@ -130,9 +124,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -155,7 +150,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Importing SNOMED and LOINC</li>
+      <li>Working with SNOMED, LOINC, and Other Ontologies</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -208,8 +203,8 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="importing-snomed-and-loinc">
-<h1>Importing SNOMED and LOINC<a class="headerlink" href="#importing-snomed-and-loinc" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="working-with-snomed-loinc-and-other-ontologies">
+<h1>Working with SNOMED, LOINC, and Other Ontologies<a class="headerlink" href="#working-with-snomed-loinc-and-other-ontologies" title="Permalink to this headline">¶</a></h1>
 <p>Bunsen supports querying data with arbitrary code systems, but includes specialized support for
 importing SNOMED and LOINC since they are prevalent in a number of FHIR-related use cases.</p>
 <div class="toctree-wrapper compound">
@@ -236,7 +231,7 @@ ingest the relationship snapshot, such as:</p>
 <p>Once the content is downloaded, users can import it with the following commands. See the
 <a class="reference internal" href="#bunsen.codes.loinc.with_loinc_hierarchy" title="bunsen.codes.loinc.with_loinc_hierarchy"><code class="xref py py-func docutils literal"><span class="pre">with_loinc_hierarchy()</span></code></a> and <a class="reference internal" href="#bunsen.codes.snomed.with_relationships" title="bunsen.codes.snomed.with_relationships"><code class="xref py py-func docutils literal"><span class="pre">with_relationships()</span></code></a>
 functions for details.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.codes</span> <span class="k">import</span> <span class="n">create_hierarchies</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.stu3.codes</span> <span class="k">import</span> <span class="n">create_hierarchies</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.codes.loinc</span> <span class="k">import</span> <span class="n">with_loinc_hierarchy</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.codes.snomed</span> <span class="k">import</span> <span class="n">with_relationships</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -260,226 +255,9 @@ functions for details.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="module-bunsen.codes">
-<span id="fhir-valueset-and-conceptmap-apis-and-apis-for-hierarchical-systems"></span><h2>FHIR ValueSet and ConceptMap APIs, and APIs for hierarchical systems<a class="headerlink" href="#module-bunsen.codes" title="Permalink to this headline">¶</a></h2>
-<p>Core library for working with <a class="reference external" href="https://www.hl7.org/fhir/conceptmap.html">Concept Maps</a>
-and <a class="reference external" href="https://www.hl7.org/fhir/valueset.html">Value Sets</a>, and hierarchical code systems
-in Bunsen. See the <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">ConceptMaps</span></code></a> class,
-:py:class <cite>~bunsen.codes.ValueSets</cite> class, and :py:class <cite>~bunsen.codes.Hierarchies</cite>
-class for details.</p>
-<dl class="class">
-<dt id="bunsen.codes.ConceptMaps">
-<em class="property">class </em><code class="descclassname">bunsen.codes.</code><code class="descname">ConceptMaps</code><span class="sig-paren">(</span><em>spark_session</em>, <em>jconcept_maps</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps" title="Permalink to this definition">¶</a></dt>
-<dd><p>An immutable collection of FHIR Concept Maps to be used to map value sets.</p>
-<dl class="method">
-<dt id="bunsen.codes.ConceptMaps.add_mappings">
-<code class="descname">add_mappings</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>mappings</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.add_mappings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a new ConceptMaps instance with the given mappings added to an existing map.
-The mappings parameter must be a list of tuples of the form
-[(source_system, source_value, target_system, target_value, equivalence)].</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ConceptMaps.get_map_as_xml">
-<code class="descname">get_map_as_xml</code><span class="sig-paren">(</span><em>url</em>, <em>version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.get_map_as_xml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an XML string containing the specified concept map.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ConceptMaps.get_mappings">
-<code class="descname">get_mappings</code><span class="sig-paren">(</span><em>url=None</em>, <em>version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.get_mappings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a dataset of all mappings which may be filtered by an optional
-concept map url and concept map version.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ConceptMaps.get_maps">
-<code class="descname">get_maps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.get_maps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a dataset of FHIR ConceptMaps without the nested mapping content,
-allowing users to explore mapping metadata.</p>
-<p>The mappings themselves are excluded because they can become quite large,
-so users should use the get_mappings method to explore a table of them.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ConceptMaps.latest_version">
-<code class="descname">latest_version</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.latest_version" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the latest version of a map, or None if there is none.&#8221;</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ConceptMaps.with_disjoint_maps_from_directory">
-<code class="descname">with_disjoint_maps_from_directory</code><span class="sig-paren">(</span><em>path</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.with_disjoint_maps_from_directory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a new ConceptMaps instance with all value sets read from the given
-directory path that are disjoint with value sets stored in the given
-database. The directory may be anything readable from a Spark path,
-including local filesystems, HDFS, S3, or others.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ConceptMaps.with_maps_from_directory">
-<code class="descname">with_maps_from_directory</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.with_maps_from_directory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a new ConceptMaps instance with all maps read from the given
-directory path. The directory may be anything readable from a Spark path,
-including local filesystems, HDFS, S3, or others.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ConceptMaps.with_new_map">
-<code class="descname">with_new_map</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>source</em>, <em>target</em>, <em>experimental=True</em>, <em>mappings=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.with_new_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a new ConceptMaps instance with the given map added. Callers
-may include a list of mappings tuples in the form of
-[(source_system, source_value, target_system, target_value, equivalence)].</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ConceptMaps.write_to_database">
-<code class="descname">write_to_database</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.write_to_database" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes the mapping content to the given database, creating a mappings
-and conceptmaps table if they don&#8217;t exist.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="bunsen.codes.Hierarchies">
-<em class="property">class </em><code class="descclassname">bunsen.codes.</code><code class="descname">Hierarchies</code><span class="sig-paren">(</span><em>spark_session</em>, <em>jhierarchies</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.Hierarchies" title="Permalink to this definition">¶</a></dt>
-<dd><p>An immutable collection of values from hierarchical code systems to be used
-for ontologically-based queries.</p>
-<dl class="method">
-<dt id="bunsen.codes.Hierarchies.get_ancestors">
-<code class="descname">get_ancestors</code><span class="sig-paren">(</span><em>url=None</em>, <em>version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.Hierarchies.get_ancestors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a dataset of ancestor values representing the transitive
-closure of codes in this Hierarchies instance filtered by an optional
-hierarchy uri and version..</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.Hierarchies.latest_version">
-<code class="descname">latest_version</code><span class="sig-paren">(</span><em>uri</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.Hierarchies.latest_version" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the latest version of a hierarchy, or None if there is none.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.Hierarchies.write_to_database">
-<code class="descname">write_to_database</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.Hierarchies.write_to_database" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the ancestor content to the given database, create an ancestors
-table if they don&#8217;t exist.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="bunsen.codes.ValueSets">
-<em class="property">class </em><code class="descclassname">bunsen.codes.</code><code class="descname">ValueSets</code><span class="sig-paren">(</span><em>spark_session</em>, <em>jvalue_sets</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets" title="Permalink to this definition">¶</a></dt>
-<dd><p>An immutable collection of FHIR Value Sets to be used to for
-ontologically-based queries.</p>
-<dl class="method">
-<dt id="bunsen.codes.ValueSets.add_values">
-<code class="descname">add_values</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>values</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.add_values" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a new ValueSets instance with the given values added to an
-existing value set. The values parameter must be a list of the form
-[(sytem, value)].</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ValueSets.get_value_set_as_xml">
-<code class="descname">get_value_set_as_xml</code><span class="sig-paren">(</span><em>url</em>, <em>version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.get_value_set_as_xml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an XML string containing the specified value set.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ValueSets.get_value_sets">
-<code class="descname">get_value_sets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.get_value_sets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a dataset of FHIR ValueSets without the nested value content,
-allowing users to explore value set metadata.</p>
-<p>The values themselves are excluded because they can be become quite
-large, so users should use the get_values method to explore them.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ValueSets.get_values">
-<code class="descname">get_values</code><span class="sig-paren">(</span><em>url=None</em>, <em>version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.get_values" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a dataset of all values which may be filtered by an optional
-value set url and value set version.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ValueSets.latest_version">
-<code class="descname">latest_version</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.latest_version" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the latest version of a value set, or None if there is none.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ValueSets.with_disjoint_value_sets_from_directory">
-<code class="descname">with_disjoint_value_sets_from_directory</code><span class="sig-paren">(</span><em>path</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.with_disjoint_value_sets_from_directory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a new ValueSets instance with all value sets read from the given
-directory path that are disjoint with value sets stored in the given
-database. The directory may be anything readable from a Spark path,
-including local filesystems, HDFS, S3, or others.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ValueSets.with_new_value_set">
-<code class="descname">with_new_value_set</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>experimental=True</em>, <em>values=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.with_new_value_set" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a new ValueSets instance with the given value set added. Callers
-may include a list of value tuples in the form of [(system, value)].</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ValueSets.with_value_sets_from_directory">
-<code class="descname">with_value_sets_from_directory</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.with_value_sets_from_directory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a new ValueSets instance with all value sets read from the given
-directory path. The directory may be anything readable from a Spark path,
-including local filesystems, HDFS, S3, or others.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="bunsen.codes.ValueSets.write_to_database">
-<code class="descname">write_to_database</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.write_to_database" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes the value set content to the given database, creating a values
-and valuesets table if they don&#8217;t exist.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="bunsen.codes.create_concept_maps">
-<code class="descclassname">bunsen.codes.</code><code class="descname">create_concept_maps</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.create_concept_maps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new, empty <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">ConceptMaps</span></code></a> instance.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="bunsen.codes.create_hierarchies">
-<code class="descclassname">bunsen.codes.</code><code class="descname">create_hierarchies</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.create_hierarchies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new, empty <a class="reference internal" href="#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">Hierarchies</span></code></a> instance.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="bunsen.codes.create_value_sets">
-<code class="descclassname">bunsen.codes.</code><code class="descname">create_value_sets</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.create_value_sets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new, empty <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">ValueSets</span></code></a> instance.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="bunsen.codes.get_concept_maps">
-<code class="descclassname">bunsen.codes.</code><code class="descname">get_concept_maps</code><span class="sig-paren">(</span><em>spark_session</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.get_concept_maps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">ConceptMaps</span></code></a> instance for the given database.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="bunsen.codes.get_hierarchies">
-<code class="descclassname">bunsen.codes.</code><code class="descname">get_hierarchies</code><span class="sig-paren">(</span><em>spark_session</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.get_hierarchies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a <a class="reference internal" href="#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">Hierarchies</span></code></a> instance for the given database.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="bunsen.codes.get_value_sets">
-<code class="descclassname">bunsen.codes.</code><code class="descname">get_value_sets</code><span class="sig-paren">(</span><em>spark_session</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.get_value_sets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">ValueSets</span></code></a> instance for the given database.</p>
-</dd></dl>
-
-<span class="target" id="module-bunsen.codes.loinc"></span><p>Support for importing the LOINC Hierarchy into Bunsen.</p>
+<div class="section" id="module-bunsen.codes.loinc">
+<span id="snomed-and-loinc-import-apis"></span><h2>SNOMED and LOINC Import APIs<a class="headerlink" href="#module-bunsen.codes.loinc" title="Permalink to this headline">¶</a></h2>
+<p>Support for importing the LOINC Hierarchy into Bunsen.</p>
 <dl class="function">
 <dt id="bunsen.codes.loinc.with_loinc_hierarchy">
 <code class="descclassname">bunsen.codes.loinc.</code><code class="descname">with_loinc_hierarchy</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>hierarchies</em>, <em>loinc_hierarchy_path</em>, <em>loinc_version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.loinc.with_loinc_hierarchy" title="Permalink to this definition">¶</a></dt>
@@ -500,9 +278,7 @@ from the given location.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -511,7 +287,7 @@ from the given location.</p>
         <a href="building.html" class="btn btn-neutral float-right" title="Building Bunsen" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="pythonapis.html" class="btn btn-neutral" title="Core Python APIs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="r4_pythonapis.html" class="btn btn-neutral" title="R4 Python APIs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -524,7 +300,7 @@ from the given location.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -543,6 +319,7 @@ from the given location.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'latest',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -561,14 +338,13 @@ from the given location.</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
