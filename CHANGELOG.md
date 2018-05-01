@@ -1,5 +1,9 @@
 # Bunsen Changelog
 
+## 0.3.0
+* Refactor project to support multiple versions of FHIR in a single build. See [issue 21](https://github.com/cerner/bunsen/issues/21).
+* Add support for FHIR R4.
+
 ## 0.2.2
 * Remove extraneous debugging logic.
 
