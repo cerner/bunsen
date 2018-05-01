@@ -312,8 +312,12 @@ public class ConceptMaps extends AbstractConceptMaps<ConceptMap, ConceptMaps> {
   @Override
   public Broadcast<BroadcastableMappings> broadcast(Map<String,String> conceptMapUriToVersion) {
 
-    Map<String,ConceptMap> mapsToLoad = getMaps()
-        .collectAsList()
+    List<ConceptMap> mapsList = getMaps().collectAsList();
+
+    Map<String,ConceptMap> allMaps = mapsList.stream()
+        .collect(Collectors.toMap(ConceptMap::getUrl, Function.identity()));
+
+    Map<String,ConceptMap> mapsToLoad = mapsList
         .stream()
         .filter(conceptMap ->
             conceptMap.getVersion().equals(conceptMapUriToVersion.get(conceptMap.getUrl())))
@@ -321,7 +325,7 @@ public class ConceptMaps extends AbstractConceptMaps<ConceptMap, ConceptMaps> {
 
     // Expand the concept maps to load and sort them so dependencies are before
     // their dependents in the list.
-    List<String> sortedMapsToLoad = sortMapsToLoad(conceptMapUriToVersion.keySet(), mapsToLoad);
+    List<String> sortedMapsToLoad = sortMapsToLoad(conceptMapUriToVersion.keySet(), allMaps);
 
     // Since this is used to map from one system to another, we use only targets
     // that don't introduce inaccurate meanings. (For instance, we can't map
@@ -340,7 +344,7 @@ public class ConceptMaps extends AbstractConceptMaps<ConceptMap, ConceptMaps> {
 
     for (String conceptMapUri: sortedMapsToLoad) {
 
-      ConceptMap map = mapsToLoad.get(conceptMapUri);
+      ConceptMap map = allMaps.get(conceptMapUri);
 
       Set<String> children = getMapChildren(map);
 
