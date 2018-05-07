@@ -263,6 +263,25 @@ functions for details.</p>
 <code class="descclassname">bunsen.codes.loinc.</code><code class="descname">with_loinc_hierarchy</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>hierarchies</em>, <em>loinc_hierarchy_path</em>, <em>loinc_version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.loinc.with_loinc_hierarchy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a hierarchies instance that includes the LOINC hierarchy read
 from the given location.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sparkSession</strong> – the spark session</li>
+<li><strong>hierarchies</strong> – the <a class="reference internal" href="stu3_pythonapis.html#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.Hierarchies</span></code></a> class
+to which the LOINC hierarchy should be added.</li>
+<li><strong>loinc_hierarchy_path</strong> – the path of the LOINC hierarchy to load.
+This can be any path compatible with Hadoop’s FileSystem API.</li>
+<li><strong>loinc_version</strong> – the version of LOINC that is being loaded</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="stu3_pythonapis.html#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.Hierarchies</span></code></a> with the added content.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <span class="target" id="module-bunsen.codes.snomed"></span><p>Support for importing SNOMED relationship files into Bunsen.</p>
@@ -271,6 +290,25 @@ from the given location.</p>
 <code class="descclassname">bunsen.codes.snomed.</code><code class="descname">with_relationships</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>hierarchies</em>, <em>snomed_relationship_path</em>, <em>snomed_version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.snomed.with_relationships" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a hierarchies instance that includes the SNOMED relationships read
 from the given location.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sparkSession</strong> – the spark session</li>
+<li><strong>hierarchies</strong> – the <a class="reference internal" href="stu3_pythonapis.html#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.Hierarchies</span></code></a> class
+to which the SNOMED hierarchy should be added.</li>
+<li><strong>snomed_relationship_path</strong> – the path of the SNOMED file to load.
+This can be any path compatible with Hadoop’s FileSystem API.</li>
+<li><strong>snomed_version</strong> – the version of SNOMED that is being loaded</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="stu3_pythonapis.html#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.Hierarchies</span></code></a> with the added content.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
