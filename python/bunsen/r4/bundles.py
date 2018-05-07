@@ -20,6 +20,10 @@ def load_from_directory(sparkSession, path, minPartitions=1):
     RDD contains Bundle records that aren't serializable in Python,
     so users should use this class as merely a parameter to other methods
     in this module, like extract_entry.
+
+    :param sparkSession: the SparkSession instance
+    :param path: path to directory of FHIR bundles to load
+    :return: a Java RDD of bundles for use with :func:`extract_entry`
     """
 
     bundles = _bundles(sparkSession._jvm)
@@ -32,6 +36,10 @@ def from_json(df, column):
     RDD contains Bundle records that aren't serializable in Python,
     so users should use this class as merely a parameter to other methods
     in this module, like extract_entry.
+
+    :param df: a DataFrame containing bundles to decode
+    :param column: the column in which the bundles to decode are stored
+    :return: a Java RDD of bundles for use with :func:`extract_entry`
     """
     bundles = _bundles(df._sc._jvm)
     return bundles.fromJson(df._jdf, column)
@@ -43,6 +51,10 @@ def from_xml(df, column):
     RDD contains Bundle records that aren't serializable in Python,
     so users should use this class as merely a parameter to other methods
     in this module, like extract_entry.
+
+    :param df: a DataFrame containing bundles to decode
+    :param column: the column in which the bundles to decode are stored
+    :return: a Java RDD of bundles for use with :func:`extract_entry`
     """
     bundles = _bundles(df._sc._jvm)
     return bundles.fromXml(df._jdf, column)
@@ -50,6 +62,13 @@ def from_xml(df, column):
 def extract_entry(sparkSession, javaRDD, resourceName):
     """
     Returns a dataset for the given entry type from the bundles.
+
+    :param sparkSession: the SparkSession instance
+    :param javaRDD: the RDD produced by :func:`load_from_directory` or other methods
+        in this package
+    :param resourceName: the name of the FHIR resource to extract
+        (condition, observation, etc)
+    :return: a DataFrame containing the given resource encoded into Spark columns
     """
 
     bundles = _bundles(sparkSession._jvm)
@@ -61,6 +80,12 @@ def save_as_database(sparkSession, path, databaseName, *resourceNames, **kwargs)
     """
     Loads the bundles in the path and saves them to a database, where
     each table in the database has the same name of the resource it represents.
+
+    :param sparkSession: the SparkSession instance
+    :param path: path to directory of FHIR bundles to load
+    :param databaseName: name of the database to write the resources to
+    :param resourceNames: the names of the FHIR resource to extract
+        (condition, observation, etc)
     """
 
     gateway = sparkSession.sparkContext._gateway
@@ -84,6 +109,10 @@ def to_bundle(sparkSession, dataset):
     """
     Converts a dataset of FHIR resources to a bundle containing those resources.
     Use with caution against large datasets.
+
+    :param sparkSession: the SparkSession instance
+    :param dataset: a DataFrame of encoded FHIR Resources
+    :return: a JSON bundle of the dataset contents
     """
 
     jvm = sparkSession._jvm

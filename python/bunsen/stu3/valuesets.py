@@ -19,6 +19,10 @@ def isa_loinc(code_value, loinc_version=None):
     """
     Returns a hierarchy placeholder that will load all values that are descendents
     of a given LOINC code.
+
+    :param code_value: the parent code value
+    :param loinc_version: the version of LOINC to use (uses latest if None is given)
+    :return: a placeholder for use with :func:`push_valuesets`
     """
     return HierarchyPlaceholder('http://loinc.org',
                                 code_value,
@@ -29,6 +33,10 @@ def isa_snomed(code_value, snomed_version=None):
     """
     Returns a hierarchy placeholder that will load all values that are descendents
     of a given SNOMED code.
+
+    :param code_value: the parent code value
+    :param loinc_version: the version of SNOMED to use (uses latest if None is given)
+    :return: a placeholder for use with :func:`push_valuesets`
     """
     return HierarchyPlaceholder('http://snomed.info/sct',
                                 code_value,
@@ -52,6 +60,10 @@ def push_valuesets(spark_session, valueset_map, database='ontologies'):
     Finally, ontology information is assumed to be stored in the 'ontologies' database by
     default, but users can specify another database name if they have customized
     ontologies that are separated from the default ontologies database.
+
+    :param spark_session: the SparkSession instance
+    :param valueset_map: a map containing value set structures to publish
+    :param database: the database from which value set data is loaded
     """
 
     value_sets = get_value_sets(spark_session, database)
@@ -99,6 +111,9 @@ def get_current_valuesets(spark_session):
     Returns the current valuesets in the same form that is accepted by
     the push_valuesets function above, that is the structure will follow this pattern:
     {referenceName: [(codeset, codevalue), (codeset, codevalue)]}
+
+    :param spark_session: the SparkSession instance
+    :return: a map containing the valuesets currently published to the cluster
     """
     jvm = spark_session._jvm
 
@@ -118,6 +133,8 @@ def pop_valuesets(spark_session):
     """
     Pops the current valuesets from the stack, returning true if there remains
     an active valueset, or false otherwise.
+
+    :param spark_session: the SparkSession instance
     """
     jvm = spark_session._jvm
 

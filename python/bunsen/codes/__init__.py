@@ -83,6 +83,9 @@ class ConceptMaps(object):
     def latest_version(self, url):
         """
         Returns the latest version of a map, or None if there is none."
+
+        :param url: the URL identifying a given concept map
+        :return: the version of the given map
         """
         df = get_maps().where(df.url == url)
         results = df.agg({"version": "max"}).collect()
@@ -95,6 +98,8 @@ class ConceptMaps(object):
 
         The mappings themselves are excluded because they can become quite large,
         so users should use the get_mappings method to explore a table of them.
+
+        :return: a DataFrame of FHIR ConceptMap resources managed by this object
         """
         return DataFrame(self._jconcept_maps.getMaps(), self._spark_session)
 
@@ -102,6 +107,10 @@ class ConceptMaps(object):
         """
         Returns a dataset of all mappings which may be filtered by an optional
         concept map url and concept map version.
+
+        :param url: Optional URL of the mappings to return
+        :param version: Optional version of the mappings to return
+        :return: a DataFrame of mapping records
         """
         df = DataFrame(self._jconcept_maps.getMappings(), self._spark_session)
 
@@ -116,6 +125,10 @@ class ConceptMaps(object):
     def get_map_as_xml(self, url, version):
         """
         Returns an XML string containing the specified concept map.
+
+        :param url: URL of the ConceptMap to return
+        :param version: Version of the ConceptMap to return
+        :return: a string containing the ConceptMap in XML form
         """
         concept_map = self._jconcept_maps.getConceptMap(url, version)
         return self._jfunctions.resourceToXml(concept_map)
@@ -131,6 +144,15 @@ class ConceptMaps(object):
         Returns a new ConceptMaps instance with the given map added. Callers
         may include a list of mappings tuples in the form of
         [(source_system, source_value, target_system, target_value, equivalence)].
+
+        :param url: URL of the ConceptMap to add
+        :param version: Version of the ConceptMap to add
+        :param source: source URI of the ConceptMap
+        :param target: target URI of the ConceptMap
+        :param experimental: a Boolean variable indicating whether the map should be
+            labeled as experimental
+        :param mappings: A list of tuples representing the mappings to add
+        :return: a :class:`ConceptMaps` instance with the added map
         """
         concept_map = self._java_package.ConceptMap()
         concept_map.setUrl(url)
@@ -156,6 +178,9 @@ class ConceptMaps(object):
       Returns a new ConceptMaps instance with all maps read from the given
       directory path. The directory may be anything readable from a Spark path,
       including local filesystems, HDFS, S3, or others.
+
+      :param path: Path to directory containing FHIR ConceptMap resources
+      :return: a :class:`ConceptMaps` instance with the added maps
       """
       maps = self._jconcept_maps.withMapsFromDirectory(path)
 
@@ -170,6 +195,10 @@ class ConceptMaps(object):
       directory path that are disjoint with value sets stored in the given
       database. The directory may be anything readable from a Spark path,
       including local filesystems, HDFS, S3, or others.
+
+      :param path: Path to directory containing FHIR ConceptMap resources
+      :param database: The database in which existing concept maps are stored
+      :return: a :class:`ConceptMaps` instance with the added maps
       """
       maps = self._jconcept_maps.withDisjointMapsFromDirectory(path, database)
 
@@ -183,6 +212,11 @@ class ConceptMaps(object):
         Returns a new ConceptMaps instance with the given mappings added to an existing map.
         The mappings parameter must be a list of tuples of the form
         [(source_system, source_value, target_system, target_value, equivalence)].
+
+        :param url: URL of the ConceptMap to add mappings to
+        :param version: Version of the ConceptMap to add mappings to
+        :param mappings: A list of tuples representing the mappings to add
+        :return: a :class:`ConceptMaps` instance with the added mappings
         """
         concept_map = self._jconcept_maps.getConceptMap(url, version)
 
@@ -199,6 +233,8 @@ class ConceptMaps(object):
         """
         Writes the mapping content to the given database, creating a mappings
         and conceptmaps table if they don't exist.
+
+        :param database: the database to write the concept maps to
         """
         self._jconcept_maps.writeToDatabase(database)
 
@@ -218,6 +254,9 @@ class ValueSets(object):
     def latest_version(self, url):
         """
         Returns the latest version of a value set, or None if there is none.
+
+        :param url: URL of the ValueSet to return
+        :return: the version of the ValueSet, or None if there is none
         """
         df = get_value_sets().where(df.url == functions.lit(url))
         results = df.agg({"version": "max"}).collect()
@@ -230,6 +269,8 @@ class ValueSets(object):
 
         The values themselves are excluded because they can be become quite
         large, so users should use the get_values method to explore them.
+
+        :return: a dataframe of FHIR ValueSets
         """
         return DataFrame(self._jvalue_sets.getValueSets(), self._spark_session)
 
@@ -237,6 +278,10 @@ class ValueSets(object):
         """
         Returns a dataset of all values which may be filtered by an optional
         value set url and value set version.
+
+        :param url: Optional URL of ValueSet to return
+        :param version: Optional version of the ValueSet to return
+        :return: a DataFrame of values
         """
         df = DataFrame(self._jvalue_sets.getValues(), self._spark_session)
 
@@ -251,6 +296,10 @@ class ValueSets(object):
     def get_value_set_as_xml(self, url, version):
         """
         Returns an XML string containing the specified value set.
+
+        :param url: URL of the ValueSet to return
+        :param version: Version of the ValueSet to return
+        :return: a string containing the ValueSet in XML form
         """
         value_set = self._jvalue_sets.getValueSet(url, version)
         return self._jfunctions.resourceToXml(value_set)
@@ -263,6 +312,13 @@ class ValueSets(object):
         """
         Returns a new ValueSets instance with the given value set added. Callers
         may include a list of value tuples in the form of [(system, value)].
+
+        :param url: URL of the ValueSet to add
+        :param version: Version of the ValueSet to add
+        :param experimental: a Boolean variable indicating whether the ValueSet should be
+            labeled as experimental
+        :param values: A list of tuples representing the values to add
+        :return: a :class:`ValueSets` instance with the added value set.
         """
         value_set = self._java_package.ValueSet()
         value_set.setUrl(url)
@@ -285,6 +341,9 @@ class ValueSets(object):
       Returns a new ValueSets instance with all value sets read from the given
       directory path. The directory may be anything readable from a Spark path,
       including local filesystems, HDFS, S3, or others.
+
+      :param path: Path to directory containing FHIR ValueSet resources
+      :return: a :class:`ValueSets` instance with the added value sets
       """
       value_sets = self._jvalue_sets.withValueSetsFromDirectory(path)
 
@@ -299,6 +358,10 @@ class ValueSets(object):
       directory path that are disjoint with value sets stored in the given
       database. The directory may be anything readable from a Spark path,
       including local filesystems, HDFS, S3, or others.
+
+      :param path: Path to directory containing FHIR ValueSet resources
+      :param database: The database in which existing value sets are stored
+      :return: a :class:`ValueSets` instance with the added value sets
       """
       value_sets = self._jvalue_sets.withDisjointValueSetsFromDirectory(path, database)
 
@@ -312,6 +375,11 @@ class ValueSets(object):
         Returns a new ValueSets instance with the given values added to an
         existing value set. The values parameter must be a list of the form
         [(sytem, value)].
+
+        :param url: URL of the ValueSet to add values to
+        :param version: Version of the ValueSet to add values to
+        :param mappings: A list of tuples representing the values to add
+        :return: a :class:`ValueSets` instance with the added values
         """
         value_set = self._jvalue_sets.getValueSet(url, version)
 
@@ -328,6 +396,8 @@ class ValueSets(object):
         """
         Writes the value set content to the given database, creating a values
         and valuesets table if they don't exist.
+
+        :param database: the database to write the value sets to
         """
         self._jvalue_sets.writeToDatabase(database)
 
@@ -345,6 +415,9 @@ class Hierarchies(object):
     def latest_version(self, uri):
         """
         Returns the latest version of a hierarchy, or None if there is none.
+
+        :param uri: URI of the concept hierarchy to return
+        :return: the version of the hierarchy, or None if there is none
         """
         df = get_ancestors().where(df.uri == functions.lit(uri))
         results = df.agg({"version": "max"}).collect()
@@ -354,7 +427,11 @@ class Hierarchies(object):
         """
         Returns a dataset of ancestor values representing the transitive
         closure of codes in this Hierarchies instance filtered by an optional
-        hierarchy uri and version..
+        hierarchy uri and version.
+
+        :param url: Optional URL of hierarchy to return
+        :param version: Optional version of the hierarchy to return
+        :return: a DataFrame of ancestor records
         """
         df = DataFrame(self._jhierarchies.getAncestors(), self._spark_session)
 
@@ -370,5 +447,7 @@ class Hierarchies(object):
         """
         Write the ancestor content to the given database, create an ancestors
         table if they don't exist.
+
+        :param database: the database to write the hierarchies to
         """
         self._jhierarchies.writeToDatabase(database)

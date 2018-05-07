@@ -21,6 +21,9 @@ def _concept_maps_from_java(spark_session, jconcept_maps):
 def get_concept_maps(spark_session, database='ontologies'):
     """
     Returns a :class:`bunsen.codes.ConceptMaps` instance for the given database.
+
+    :param database: the database containing the concept maps to load
+    :return: a :class:`bunsen.codes.ConceptMaps` with the loaded maps
     """
     jconcept_maps = spark_session._jvm.com.cerner.bunsen.stu3.codes \
       .ConceptMaps.getFromDatabase(spark_session._jsparkSession, database)
@@ -30,6 +33,8 @@ def get_concept_maps(spark_session, database='ontologies'):
 def create_concept_maps(spark_session):
     """
     Creates a new, empty :py:class:`bunsen.codes.ConceptMaps` instance.
+
+    :return: an empty :class:`bunsen.codes.ConceptMaps` instance
     """
     jconcept_maps = spark_session._jvm.com.cerner.bunsen.stu3.codes \
       .ConceptMaps.getEmpty(spark_session._jsparkSession)
@@ -53,6 +58,9 @@ def _value_sets_from_java(spark_session, jvalue_sets):
 def get_value_sets(spark_session, database='ontologies'):
     """
     Returns a :class:`bunsen.codes.ValueSets` instance for the given database.
+
+    :param database: the database containing the value sets to load
+    :return: a :class:`bunsen.codes.ValueSets` with the loaded value sets
     """
     jvalue_sets = spark_session._jvm.com.cerner.bunsen.stu3.codes \
       .ValueSets.getFromDatabase(spark_session._jsparkSession, database)
@@ -62,6 +70,8 @@ def get_value_sets(spark_session, database='ontologies'):
 def create_value_sets(spark_session):
     """
     Creates a new, empty :class:`bunsen.codes.ValueSets` instance.
+
+    :return: an empty :class:`bunsen.codes.ValueSets` instance
     """
     jvalue_sets = spark_session._jvm.com.cerner.bunsen.stu3.codes \
       .ValueSets.getEmpty(spark_session._jsparkSession)
@@ -71,6 +81,9 @@ def create_value_sets(spark_session):
 def get_hierarchies(spark_session, database='ontologies'):
     """
     Returns a :class:`bunsen.codes.Hierarchies` instance for the given database.
+
+    :param database: the database containing the hierarchies to load
+    :return: a :class:`bunsen.codes.Hierarchies` with the loaded value sets
     """
     jhierarchies = spark_session._jvm.com.cerner.bunsen.codes \
         .Hierarchies.getFromDatabase(spark_session._jsparkSession, database)
@@ -80,6 +93,8 @@ def get_hierarchies(spark_session, database='ontologies'):
 def create_hierarchies(spark_session):
     """
     Creates a new, empty :class:`bunsen.codes.Hierarchies` instance.
+
+    :return: an empty :class:`bunsen.codes.Hierarchies` instance
     """
     jhierarchies = spark_session._jvm.com.cerner.bunsen.codes \
         .Hierarchies.getEmpty(spark_session._jsparkSession)
