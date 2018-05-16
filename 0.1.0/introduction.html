@@ -1,0 +1,398 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Getting Started &mdash; Bunsen latest documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Java Usage" href="java_usage.html" />
+    <link rel="prev" title="Welcome to Bunsen" href="index.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Bunsen
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#initial-setup">Initial Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simple-queries">Simple Queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#spark-sql-integration">Spark SQL Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bring-your-own-value-sets">Bring Your Own Value Sets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonapis.html">Core Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Importing SNOMED and LOINC</a></li>
+</ul>
+
+            
+          
+<li>
+  <a href="apidocs/index.html">Java Docs</a>
+</li>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bunsen</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Getting Started</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/introduction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="toctree-wrapper compound" id="introduction">
+</div>
+<div class="section" id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>Bunsen offers first-class integration with Apache Spark for Python, Java, and Scala users. This page
+describes the steps to get started with them.</p>
+<div class="section" id="initial-setup">
+<h2>Initial Setup<a class="headerlink" href="#initial-setup" title="Permalink to this headline">¶</a></h2>
+<p>Scala or Java users of Spark  can simply add the bunsen-shaded JAR to the Spark job. PySpark
+users wanting to use the provided wrapper functions will also need to include the Python files
+in the PYTHONPATH, all of which can be found in the assembly:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; unzip bunsen-assembly-0.1.0-dist.zip
+&gt;&gt;&gt; export PYTHONPATH=$PWD/bunsen-assembly-0.1.0/python:$PYTHONPATH
+&gt;&gt;&gt; pyspark --jars bunsen-assembly-0.1.0/jars/bunsen-shaded-0.1.0.jar
+</pre></div>
+</div>
+<p>Bunsen currently uses FHIR STU3 and Spark 2.1. The assembly itself can be downloaded from
+<a class="reference external" href="https://repo.maven.apache.org/maven2/com/cerner/">Maven Central</a>.</p>
+<p>(Note: the above link will be updated when the first release lands on Maven Central.)</p>
+</div>
+<div class="section" id="simple-queries">
+<h2>Simple Queries<a class="headerlink" href="#simple-queries" title="Permalink to this headline">¶</a></h2>
+<p>A production deployment would typically bulk load large volumes of data, but the easiest way to experiment
+with Bunsen is simply to pull in some existing FHIR bundles.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.bundles</span> <span class="k">import</span> <span class="n">load_from_directory</span><span class="p">,</span> <span class="n">extract_entry</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bundles</span> <span class="o">=</span> <span class="n">load_from_directory</span><span class="p">(</span><span class="n">spark</span><span class="p">,</span> <span class="s1">&#39;path/to/test/bundles&#39;</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The extract_entry method returns a Spark dataframe containing all observations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># that were in the bundle. We can then perform arbitrary Spark operations on them.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">observations</span> <span class="o">=</span> <span class="n">extract_entry</span><span class="p">(</span><span class="n">spark</span><span class="p">,</span> <span class="n">bundles</span><span class="p">,</span> <span class="s1">&#39;observation&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">observations</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;subject.reference&#39;</span><span class="p">,</span> <span class="s1">&#39;code.text&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">truncate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">+---------------+-------------------------------------+</span>
+<span class="go">|reference      |text                                 |</span>
+<span class="go">+---------------+-------------------------------------+</span>
+<span class="go">|Patient/1032702|Tobacco smoking status               |</span>
+<span class="go">|Patient/9995679|Blood pressure systolic and diastolic|</span>
+<span class="go">|Patient/9995679|Systolic blood pressure              |</span>
+<span class="go">|Patient/9995679|Diastolic blood pressure             |</span>
+<span class="go">|Patient/9995679|Blood pressure systolic and diastolic|</span>
+<span class="go">+---------------+-------------------------------------+</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="pythonapis.html#module-bunsen.bundles" title="bunsen.bundles"><code class="xref py py-mod docutils literal"><span class="pre">bundles</span></code></a> module for details on use.</p>
+</div>
+<div class="section" id="spark-sql-integration">
+<h2>Spark SQL Integration<a class="headerlink" href="#spark-sql-integration" title="Permalink to this headline">¶</a></h2>
+<p>Once the FHIR data is available in Spark, it can be registered as a table or saved to a Hive
+database, and then queried with the full power of SQL.</p>
+<p>Bunsen also supports basic use of simple value sets to simplify queries. In the example below
+we will register our observations dataframe, and we declare some value sets based on standard
+terminologies. We use the set of all values with a transitive is-a relationship
+in the given termoniology.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">observations</span><span class="o">.</span><span class="n">registerTempTable</span><span class="p">(</span><span class="s1">&#39;observations&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.valuesets</span> <span class="k">import</span> <span class="n">push_valuesets</span><span class="p">,</span> <span class="n">isa_loinc</span><span class="p">,</span> <span class="n">isa_snomed</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">push_valuesets</span><span class="p">(</span><span class="n">spark</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">{</span><span class="s1">&#39;body_weight&#39;</span>          <span class="p">:</span> <span class="n">isa_loinc</span><span class="p">(</span><span class="s1">&#39;29463-7&#39;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="s1">&#39;bmi&#39;</span>                  <span class="p">:</span> <span class="n">isa_loinc</span><span class="p">(</span><span class="s1">&#39;39156-5&#39;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="s1">&#39;heart_rate&#39;</span>           <span class="p">:</span> <span class="n">isa_loinc</span><span class="p">(</span><span class="s1">&#39;8867-4&#39;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="s1">&#39;abnormal_weight_loss&#39;</span> <span class="p">:</span> <span class="n">isa_snomed</span><span class="p">(</span><span class="s1">&#39;267024001&#39;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="s1">&#39;stroke&#39;</span>               <span class="p">:</span> <span class="n">isa_snomed</span><span class="p">(</span><span class="s1">&#39;230690007&#39;</span><span class="p">)})</span>
+</pre></div>
+</div>
+<p>Now we can query our data with standard Spark SQL using the in_valueset user-defined function
+to reference the valuesets used above. See the <a class="reference internal" href="pythonapis.html#module-bunsen.valuesets" title="bunsen.valuesets"><code class="xref py py-mod docutils literal"><span class="pre">valuesets</span></code></a> module for details on use.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">select subject.reference,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">       effectiveDateTime,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">       valueQuantity.value</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">from observations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">where in_valueset(code, &quot;heart_rate&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">limit 5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="go">+---------------+-----------------+-------+</span>
+<span class="go">|      reference|effectiveDateTime|  value|</span>
+<span class="go">+---------------+-----------------+-------+</span>
+<span class="go">|Patient/9995679|       2006-12-27|54.0000|</span>
+<span class="go">|Patient/9995679|       2007-04-18|60.0000|</span>
+<span class="go">|Patient/9995679|       2007-07-18|80.0000|</span>
+<span class="go">|Patient/9995679|       2008-01-16|47.0000|</span>
+<span class="go">|Patient/9995679|       2008-06-25|47.0000|</span>
+<span class="go">+---------------+-----------------+-------+</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="bring-your-own-value-sets">
+<h2>Bring Your Own Value Sets<a class="headerlink" href="#bring-your-own-value-sets" title="Permalink to this headline">¶</a></h2>
+<p>The above examples show is-a relationships in standard ontologies, but users can also
+bring their own datasets or import them from sources like the Value Set Authority Center.</p>
+<p>To do so, import the value set into a list of (code system, code value) tuples,
+then use the push <a class="reference internal" href="pythonapis.html#bunsen.valuesets.push_valuesets" title="bunsen.valuesets.push_valuesets"><code class="xref py py-func docutils literal"><span class="pre">push_valuesets()</span></code></a> function to broadcast
+them to the cluster. Here’s an example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hypertension_meds</span> <span class="o">=</span> \
+<span class="gp">&gt;&gt;&gt; </span> <span class="p">[(</span><span class="s1">&#39;http://snomed.info/sct&#39;</span><span class="p">,</span> <span class="s1">&#39;68180051503&#39;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>  <span class="p">(</span><span class="s1">&#39;http://snomed.info/sct&#39;</span><span class="p">,</span> <span class="s1">&#39;68180048003&#39;</span><span class="p">)]</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Push a combination of is-a relationships and our own value sets.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">push_valuesets</span><span class="p">(</span><span class="n">spark</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">{</span><span class="s1">&#39;hypertension&#39;</span>  <span class="p">:</span> <span class="n">isa_snomed</span><span class="p">(</span><span class="s1">&#39;59621000&#39;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="s1">&#39;glucose_level&#39;</span> <span class="p">:</span> <span class="n">isa_loinc</span><span class="p">(</span><span class="s1">&#39;2345-7&#39;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="s1">&#39;hypertension_meds&#39;</span> <span class="p">:</span> <span class="n">hypertension_meds</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Once those valuesets are pushed to the cluster, we can use them in our queries
+like any other:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">select subject.reference</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">from medicationstatements</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">where in_valueset(medicationCodeableConcept, &#39;hypertension_meds&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="go">+---------------+</span>
+<span class="go">|      reference|</span>
+<span class="go">+---------------+</span>
+<span class="go">|Patient/9995467|</span>
+<span class="go">|Patient/9995467|</span>
+<span class="go">|Patient/9995467|</span>
+<span class="go">|Patient/9995467|</span>
+<span class="go">|Patient/9995467|</span>
+<span class="go">+---------------+</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="java_usage.html" class="btn btn-neutral float-right" title="Java Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to Bunsen" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cerner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'latest',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/github_fork.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

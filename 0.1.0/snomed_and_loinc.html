@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Importing SNOMED and LOINC &mdash; Bunsen latest documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Core Python APIs" href="pythonapis.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Bunsen
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonapis.html">Core Python APIs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Importing SNOMED and LOINC</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#obtaining-loinc">Obtaining LOINC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#obtaining-snomed">Obtaining SNOMED</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loading-the-ontologies">Loading the Ontologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-bunsen.mapping">FHIR ConceptMap APIs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+<li>
+  <a href="apidocs/index.html">Java Docs</a>
+</li>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bunsen</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Importing SNOMED and LOINC</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/snomed_and_loinc.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="importing-snomed-and-loinc">
+<h1>Importing SNOMED and LOINC<a class="headerlink" href="#importing-snomed-and-loinc" title="Permalink to this headline">¶</a></h1>
+<p>Bunsen supports querying data with arbitrary code systems, but includes specialized support for
+importing SNOMED and LOINC since they are prevalent in a number of FHIR-related use cases.</p>
+<div class="toctree-wrapper compound">
+</div>
+<p>Users must load the reference data in order to  use queries aware of LOINC, SNOMED, or other terminologies.
+Users are responsible for ensuring they have the appropriate licenses to use this content and downloading
+it from the given sources.</p>
+<div class="section" id="obtaining-loinc">
+<h2>Obtaining LOINC<a class="headerlink" href="#obtaining-loinc" title="Permalink to this headline">¶</a></h2>
+<p>The LOINC Multiaxial Hierarchy is published at <a class="reference external" href="https://loinc.org/download/loinc-multiaxial-hierarchy/">https://loinc.org/download/loinc-multiaxial-hierarchy/</a>.
+It can be downloaded and extracted into the mappings root with the following structure. Bunsen can ingest
+the multiaxial hierarchy from the CSV file available in that download, such as:</p>
+<p>/path/to/mappings/loinc_hierarchy/2.56/LOINC_2.56_MULTI-AXIAL_HIERARCHY.CSV</p>
+</div>
+<div class="section" id="obtaining-snomed">
+<h2>Obtaining SNOMED<a class="headerlink" href="#obtaining-snomed" title="Permalink to this headline">¶</a></h2>
+<p>SNOMED RF2 Files are published at <a class="reference external" href="https://www.nlm.nih.gov/healthit/snomedct/international.html">https://www.nlm.nih.gov/healthit/snomedct/international.html</a>.
+It can be downloaded and extracted into the mappings root with the following structure. Bunsen can
+ingest the relationship snapshot, such as:</p>
+<p>/path/to/mappings/snomedct_rf2/20160901/Snapshot/Terminology/sct2_Relationship_Snapshot_US1000124_20160901.txt</p>
+</div>
+<div class="section" id="loading-the-ontologies">
+<h2>Loading the Ontologies<a class="headerlink" href="#loading-the-ontologies" title="Permalink to this headline">¶</a></h2>
+<p>Once the content is downloaded, users can import it with the following commands. See the
+<a class="reference internal" href="#bunsen.mapping.loinc.with_loinc_hierarchy" title="bunsen.mapping.loinc.with_loinc_hierarchy"><code class="xref py py-func docutils literal"><span class="pre">with_loinc_hierarchy()</span></code></a> and <code class="xref py py-func docutils literal"><span class="pre">with_relationships()</span></code>
+functions for details.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.mapping</span> <span class="k">import</span> <span class="n">get_empty</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.mapping.loinc</span> <span class="k">import</span> <span class="n">with_loinc_hierarchy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.mapping.snomed</span> <span class="k">import</span> <span class="n">with_relationships</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add SNOMED ot the concept maps</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">concept_maps</span> <span class="o">=</span> <span class="n">with_relationships</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="n">spark</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="n">get_empty</span><span class="p">(</span><span class="n">spark</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="s1">&#39;/path/to/mappings/snomedct_rf2/20160901/Snapshot/Terminology/sct2_Relationship_Snapshot_US1000124_20160901.txt&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="s1">&#39;20160901&#39;</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add LOINC to the concept maps.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">concept_maps</span> <span class="o">=</span> <span class="n">with_loinc_hierarchy</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="n">spark</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="n">concept_maps</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="s1">&#39;/path/to/mappings/loinc_hierarchy/2.56/LOINC_2.56_MULTI-AXIAL_HIERARCHY.CSV&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="s1">&#39;2.56&#39;</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Write the SNOMED and LOINC data to the ontologies database, where it is visible</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># in Bunsen&#39;s valueset functions.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">concept_maps</span><span class="o">.</span><span class="n">write_to_database</span><span class="p">(</span><span class="s1">&#39;ontologies&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-bunsen.mapping">
+<span id="fhir-conceptmap-apis"></span><h2>FHIR ConceptMap APIs<a class="headerlink" href="#module-bunsen.mapping" title="Permalink to this headline">¶</a></h2>
+<p>Core library for working with <a class="reference external" href="https://www.hl7.org/fhir/conceptmap.html">Concept Maps</a>
+in Bunsen. This class See the <a class="reference internal" href="#bunsen.mapping.ConceptMaps" title="bunsen.mapping.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">ConceptMaps</span></code></a> class for details.</p>
+<dl class="class">
+<dt id="bunsen.mapping.ConceptMaps">
+<em class="property">class </em><code class="descclassname">bunsen.mapping.</code><code class="descname">ConceptMaps</code><span class="sig-paren">(</span><em>spark_session</em>, <em>jconcept_maps</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.ConceptMaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>An immutable collection of FHIR Concept Maps to be used to
+map value sets and for ontologically-based queries.</p>
+<dl class="method">
+<dt id="bunsen.mapping.ConceptMaps.add_mappings">
+<code class="descname">add_mappings</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>mappings</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.ConceptMaps.add_mappings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ConceptMaps instance with the given mappings added to an existing map.
+The mappings parameter must be a list of tuples of the form
+[(source_system, source_value, target_system, target_value, equivalence)].</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.mapping.ConceptMaps.get_ancestors">
+<code class="descname">get_ancestors</code><span class="sig-paren">(</span><em>uri=None</em>, <em>version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.ConceptMaps.get_ancestors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset of all ancestors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.mapping.ConceptMaps.get_map_as_xml">
+<code class="descname">get_map_as_xml</code><span class="sig-paren">(</span><em>url</em>, <em>version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.ConceptMaps.get_map_as_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an XML string containing the specified concept map.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.mapping.ConceptMaps.get_mappings">
+<code class="descname">get_mappings</code><span class="sig-paren">(</span><em>uri=None</em>, <em>version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.ConceptMaps.get_mappings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset of all mappings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.mapping.ConceptMaps.get_maps">
+<code class="descname">get_maps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.ConceptMaps.get_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset of FHIR ConceptMaps without the nested mapping content,
+allowing users to explore mapping metadata.</p>
+<p>The mappings themselves are excluded because they can become quite large,
+so users should use the get_mappings method above to explore a table of
+them.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.mapping.ConceptMaps.latest_version">
+<code class="descname">latest_version</code><span class="sig-paren">(</span><em>uri</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.ConceptMaps.latest_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the latest version of a map, or None if there is none.”</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.mapping.ConceptMaps.with_new_map">
+<code class="descname">with_new_map</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>source</em>, <em>target</em>, <em>experimental=True</em>, <em>mappings=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.ConceptMaps.with_new_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ConceptMaps instance with the given map added. Callers
+may include a list of mappings tuples in the form of
+[(source_system, source_value, target_system, target_value, equivalence)].</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.mapping.ConceptMaps.write_to_database">
+<code class="descname">write_to_database</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.ConceptMaps.write_to_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the mapping content to the given database, creating a mappings
+and conceptmaps table if they don’t exist.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.mapping.get_default">
+<code class="descclassname">bunsen.mapping.</code><code class="descname">get_default</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.get_default" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bunsen.mapping.get_empty">
+<code class="descclassname">bunsen.mapping.</code><code class="descname">get_empty</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.get_empty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-bunsen.mapping.loinc"></span><p>Support for importing the LOINC Hierarchy into Bunsen.</p>
+<dl class="function">
+<dt id="bunsen.mapping.loinc.with_loinc_hierarchy">
+<code class="descclassname">bunsen.mapping.loinc.</code><code class="descname">with_loinc_hierarchy</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>concept_maps</em>, <em>loinc_hierarchy_path</em>, <em>loinc_version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.loinc.with_loinc_hierarchy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a concept maps instance that includes the LOINC hierarchy read
+from the given location.</p>
+</dd></dl>
+
+<span class="target" id="module-bunsen.mapping.snomed"></span><p>Support for importing SNOMED relationship files into Bunsen.</p>
+<dl class="function">
+<dt id="bunsen.mapping.snomed.with_relationships">
+<code class="descclassname">bunsen.mapping.snomed.</code><code class="descname">with_relationships</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>concept_maps</em>, <em>snomed_relationship_path</em>, <em>snomed_version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.mapping.snomed.with_relationships" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a concept maps instance that includes the SNOMED relationships read
+from the given location.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="pythonapis.html" class="btn btn-neutral" title="Core Python APIs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cerner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'latest',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/github_fork.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>
