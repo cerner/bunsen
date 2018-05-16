@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Core Python APIs &mdash; Bunsen latest documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Importing SNOMED and LOINC" href="snomed_and_loinc.html" />
+    <link rel="prev" title="How Bunsen Works" href="how_bunsen_works.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Bunsen
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Core Python APIs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-bunsen.bundles">FHIR Bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-bunsen.valuesets">FHIR Valuesets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Importing SNOMED and LOINC</a></li>
+</ul>
+
+            
+          
+<li>
+  <a href="apidocs/index.html">Java Docs</a>
+  <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
+</li>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bunsen</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Core Python APIs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/pythonapis.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="core-python-apis">
+<h1>Core Python APIs<a class="headerlink" href="#core-python-apis" title="Permalink to this headline">¶</a></h1>
+<p>Bunsen offers Python APIs for PySpark users working with FHIR datasets. This includes basic functionality for working with FHIR Concept Maps, Bundles and Valuesets.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="module-bunsen.bundles">
+<span id="fhir-bundles"></span><h2>FHIR Bundles<a class="headerlink" href="#module-bunsen.bundles" title="Permalink to this headline">¶</a></h2>
+<p>Support for loading FHIR bundles into Bunsen. This includes the following features:</p>
+<ul class="simple">
+<li>Allow users to load bundles from a given location</li>
+<li>Convert bundle entries into Spark Dataframes</li>
+<li>Save all entities with a bundle collection to a distinct table for each (e.g., an observation table, a condition table, and so on.)</li>
+<li>Converts the results of a Bunsen query back into bundles that can then be used elsewhere.</li>
+</ul>
+<p>See the methods below for details.</p>
+<dl class="function">
+<dt id="bunsen.bundles.extract_entry">
+<code class="descclassname">bunsen.bundles.</code><code class="descname">extract_entry</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>javaRDD</em>, <em>resourceName</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.bundles.extract_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset for the given entry type from the bundles.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.bundles.load_from_directory">
+<code class="descclassname">bunsen.bundles.</code><code class="descname">load_from_directory</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>path</em>, <em>minPartitions=1</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.bundles.load_from_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Java RDD of bundles loaded from the given path. Note this
+RDD contains Bundle records that aren’t serializable in Python,
+so users should use this class as merely a parameter to other methods
+in this module, like extract_entry.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.bundles.save_as_database">
+<code class="descclassname">bunsen.bundles.</code><code class="descname">save_as_database</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>path</em>, <em>databaseName</em>, <em>*resourceNames</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.bundles.save_as_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the bundles in the path and saves them to a database, where
+each table in the database has the same name of the resource it represents.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.bundles.to_bundle">
+<code class="descclassname">bunsen.bundles.</code><code class="descname">to_bundle</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>dataset</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.bundles.to_bundle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a dataset of FHIR resources to a bundle containing those resources.
+Use with caution against large datasets.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-bunsen.valuesets">
+<span id="fhir-valuesets"></span><h2>FHIR Valuesets<a class="headerlink" href="#module-bunsen.valuesets" title="Permalink to this headline">¶</a></h2>
+<p>Support for broadcasting valuesets and using them in user-defined functions
+in Spark queries.</p>
+<dl class="function">
+<dt id="bunsen.valuesets.get_current_valuesets">
+<code class="descclassname">bunsen.valuesets.</code><code class="descname">get_current_valuesets</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.valuesets.get_current_valuesets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current valuesets in the same form that is accepted by
+the push_valuesets function above, that is the structure will follow this pattern:
+{referenceName: [(codeset, codevalue), (codeset, codevalue)]}</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.valuesets.isa_loinc">
+<code class="descclassname">bunsen.valuesets.</code><code class="descname">isa_loinc</code><span class="sig-paren">(</span><em>code_value</em>, <em>loinc_version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.valuesets.isa_loinc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a hierarchy placeholder that will load all values that are descendents
+of a given LOINC code.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.valuesets.isa_snomed">
+<code class="descclassname">bunsen.valuesets.</code><code class="descname">isa_snomed</code><span class="sig-paren">(</span><em>code_value</em>, <em>snomed_version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.valuesets.isa_snomed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a hierarchy placeholder that will load all values that are descendents
+of a given SNOMED code.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.valuesets.pop_valuesets">
+<code class="descclassname">bunsen.valuesets.</code><code class="descname">pop_valuesets</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.valuesets.pop_valuesets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pops the current valuesets from the stack, returning true if there remains
+an active valueset, or false otherwise.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.valuesets.push_valuesets">
+<code class="descclassname">bunsen.valuesets.</code><code class="descname">push_valuesets</code><span class="sig-paren">(</span><em>spark_session</em>, <em>valueset_map</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.valuesets.push_valuesets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pushes valuesets onto a stack and registers an in_valueset user-defined function
+that uses this content.</p>
+<p>The valueset_map takes the form of {referenceName: [(codeset, codevalue), (codeset, codevalue)]}
+to specify which codesets/values are used for the given valueset reference name.</p>
+<p>Rather than explicitly passing a list of (codeset, codevalue) tuples, users may instead
+load particular value sets or particular hierarchies by providing a ValueSetPlaceholder
+or HierarchyPlaceholder that instructs the system to load codes belonging to a particular
+value set or hierarchical system, respectively. See the isa_loinc and isa_snomed functions
+above for details.</p>
+<p>Finally, ontology information is assumed to be stored in the ‘ontologies’ database by
+default, but users can specify another database name if they have customized
+ontologies that are separated from the default ontologies database.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="snomed_and_loinc.html" class="btn btn-neutral float-right" title="Importing SNOMED and LOINC" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="how_bunsen_works.html" class="btn btn-neutral" title="How Bunsen Works" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cerner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'latest',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/github_fork.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>
