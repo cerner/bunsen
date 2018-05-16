@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Working with SNOMED, LOINC, and Other Ontologies &mdash; Bunsen latest documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Building Bunsen" href="building.html" />
+    <link rel="prev" title="R4 Python APIs" href="r4_pythonapis.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Bunsen
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Working with SNOMED, LOINC, and Other Ontologies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#obtaining-loinc">Obtaining LOINC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#obtaining-snomed">Obtaining SNOMED</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loading-the-ontologies">Loading the Ontologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-bunsen.codes.loinc">SNOMED and LOINC Import APIs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
+</ul>
+
+            
+          
+<li>
+  <a href="apidocs/index.html">JavaDocs</a>
+  <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
+</li>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bunsen</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Working with SNOMED, LOINC, and Other Ontologies</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/snomed_and_loinc.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="working-with-snomed-loinc-and-other-ontologies">
+<h1>Working with SNOMED, LOINC, and Other Ontologies<a class="headerlink" href="#working-with-snomed-loinc-and-other-ontologies" title="Permalink to this headline">¶</a></h1>
+<p>Bunsen supports querying data with arbitrary code systems, but includes specialized support for
+importing SNOMED and LOINC since they are prevalent in a number of FHIR-related use cases.</p>
+<div class="toctree-wrapper compound">
+</div>
+<p>Users must load the reference data in order to  use queries aware of LOINC, SNOMED, or other terminologies.
+Users are responsible for ensuring they have the appropriate licenses to use this content and downloading
+it from the given sources.</p>
+<div class="section" id="obtaining-loinc">
+<h2>Obtaining LOINC<a class="headerlink" href="#obtaining-loinc" title="Permalink to this headline">¶</a></h2>
+<p>The LOINC Multiaxial Hierarchy is published at <a class="reference external" href="https://loinc.org/download/loinc-multiaxial-hierarchy/">https://loinc.org/download/loinc-multiaxial-hierarchy/</a>.
+It can be downloaded and extracted into the mappings root with the following structure. Bunsen can ingest
+the multiaxial hierarchy from the CSV file available in that download, such as:</p>
+<p>/path/to/mappings/loinc_hierarchy/2.56/LOINC_2.56_MULTI-AXIAL_HIERARCHY.CSV</p>
+</div>
+<div class="section" id="obtaining-snomed">
+<h2>Obtaining SNOMED<a class="headerlink" href="#obtaining-snomed" title="Permalink to this headline">¶</a></h2>
+<p>SNOMED RF2 Files are published at <a class="reference external" href="https://www.nlm.nih.gov/healthit/snomedct/international.html">https://www.nlm.nih.gov/healthit/snomedct/international.html</a>.
+It can be downloaded and extracted into the mappings root with the following structure. Bunsen can
+ingest the relationship snapshot, such as:</p>
+<p>/path/to/mappings/snomedct_rf2/20160901/Snapshot/Terminology/sct2_Relationship_Snapshot_US1000124_20160901.txt</p>
+</div>
+<div class="section" id="loading-the-ontologies">
+<h2>Loading the Ontologies<a class="headerlink" href="#loading-the-ontologies" title="Permalink to this headline">¶</a></h2>
+<p>Once the content is downloaded, users can import it with the following commands. See the
+<a class="reference internal" href="#bunsen.codes.loinc.with_loinc_hierarchy" title="bunsen.codes.loinc.with_loinc_hierarchy"><code class="xref py py-func docutils literal"><span class="pre">with_loinc_hierarchy()</span></code></a> and <a class="reference internal" href="#bunsen.codes.snomed.with_relationships" title="bunsen.codes.snomed.with_relationships"><code class="xref py py-func docutils literal"><span class="pre">with_relationships()</span></code></a>
+functions for details.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.stu3.codes</span> <span class="k">import</span> <span class="n">create_hierarchies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.codes.loinc</span> <span class="k">import</span> <span class="n">with_loinc_hierarchy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bunsen.codes.snomed</span> <span class="k">import</span> <span class="n">with_relationships</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add SNOMED to the value sets</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snomed_hierarchy</span><span class="o">=</span> <span class="n">with_relationships</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="n">spark</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="n">create_hierarchies</span><span class="p">(</span><span class="n">spark</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="s1">&#39;/path/to/mappings/snomedct_rf2/20160901/Snapshot/Terminology/sct2_Relationship_Snapshot_US1000124_20160901.txt&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>      <span class="s1">&#39;20160901&#39;</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add LOINC to the value sets</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loinc_hierarchy</span><span class="o">=</span> <span class="n">with_loinc_hierarchy</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="n">spark</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="n">snomed_hierarchy</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="s1">&#39;/path/to/mappings/loinc_hierarchy/2.56/LOINC_2.56_MULTI-AXIAL_HIERARCHY.CSV&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="s1">&#39;2.56&#39;</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Write the SNOMED and LOINC data to the ontologies database, where it is visible</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># in Bunsen&#39;s valueset functions.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hierarchies</span><span class="o">.</span><span class="n">write_to_database</span><span class="p">(</span><span class="s1">&#39;ontologies&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-bunsen.codes.loinc">
+<span id="snomed-and-loinc-import-apis"></span><h2>SNOMED and LOINC Import APIs<a class="headerlink" href="#module-bunsen.codes.loinc" title="Permalink to this headline">¶</a></h2>
+<p>Support for importing the LOINC Hierarchy into Bunsen.</p>
+<dl class="function">
+<dt id="bunsen.codes.loinc.with_loinc_hierarchy">
+<code class="descclassname">bunsen.codes.loinc.</code><code class="descname">with_loinc_hierarchy</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>hierarchies</em>, <em>loinc_hierarchy_path</em>, <em>loinc_version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.loinc.with_loinc_hierarchy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a hierarchies instance that includes the LOINC hierarchy read
+from the given location.</p>
+</dd></dl>
+
+<span class="target" id="module-bunsen.codes.snomed"></span><p>Support for importing SNOMED relationship files into Bunsen.</p>
+<dl class="function">
+<dt id="bunsen.codes.snomed.with_relationships">
+<code class="descclassname">bunsen.codes.snomed.</code><code class="descname">with_relationships</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>hierarchies</em>, <em>snomed_relationship_path</em>, <em>snomed_version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.snomed.with_relationships" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a hierarchies instance that includes the SNOMED relationships read
+from the given location.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="building.html" class="btn btn-neutral float-right" title="Building Bunsen" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="r4_pythonapis.html" class="btn btn-neutral" title="R4 Python APIs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cerner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'latest',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/github_fork.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>
