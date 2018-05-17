@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Building Bunsen &mdash; Bunsen 0.3.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Working with SNOMED, LOINC, and Other Ontologies" href="snomed_and_loinc.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Bunsen
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Building Bunsen</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simple-builds">Simple Builds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-python-tests">Running Python Tests</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+<li>
+  <a href="apidocs/index.html">JavaDocs</a>
+  <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
+</li>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bunsen</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Building Bunsen</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/building.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="building-bunsen">
+<h1>Building Bunsen<a class="headerlink" href="#building-bunsen" title="Permalink to this headline">¶</a></h1>
+<p>Bunsen is built with Apache Maven 3.3 or higher running in an environment with Java 8 or newer.
+Python users will also want to create a virtual environment with Python 2.7 or Python 3.4 or newer.</p>
+<div class="section" id="simple-builds">
+<h2>Simple Builds<a class="headerlink" href="#simple-builds" title="Permalink to this headline">¶</a></h2>
+<p>Bunsen can be built and packaged by simply running the following command in any environment
+where Maven is installed:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span> <span class="o">-</span><span class="n">Dskip</span><span class="o">.</span><span class="n">python</span><span class="o">.</span><span class="n">tests</span><span class="o">=</span><span class="n">true</span>
+</pre></div>
+</div>
+<p>This will produce a bunsen-assembly zip file that can be unzipped in used in any Spark or PySpark
+environment like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; unzip bunsen-assembly-0.x.y-dist.zip
+&gt;&gt;&gt; export PYTHONPATH=$PWD/bunsen-assembly-0.x.y/python:$PYTHONPATH
+&gt;&gt;&gt; pyspark --jars bunsen-assembly-0.x.y/jars/bunsen-shaded-0.x.y.jar
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-python-tests">
+<h2>Running Python Tests<a class="headerlink" href="#running-python-tests" title="Permalink to this headline">¶</a></h2>
+<p>Running Bunsen’s Python tests requires the Apache Spark and Python dependencies be available. Once
+Python itself is installed on the build machine, users may want to create a separate vitualenv for
+the project to isolate it from other usage.</p>
+<p>Installing Bunsen’s python dependencies is done by running the following command in the Bunsen project root directory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">make</span> <span class="o">--</span><span class="n">directory</span> <span class="n">python</span>
+</pre></div>
+</div>
+<p>After that, users can simply run the “mvn clean install” command as seen below to build, test,
+and install the project in the local Maven repository:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>Users who have an existing Spark installation they want to use can set the SPARK_HOME For instance,
+if you have a Spark installation in /usr/local/spark you want to use for the Python tests, you can
+set this before building the project:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">export</span> <span class="n">SPARK_HOME</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">spark</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="snomed_and_loinc.html" class="btn btn-neutral" title="Working with SNOMED, LOINC, and Other Ontologies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cerner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.3.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/github_fork.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>
