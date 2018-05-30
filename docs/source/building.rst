@@ -37,3 +37,14 @@ if you have a Spark installation in /usr/local/spark you want to use for the Pyt
 set this before building the project:
 
 >>> export SPARK_HOME=/usr/local/spark
+
+Docker Build
+------------
+Bunsen also provides a Docker file to create an image with a full Jupyter notebook
+environment based on the `Jupyter Docker Stacks <http://jupyter-docker-stacks.readthedocs.io/en/latest/>`_
+project. The Docker image can be built with the following command run in the root
+directory of the Bunsen project:
+
+>>> make --directory docker
+
+See the :doc:`docker` documentation for details on using these images.

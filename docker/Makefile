@@ -13,7 +13,7 @@ image:
 	# Unzip the assembly under the current folder so the Docker file can add it.
 	unzip ../assembly/target/bunsen-assembly-$(PROJECT_VERSION)-dist.zip -d .
 
-	docker build . --build-arg BUNSEN_VERSION=$(PROJECT_VERSION) -t bunsen-notebook
+	docker build . --build-arg BUNSEN_VERSION=$(PROJECT_VERSION) -t cerner/bunsen-notebook
 
 	# Clean up local copy of the assembly
 	rm -r ./bunsen-assembly-$(PROJECT_VERSION)
