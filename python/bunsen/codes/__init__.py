@@ -101,7 +101,7 @@ class ConceptMaps(object):
 
         :return: a DataFrame of FHIR ConceptMap resources managed by this object
         """
-        return DataFrame(self._jconcept_maps.getMaps(), self._spark_session)
+        return DataFrame(self._jconcept_maps.getMaps(), self._spark_session._wrapped)
 
     def get_mappings(self, url=None, version=None):
         """
@@ -112,7 +112,7 @@ class ConceptMaps(object):
         :param version: Optional version of the mappings to return
         :return: a DataFrame of mapping records
         """
-        df = DataFrame(self._jconcept_maps.getMappings(), self._spark_session)
+        df = DataFrame(self._jconcept_maps.getMappings(), self._spark_session._wrapped)
 
         if url is not None:
             df = df.where("conceptmapuri = '" + url + "'")
@@ -272,7 +272,7 @@ class ValueSets(object):
 
         :return: a dataframe of FHIR ValueSets
         """
-        return DataFrame(self._jvalue_sets.getValueSets(), self._spark_session)
+        return DataFrame(self._jvalue_sets.getValueSets(), self._spark_session._wrapped)
 
     def get_values(self, url=None, version=None):
         """
@@ -283,7 +283,7 @@ class ValueSets(object):
         :param version: Optional version of the ValueSet to return
         :return: a DataFrame of values
         """
-        df = DataFrame(self._jvalue_sets.getValues(), self._spark_session)
+        df = DataFrame(self._jvalue_sets.getValues(), self._spark_session._wrapped)
 
         if  url is not None:
             df = df.where("valueseturi = '" + url + "'")
@@ -333,6 +333,21 @@ class ValueSets(object):
 
         return ValueSets(self._spark_session,
                          self._jvalue_sets.withValueSets(value_set_as_list),
+                         self._jfunctions,
+                         self._java_package)
+
+    def with_value_sets(self, df):
+        """
+        Returns a new ValueSets instance that includes the ValueSet FHIR
+        resources encoded in the given Spark DataFrame.
+
+        :param df: A Spark DataFrame containing the valueset FHIR resource
+        :return: a :class:`ValueSets` instance with the added value sets
+        """
+        value_sets = self._jvalue_sets.withValueSets(df._jdf)
+
+        return ValueSets(self._spark_session,
+                         value_sets,
                          self._jfunctions,
                          self._java_package)
 
@@ -433,7 +448,7 @@ class Hierarchies(object):
         :param version: Optional version of the hierarchy to return
         :return: a DataFrame of ancestor records
         """
-        df = DataFrame(self._jhierarchies.getAncestors(), self._spark_session)
+        df = DataFrame(self._jhierarchies.getAncestors(), self._spark_session._wrapped)
 
         if url is not None:
             df = df.where(df.uri == functions.lit(uri))

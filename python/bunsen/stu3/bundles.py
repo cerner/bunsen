@@ -74,15 +74,16 @@ def extract_entry(sparkSession, javaRDD, resourceName):
     bundles = _bundles(sparkSession._jvm)
     return DataFrame(
             bundles.extractEntry(sparkSession._jsparkSession, javaRDD, resourceName),
-            sparkSession)
+            sparkSession._wrapped)
 
-def save_as_database(sparkSession, path, databaseName, *resourceNames, **kwargs):
+def write_to_database(sparkSession, javaRDD, databaseName, resourceNames):
     """
-    Loads the bundles in the path and saves them to a database, where
+    Writes the bundles in the give RDD and saves them to a database, where
     each table in the database has the same name of the resource it represents.
 
     :param sparkSession: the SparkSession instance
-    :param path: path to directory of FHIR bundles to load
+    :param javaRDD: the RDD produced by :func:`load_from_directory` or other methods
+        in this package
     :param databaseName: name of the database to write the resources to
     :param resourceNames: the names of the FHIR resource to extract
         (condition, observation, etc)
@@ -93,14 +94,30 @@ def save_as_database(sparkSession, path, databaseName, *resourceNames, **kwargs)
     for idx, name in enumerate(resourceNames):
         namesArray[idx] = name
 
+    bundles = _bundles(sparkSession._jvm)
+
+    bundles.saveAsDatabase(sparkSession._jsparkSession, javaRDD, databaseName, namesArray)
+
+def save_as_database(sparkSession, path, databaseName, *resourceNames, **kwargs):
+    """
+    DEPRECATED. Users can easily do this by combining the load_from_directory and
+    write_to_database functions.
+
+    Loads the bundles in the path and saves them to a database, where
+    each table in the database has the same name of the resource it represents.
+
+    :param sparkSession: the SparkSession instance
+    :param path: path to directory of FHIR bundles to load
+    :param databaseName: name of the database to write the resources to
+    :param resourceNames: the names of the FHIR resource to extract
+        (condition, observation, etc)
+    """
     rdd = load_from_directory(sparkSession,path, kwargs.get('minPartitions', 1))
 
     if (kwargs.get('cache', True)):
         rdd.cache()
 
-    bundles = _bundles(sparkSession._jvm)
-
-    bundles.saveAsDatabase(sparkSession._jsparkSession, rdd, databaseName, namesArray)
+    write_to_database(sparkSession, rdd, databaseName, resourceNames)
 
     if (kwargs.get('cache', True)):
         rdd.unpersist()
