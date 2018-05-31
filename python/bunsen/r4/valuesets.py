@@ -5,7 +5,7 @@ in Spark queries.
 
 from collections import namedtuple
 
-from bunsen.r4.codes import get_value_sets, get_hierarchies
+from bunsen.r4.codes import get_value_sets, get_hierarchies, create_value_sets, create_hierarchies
 
 # Placeholder record to load a particular value set
 ValueSetPlaceholder = namedtuple("ValueSetPlaceholder",
@@ -14,6 +14,17 @@ ValueSetPlaceholder = namedtuple("ValueSetPlaceholder",
 # Placeholder record to load a particular hierarchical system
 HierarchyPlaceholder = namedtuple("HierarchyPlaceholder",
                                   "codeSystem codeValue hierarchyUri hierarchyVersion")
+
+def valueset(valueset_uri, valueset_version):
+  """
+  Creates a placeholder specifying a specific valueset
+  for use with :func:`push_valuesets`.
+
+  :param valueset_uri: the URI of the valueset
+  :param valueset_version: the version of the valueset
+  :return: a placeholder for use with :func:`push_valuesets`
+  """
+  return ValueSetPlaceholder(valueset_uri, valueset_version)
 
 def isa_loinc(code_value, loinc_version=None):
     """
@@ -66,9 +77,8 @@ def push_valuesets(spark_session, valueset_map, database='ontologies'):
     :param database: the database from which value set data is loaded
     """
 
-    value_sets = get_value_sets(spark_session, database)
-
-    hierarchies = get_hierarchies(spark_session, database)
+    loads_valuesets = False
+    loads_hierarchies = False
 
     jvm = spark_session._jvm
 
@@ -87,6 +97,8 @@ def push_valuesets(spark_session, valueset_map, database='ontologies'):
                                      hierarchyUri,
                                      hierarchyVersion)
 
+            loads_hierarchies = True
+
         elif type(content) is ValueSetPlaceholder:
 
             # Add codes belonging to the specified value set
@@ -94,14 +106,20 @@ def push_valuesets(spark_session, valueset_map, database='ontologies'):
 
             builder.addReference(name, valueSetUri, valueSetVersion)
 
+            loads_valuesets = True
+
         else:
 
             # Add the explicitly provided code values
             for (codeSystem, codeValue) in content:
                 builder.addCode(name, codeSystem, codeValue)
 
+    valuesets = get_value_sets(spark_session, database) if loads_valuesets else create_value_sets(spark_session)
+
+    hierarchies = get_hierarchies(spark_session, database) if loads_hierarchies else create_hierarchies(spark_session)
+
     broadcastable = builder.build(spark_session._jsparkSession,
-                                  value_sets._jvalue_sets,
+                                  valuesets._jvalue_sets,
                                   hierarchies._jhierarchies)
 
     jvm.com.cerner.bunsen.ValueSetUdfs.pushUdf(spark_session._jsparkSession, broadcastable)

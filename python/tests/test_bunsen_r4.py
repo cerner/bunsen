@@ -320,13 +320,7 @@ def test_isa_custom(spark_session, bundles):
 
   blood_pressure = {'blood_pressure' : [('http://loinc.org', '8462-4')]}
 
-  spark_session.sql('create database custom_ontologies')
-  create_value_sets(spark_session).write_to_database('custom_ontologies')
-  create_hierarchies(spark_session).write_to_database('custom_ontologies')
-
-  push_valuesets(spark_session,
-                 blood_pressure,
-                 database='custom_ontologies')
+  push_valuesets(spark_session, blood_pressure)
 
   results = spark_session.sql("SELECT subject.reference, "
                               + "effectiveDateTime, "
@@ -336,3 +330,14 @@ def test_isa_custom(spark_session, bundles):
 
   assert get_current_valuesets(spark_session) == blood_pressure
   assert results.count() == 14
+
+def test_valueset_from_bundle(spark_session):
+  bundles = load_from_directory(spark_session, 'tests/resources/bundles/json', 1)
+
+  vs = extract_entry(spark_session, bundles, 'ValueSet')
+
+  value_sets = create_value_sets(spark_session) \
+    .with_value_sets(vs)
+
+  assert value_sets.get_values("http://hl7.org/fhir/ValueSet/example-extensional", "20150622") \
+         .count() == 4
