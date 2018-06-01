@@ -1,0 +1,1137 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>STU3 Python APIs &mdash; Bunsen 0.4.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="R4 Python APIs" href="r4_pythonapis.html" />
+    <link rel="prev" title="How Bunsen Works" href="how_bunsen_works.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Bunsen
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">STU3 Python APIs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-bunsen.stu3.bundles">FHIR Bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-bunsen.stu3.valuesets">FHIR Valuesets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-bunsen.stu3.codes">APIS for Loading ValueSets and ConceptMaps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
+</ul>
+
+            
+          
+<li>
+  <a href="apidocs/index.html">JavaDocs</a>
+  <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
+</li>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bunsen</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>STU3 Python APIs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/stu3_pythonapis.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="stu3-python-apis">
+<h1>STU3 Python APIs<a class="headerlink" href="#stu3-python-apis" title="Permalink to this headline">¶</a></h1>
+<p>Bunsen offers Python APIs for PySpark users working with FHIR datasets. This includes basic functionality for working with FHIR Concept Maps, Bundles and Valuesets.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="module-bunsen.stu3.bundles">
+<span id="fhir-bundles"></span><h2>FHIR Bundles<a class="headerlink" href="#module-bunsen.stu3.bundles" title="Permalink to this headline">¶</a></h2>
+<p>Support for loading FHIR bundles into Bunsen. This includes the following features:</p>
+<ul class="simple">
+<li>Allow users to load bundles from a given location</li>
+<li>Convert bundle entries into Spark Dataframes</li>
+<li>Save all entities with a bundle collection to a distinct table for each (e.g., an observation table, a condition table, and so on.)</li>
+<li>Converts the results of a Bunsen query back into bundles that can then be used elsewhere.</li>
+</ul>
+<p>See the methods below for details.</p>
+<dl class="function">
+<dt id="bunsen.stu3.bundles.extract_entry">
+<code class="descclassname">bunsen.stu3.bundles.</code><code class="descname">extract_entry</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>javaRDD</em>, <em>resourceName</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.bundles.extract_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset for the given entry type from the bundles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sparkSession</strong> – the SparkSession instance</li>
+<li><strong>javaRDD</strong> – the RDD produced by <a class="reference internal" href="#bunsen.stu3.bundles.load_from_directory" title="bunsen.stu3.bundles.load_from_directory"><code class="xref py py-func docutils literal"><span class="pre">load_from_directory()</span></code></a> or other methods
+in this package</li>
+<li><strong>resourceName</strong> – the name of the FHIR resource to extract
+(condition, observation, etc)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a DataFrame containing the given resource encoded into Spark columns</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.bundles.from_json">
+<code class="descclassname">bunsen.stu3.bundles.</code><code class="descname">from_json</code><span class="sig-paren">(</span><em>df</em>, <em>column</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.bundles.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a dataframe with JSON-encoded bundles in the given column and returns
+a Java RDD of Bundle records. Note this
+RDD contains Bundle records that aren’t serializable in Python,
+so users should use this class as merely a parameter to other methods
+in this module, like extract_entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>df</strong> – a DataFrame containing bundles to decode</li>
+<li><strong>column</strong> – the column in which the bundles to decode are stored</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Java RDD of bundles for use with <a class="reference internal" href="#bunsen.stu3.bundles.extract_entry" title="bunsen.stu3.bundles.extract_entry"><code class="xref py py-func docutils literal"><span class="pre">extract_entry()</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.bundles.from_xml">
+<code class="descclassname">bunsen.stu3.bundles.</code><code class="descname">from_xml</code><span class="sig-paren">(</span><em>df</em>, <em>column</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.bundles.from_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a dataframe with XML-encoded bundles in the given column and returns
+a Java RDD of Bundle records. Note this
+RDD contains Bundle records that aren’t serializable in Python,
+so users should use this class as merely a parameter to other methods
+in this module, like extract_entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>df</strong> – a DataFrame containing bundles to decode</li>
+<li><strong>column</strong> – the column in which the bundles to decode are stored</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Java RDD of bundles for use with <a class="reference internal" href="#bunsen.stu3.bundles.extract_entry" title="bunsen.stu3.bundles.extract_entry"><code class="xref py py-func docutils literal"><span class="pre">extract_entry()</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.bundles.load_from_directory">
+<code class="descclassname">bunsen.stu3.bundles.</code><code class="descname">load_from_directory</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>path</em>, <em>minPartitions=1</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.bundles.load_from_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Java RDD of bundles loaded from the given path. Note this
+RDD contains Bundle records that aren’t serializable in Python,
+so users should use this class as merely a parameter to other methods
+in this module, like <a class="reference internal" href="#bunsen.stu3.bundles.extract_entry" title="bunsen.stu3.bundles.extract_entry"><code class="xref py py-func docutils literal"><span class="pre">extract_entry()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sparkSession</strong> – the SparkSession instance</li>
+<li><strong>path</strong> – path to directory of FHIR bundles to load</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Java RDD of bundles for use with <a class="reference internal" href="#bunsen.stu3.bundles.extract_entry" title="bunsen.stu3.bundles.extract_entry"><code class="xref py py-func docutils literal"><span class="pre">extract_entry()</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.bundles.save_as_database">
+<code class="descclassname">bunsen.stu3.bundles.</code><code class="descname">save_as_database</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>path</em>, <em>databaseName</em>, <em>*resourceNames</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.bundles.save_as_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>DEPRECATED. Users can easily do this by combining the load_from_directory and
+write_to_database functions.</p>
+<p>Loads the bundles in the path and saves them to a database, where
+each table in the database has the same name of the resource it represents.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sparkSession</strong> – the SparkSession instance</li>
+<li><strong>path</strong> – path to directory of FHIR bundles to load</li>
+<li><strong>databaseName</strong> – name of the database to write the resources to</li>
+<li><strong>resourceNames</strong> – the names of the FHIR resource to extract
+(condition, observation, etc)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.bundles.to_bundle">
+<code class="descclassname">bunsen.stu3.bundles.</code><code class="descname">to_bundle</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>dataset</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.bundles.to_bundle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a dataset of FHIR resources to a bundle containing those resources.
+Use with caution against large datasets.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sparkSession</strong> – the SparkSession instance</li>
+<li><strong>dataset</strong> – a DataFrame of encoded FHIR Resources</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a JSON bundle of the dataset contents</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.bundles.write_to_database">
+<code class="descclassname">bunsen.stu3.bundles.</code><code class="descname">write_to_database</code><span class="sig-paren">(</span><em>sparkSession</em>, <em>javaRDD</em>, <em>databaseName</em>, <em>resourceNames</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.bundles.write_to_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the bundles in the give RDD and saves them to a database, where
+each table in the database has the same name of the resource it represents.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sparkSession</strong> – the SparkSession instance</li>
+<li><strong>javaRDD</strong> – the RDD produced by <a class="reference internal" href="#bunsen.stu3.bundles.load_from_directory" title="bunsen.stu3.bundles.load_from_directory"><code class="xref py py-func docutils literal"><span class="pre">load_from_directory()</span></code></a> or other methods
+in this package</li>
+<li><strong>databaseName</strong> – name of the database to write the resources to</li>
+<li><strong>resourceNames</strong> – the names of the FHIR resource to extract
+(condition, observation, etc)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-bunsen.stu3.valuesets">
+<span id="fhir-valuesets"></span><h2>FHIR Valuesets<a class="headerlink" href="#module-bunsen.stu3.valuesets" title="Permalink to this headline">¶</a></h2>
+<p>Support for broadcasting valuesets and using them in user-defined functions
+in Spark queries.</p>
+<dl class="function">
+<dt id="bunsen.stu3.valuesets.get_current_valuesets">
+<code class="descclassname">bunsen.stu3.valuesets.</code><code class="descname">get_current_valuesets</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.valuesets.get_current_valuesets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current valuesets in the same form that is accepted by
+the push_valuesets function above, that is the structure will follow this pattern:
+{referenceName: [(codeset, codevalue), (codeset, codevalue)]}</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spark_session</strong> – the SparkSession instance</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a map containing the valuesets currently published to the cluster</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.valuesets.isa_loinc">
+<code class="descclassname">bunsen.stu3.valuesets.</code><code class="descname">isa_loinc</code><span class="sig-paren">(</span><em>code_value</em>, <em>loinc_version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.valuesets.isa_loinc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a hierarchy placeholder that will load all values that are descendents
+of a given LOINC code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>code_value</strong> – the parent code value</li>
+<li><strong>loinc_version</strong> – the version of LOINC to use (uses latest if None is given)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a placeholder for use with <a class="reference internal" href="#bunsen.stu3.valuesets.push_valuesets" title="bunsen.stu3.valuesets.push_valuesets"><code class="xref py py-func docutils literal"><span class="pre">push_valuesets()</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.valuesets.isa_snomed">
+<code class="descclassname">bunsen.stu3.valuesets.</code><code class="descname">isa_snomed</code><span class="sig-paren">(</span><em>code_value</em>, <em>snomed_version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.valuesets.isa_snomed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a hierarchy placeholder that will load all values that are descendents
+of a given SNOMED code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>code_value</strong> – the parent code value</li>
+<li><strong>loinc_version</strong> – the version of SNOMED to use (uses latest if None is given)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a placeholder for use with <a class="reference internal" href="#bunsen.stu3.valuesets.push_valuesets" title="bunsen.stu3.valuesets.push_valuesets"><code class="xref py py-func docutils literal"><span class="pre">push_valuesets()</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.valuesets.pop_valuesets">
+<code class="descclassname">bunsen.stu3.valuesets.</code><code class="descname">pop_valuesets</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.valuesets.pop_valuesets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pops the current valuesets from the stack, returning true if there remains
+an active valueset, or false otherwise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spark_session</strong> – the SparkSession instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.valuesets.push_valuesets">
+<code class="descclassname">bunsen.stu3.valuesets.</code><code class="descname">push_valuesets</code><span class="sig-paren">(</span><em>spark_session</em>, <em>valueset_map</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.valuesets.push_valuesets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pushes valuesets onto a stack and registers an in_valueset user-defined function
+that uses this content.</p>
+<p>The valueset_map takes the form of {referenceName: [(codeset, codevalue), (codeset, codevalue)]}
+to specify which codesets/values are used for the given valueset reference name.</p>
+<p>Rather than explicitly passing a list of (codeset, codevalue) tuples, users may instead
+load particular value sets or particular hierarchies by providing a ValueSetPlaceholder
+or HierarchyPlaceholder that instructs the system to load codes belonging to a particular
+value set or hierarchical system, respectively. See the isa_loinc and isa_snomed functions
+above for details.</p>
+<p>Finally, ontology information is assumed to be stored in the ‘ontologies’ database by
+default, but users can specify another database name if they have customized
+ontologies that are separated from the default ontologies database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>spark_session</strong> – the SparkSession instance</li>
+<li><strong>valueset_map</strong> – a map containing value set structures to publish</li>
+<li><strong>database</strong> – the database from which value set data is loaded</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.valuesets.valueset">
+<code class="descclassname">bunsen.stu3.valuesets.</code><code class="descname">valueset</code><span class="sig-paren">(</span><em>valueset_uri</em>, <em>valueset_version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.valuesets.valueset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a placeholder specifying a specific valueset
+for use with <a class="reference internal" href="#bunsen.stu3.valuesets.push_valuesets" title="bunsen.stu3.valuesets.push_valuesets"><code class="xref py py-func docutils literal"><span class="pre">push_valuesets()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>valueset_uri</strong> – the URI of the valueset</li>
+<li><strong>valueset_version</strong> – the version of the valueset</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a placeholder for use with <a class="reference internal" href="#bunsen.stu3.valuesets.push_valuesets" title="bunsen.stu3.valuesets.push_valuesets"><code class="xref py py-func docutils literal"><span class="pre">push_valuesets()</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-bunsen.stu3.codes">
+<span id="apis-for-loading-valuesets-and-conceptmaps"></span><h2>APIS for Loading ValueSets and ConceptMaps<a class="headerlink" href="#module-bunsen.stu3.codes" title="Permalink to this headline">¶</a></h2>
+<p>Bunsen Python API for working with Code Systems.</p>
+<dl class="function">
+<dt id="bunsen.stu3.codes.create_concept_maps">
+<code class="descclassname">bunsen.stu3.codes.</code><code class="descname">create_concept_maps</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.codes.create_concept_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new, empty <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.ConceptMaps</span></code></a> instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an empty <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.ConceptMaps</span></code></a> instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.codes.create_hierarchies">
+<code class="descclassname">bunsen.stu3.codes.</code><code class="descname">create_hierarchies</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.codes.create_hierarchies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new, empty <a class="reference internal" href="#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.Hierarchies</span></code></a> instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an empty <a class="reference internal" href="#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.Hierarchies</span></code></a> instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.codes.create_value_sets">
+<code class="descclassname">bunsen.stu3.codes.</code><code class="descname">create_value_sets</code><span class="sig-paren">(</span><em>spark_session</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.codes.create_value_sets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new, empty <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.ValueSets</span></code></a> instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an empty <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.ValueSets</span></code></a> instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.codes.get_concept_maps">
+<code class="descclassname">bunsen.stu3.codes.</code><code class="descname">get_concept_maps</code><span class="sig-paren">(</span><em>spark_session</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.codes.get_concept_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.ConceptMaps</span></code></a> instance for the given database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> – the database containing the concept maps to load</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.ConceptMaps</span></code></a> with the loaded maps</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.codes.get_hierarchies">
+<code class="descclassname">bunsen.stu3.codes.</code><code class="descname">get_hierarchies</code><span class="sig-paren">(</span><em>spark_session</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.codes.get_hierarchies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <a class="reference internal" href="#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.Hierarchies</span></code></a> instance for the given database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> – the database containing the hierarchies to load</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <a class="reference internal" href="#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.Hierarchies</span></code></a> with the loaded value sets</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bunsen.stu3.codes.get_value_sets">
+<code class="descclassname">bunsen.stu3.codes.</code><code class="descname">get_value_sets</code><span class="sig-paren">(</span><em>spark_session</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.stu3.codes.get_value_sets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.ValueSets</span></code></a> instance for the given database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> – the database containing the value sets to load</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">bunsen.codes.ValueSets</span></code></a> with the loaded value sets</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-bunsen.codes"></span><p>Core library for working with <a class="reference external" href="https://www.hl7.org/fhir/conceptmap.html">Concept Maps</a>
+and <a class="reference external" href="https://www.hl7.org/fhir/valueset.html">Value Sets</a>, and hierarchical code systems
+in Bunsen. See the <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">ConceptMaps</span></code></a> class,
+<a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">ValueSets</span></code></a> class, and <a class="reference internal" href="#bunsen.codes.Hierarchies" title="bunsen.codes.Hierarchies"><code class="xref py py-class docutils literal"><span class="pre">Hierarchies</span></code></a>
+class for details.</p>
+<dl class="class">
+<dt id="bunsen.codes.ConceptMaps">
+<em class="property">class </em><code class="descclassname">bunsen.codes.</code><code class="descname">ConceptMaps</code><span class="sig-paren">(</span><em>spark_session</em>, <em>jconcept_maps</em>, <em>jfunctions</em>, <em>java_package</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>An immutable collection of FHIR Concept Maps to be used to map value sets.
+These instances are typically created via the :py:module <cite>bunsen.codes.stu3</cite></p>
+<dl class="method">
+<dt id="bunsen.codes.ConceptMaps.add_mappings">
+<code class="descname">add_mappings</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>mappings</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.add_mappings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ConceptMaps instance with the given mappings added to an existing map.
+The mappings parameter must be a list of tuples of the form
+[(source_system, source_value, target_system, target_value, equivalence)].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – URL of the ConceptMap to add mappings to</li>
+<li><strong>version</strong> – Version of the ConceptMap to add mappings to</li>
+<li><strong>mappings</strong> – A list of tuples representing the mappings to add</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">ConceptMaps</span></code></a> instance with the added mappings</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ConceptMaps.get_map_as_xml">
+<code class="descname">get_map_as_xml</code><span class="sig-paren">(</span><em>url</em>, <em>version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.get_map_as_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an XML string containing the specified concept map.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – URL of the ConceptMap to return</li>
+<li><strong>version</strong> – Version of the ConceptMap to return</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a string containing the ConceptMap in XML form</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ConceptMaps.get_mappings">
+<code class="descname">get_mappings</code><span class="sig-paren">(</span><em>url=None</em>, <em>version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.get_mappings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset of all mappings which may be filtered by an optional
+concept map url and concept map version.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – Optional URL of the mappings to return</li>
+<li><strong>version</strong> – Optional version of the mappings to return</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a DataFrame of mapping records</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ConceptMaps.get_maps">
+<code class="descname">get_maps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.get_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset of FHIR ConceptMaps without the nested mapping content,
+allowing users to explore mapping metadata.</p>
+<p>The mappings themselves are excluded because they can become quite large,
+so users should use the get_mappings method to explore a table of them.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a DataFrame of FHIR ConceptMap resources managed by this object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ConceptMaps.latest_version">
+<code class="descname">latest_version</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.latest_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the latest version of a map, or None if there is none.”</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>url</strong> – the URL identifying a given concept map</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the version of the given map</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ConceptMaps.with_disjoint_maps_from_directory">
+<code class="descname">with_disjoint_maps_from_directory</code><span class="sig-paren">(</span><em>path</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.with_disjoint_maps_from_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ConceptMaps instance with all value sets read from the given
+directory path that are disjoint with value sets stored in the given
+database. The directory may be anything readable from a Spark path,
+including local filesystems, HDFS, S3, or others.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path</strong> – Path to directory containing FHIR ConceptMap resources</li>
+<li><strong>database</strong> – The database in which existing concept maps are stored</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">ConceptMaps</span></code></a> instance with the added maps</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ConceptMaps.with_maps_from_directory">
+<code class="descname">with_maps_from_directory</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.with_maps_from_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ConceptMaps instance with all maps read from the given
+directory path. The directory may be anything readable from a Spark path,
+including local filesystems, HDFS, S3, or others.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – Path to directory containing FHIR ConceptMap resources</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">ConceptMaps</span></code></a> instance with the added maps</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ConceptMaps.with_new_map">
+<code class="descname">with_new_map</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>source</em>, <em>target</em>, <em>experimental=True</em>, <em>mappings=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.with_new_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ConceptMaps instance with the given map added. Callers
+may include a list of mappings tuples in the form of
+[(source_system, source_value, target_system, target_value, equivalence)].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – URL of the ConceptMap to add</li>
+<li><strong>version</strong> – Version of the ConceptMap to add</li>
+<li><strong>source</strong> – source URI of the ConceptMap</li>
+<li><strong>target</strong> – target URI of the ConceptMap</li>
+<li><strong>experimental</strong> – a Boolean variable indicating whether the map should be
+labeled as experimental</li>
+<li><strong>mappings</strong> – A list of tuples representing the mappings to add</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="#bunsen.codes.ConceptMaps" title="bunsen.codes.ConceptMaps"><code class="xref py py-class docutils literal"><span class="pre">ConceptMaps</span></code></a> instance with the added map</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ConceptMaps.write_to_database">
+<code class="descname">write_to_database</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ConceptMaps.write_to_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the mapping content to the given database, creating a mappings
+and conceptmaps table if they don’t exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> – the database to write the concept maps to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bunsen.codes.Hierarchies">
+<em class="property">class </em><code class="descclassname">bunsen.codes.</code><code class="descname">Hierarchies</code><span class="sig-paren">(</span><em>spark_session</em>, <em>jhierarchies</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.Hierarchies" title="Permalink to this definition">¶</a></dt>
+<dd><p>An immutable collection of values from hierarchical code systems to be used
+for ontologically-based queries.</p>
+<dl class="method">
+<dt id="bunsen.codes.Hierarchies.get_ancestors">
+<code class="descname">get_ancestors</code><span class="sig-paren">(</span><em>url=None</em>, <em>version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.Hierarchies.get_ancestors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset of ancestor values representing the transitive
+closure of codes in this Hierarchies instance filtered by an optional
+hierarchy uri and version.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – Optional URL of hierarchy to return</li>
+<li><strong>version</strong> – Optional version of the hierarchy to return</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a DataFrame of ancestor records</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.Hierarchies.latest_version">
+<code class="descname">latest_version</code><span class="sig-paren">(</span><em>uri</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.Hierarchies.latest_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the latest version of a hierarchy, or None if there is none.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>uri</strong> – URI of the concept hierarchy to return</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the version of the hierarchy, or None if there is none</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.Hierarchies.write_to_database">
+<code class="descname">write_to_database</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.Hierarchies.write_to_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the ancestor content to the given database, create an ancestors
+table if they don’t exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> – the database to write the hierarchies to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bunsen.codes.ValueSets">
+<em class="property">class </em><code class="descclassname">bunsen.codes.</code><code class="descname">ValueSets</code><span class="sig-paren">(</span><em>spark_session</em>, <em>jvalue_sets</em>, <em>jfunctions</em>, <em>java_package</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets" title="Permalink to this definition">¶</a></dt>
+<dd><p>An immutable collection of FHIR Value Sets to be used to for
+ontologically-based queries.</p>
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.add_values">
+<code class="descname">add_values</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>values</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.add_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ValueSets instance with the given values added to an
+existing value set. The values parameter must be a list of the form
+[(sytem, value)].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – URL of the ValueSet to add values to</li>
+<li><strong>version</strong> – Version of the ValueSet to add values to</li>
+<li><strong>mappings</strong> – A list of tuples representing the values to add</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">ValueSets</span></code></a> instance with the added values</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.get_value_set_as_xml">
+<code class="descname">get_value_set_as_xml</code><span class="sig-paren">(</span><em>url</em>, <em>version</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.get_value_set_as_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an XML string containing the specified value set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – URL of the ValueSet to return</li>
+<li><strong>version</strong> – Version of the ValueSet to return</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a string containing the ValueSet in XML form</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.get_value_sets">
+<code class="descname">get_value_sets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.get_value_sets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset of FHIR ValueSets without the nested value content,
+allowing users to explore value set metadata.</p>
+<p>The values themselves are excluded because they can be become quite
+large, so users should use the get_values method to explore them.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dataframe of FHIR ValueSets</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.get_values">
+<code class="descname">get_values</code><span class="sig-paren">(</span><em>url=None</em>, <em>version=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.get_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataset of all values which may be filtered by an optional
+value set url and value set version.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – Optional URL of ValueSet to return</li>
+<li><strong>version</strong> – Optional version of the ValueSet to return</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a DataFrame of values</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.latest_version">
+<code class="descname">latest_version</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.latest_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the latest version of a value set, or None if there is none.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>url</strong> – URL of the ValueSet to return</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the version of the ValueSet, or None if there is none</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.with_disjoint_value_sets_from_directory">
+<code class="descname">with_disjoint_value_sets_from_directory</code><span class="sig-paren">(</span><em>path</em>, <em>database='ontologies'</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.with_disjoint_value_sets_from_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ValueSets instance with all value sets read from the given
+directory path that are disjoint with value sets stored in the given
+database. The directory may be anything readable from a Spark path,
+including local filesystems, HDFS, S3, or others.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path</strong> – Path to directory containing FHIR ValueSet resources</li>
+<li><strong>database</strong> – The database in which existing value sets are stored</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">ValueSets</span></code></a> instance with the added value sets</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.with_new_value_set">
+<code class="descname">with_new_value_set</code><span class="sig-paren">(</span><em>url</em>, <em>version</em>, <em>experimental=True</em>, <em>values=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.with_new_value_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ValueSets instance with the given value set added. Callers
+may include a list of value tuples in the form of [(system, value)].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – URL of the ValueSet to add</li>
+<li><strong>version</strong> – Version of the ValueSet to add</li>
+<li><strong>experimental</strong> – a Boolean variable indicating whether the ValueSet should be
+labeled as experimental</li>
+<li><strong>values</strong> – A list of tuples representing the values to add</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">ValueSets</span></code></a> instance with the added value set.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.with_value_sets">
+<code class="descname">with_value_sets</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.with_value_sets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ValueSets instance that includes the ValueSet FHIR
+resources encoded in the given Spark DataFrame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>df</strong> – A Spark DataFrame containing the valueset FHIR resource</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">ValueSets</span></code></a> instance with the added value sets</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.with_value_sets_from_directory">
+<code class="descname">with_value_sets_from_directory</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.with_value_sets_from_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ValueSets instance with all value sets read from the given
+directory path. The directory may be anything readable from a Spark path,
+including local filesystems, HDFS, S3, or others.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – Path to directory containing FHIR ValueSet resources</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <a class="reference internal" href="#bunsen.codes.ValueSets" title="bunsen.codes.ValueSets"><code class="xref py py-class docutils literal"><span class="pre">ValueSets</span></code></a> instance with the added value sets</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bunsen.codes.ValueSets.write_to_database">
+<code class="descname">write_to_database</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#bunsen.codes.ValueSets.write_to_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the value set content to the given database, creating a values
+and valuesets table if they don’t exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> – the database to write the value sets to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="r4_pythonapis.html" class="btn btn-neutral float-right" title="R4 Python APIs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="how_bunsen_works.html" class="btn btn-neutral" title="How Bunsen Works" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cerner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.4.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/github_fork.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
