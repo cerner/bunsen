@@ -64,7 +64,7 @@ def spark_session(request):
 
 
 # Concept Maps Tests
-def test_add_map(spark_session):
+def test_with_new_map(spark_session):
 
   concept_maps = create_concept_maps(spark_session)
 
@@ -80,6 +80,35 @@ def test_add_map(spark_session):
 
   assert appended.get_maps().count() == 1
   assert appended.get_mappings().where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
+
+def test_add_mappings(spark_session):
+
+  concept_maps = create_concept_maps(spark_session)
+
+  original = [('http://snomed.info/sct', '75367002', 'http://loinc.org', '55417-0', 'equivalent')]
+
+  added = [('http://snomed.info/sct', '271649006', 'http://loinc.org', '8480-6', 'equivalent'), # Systolic BP
+           ('http://snomed.info/sct', '271650006', 'http://loinc.org', '8462-4', 'equivalent')] # Diastolic BP
+
+  appended = concept_maps.with_new_map(url='urn:cerner:test:snomed-to-loinc',
+                                      version='0.1',
+                                      source='urn:cerner:test:valueset',
+                                      target='http://hl7.org/fhir/ValueSet/observation-code',
+                                      mappings=original) \
+                         .add_mappings(url='urn:cerner:test:snomed-to-loinc',
+                                      version='0.1',
+                                      new_version='0.2',
+                                      mappings=added)
+
+  assert appended.get_maps().count() == 2
+  assert appended.get_mappings() \
+      .where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc') \
+      .where(col('conceptmapversion') == '0.1') \
+      .count() == 1
+  assert appended.get_mappings() \
+      .where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc') \
+      .where(col('conceptmapversion') == '0.2') \
+      .count() == 3
 
 def test_with_maps_from_directory(spark_session):
 

@@ -64,7 +64,7 @@ def spark_session(request):
 
 
 # Concept Maps Tests
-def test_add_map(spark_session):
+def test_with_new_map(spark_session):
 
   concept_maps = create_concept_maps(spark_session)
 
@@ -72,14 +72,43 @@ def test_add_map(spark_session):
                      ('http://snomed.info/sct', '271649006', 'http://loinc.org', '8480-6', 'equivalent'), # Systolic BP
                      ('http://snomed.info/sct', '271650006', 'http://loinc.org', '8462-4', 'equivalent')] # Diastolic BP
 
-  appended = concept_maps.with_new_map(url='urn:cerner:test:snomed-to-loinc',
+  added = concept_maps.with_new_map(url='urn:cerner:test:snomed-to-loinc',
                                       version='0.1',
                                       source='urn:cerner:test:valueset',
                                       target='http://hl7.org/fhir/ValueSet/observation-code',
                                       mappings=snomed_to_loinc)
 
-  assert appended.get_maps().count() == 1
-  assert appended.get_mappings().where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
+  assert added.get_maps().count() == 1
+  assert added.get_mappings().where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc').count() == 3
+
+def test_add_mappings(spark_session):
+
+  concept_maps = create_concept_maps(spark_session)
+
+  original = [('http://snomed.info/sct', '75367002', 'http://loinc.org', '55417-0', 'equivalent')]
+
+  added = [('http://snomed.info/sct', '271649006', 'http://loinc.org', '8480-6', 'equivalent'), # Systolic BP
+           ('http://snomed.info/sct', '271650006', 'http://loinc.org', '8462-4', 'equivalent')] # Diastolic BP
+
+  appended = concept_maps.with_new_map(url='urn:cerner:test:snomed-to-loinc',
+                                      version='0.1',
+                                      source='urn:cerner:test:valueset',
+                                      target='http://hl7.org/fhir/ValueSet/observation-code',
+                                      mappings=original) \
+                         .add_mappings(url='urn:cerner:test:snomed-to-loinc',
+                                      version='0.1',
+                                      new_version='0.2',
+                                      mappings=added)
+
+  assert appended.get_maps().count() == 2
+  assert appended.get_mappings() \
+      .where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc') \
+      .where(col('conceptmapversion') == '0.1') \
+      .count() == 1
+  assert appended.get_mappings() \
+      .where(col('conceptmapuri') == 'urn:cerner:test:snomed-to-loinc') \
+      .where(col('conceptmapversion') == '0.2') \
+      .count() == 3
 
 def test_with_maps_from_directory(spark_session):
 
@@ -320,7 +349,13 @@ def test_isa_custom(spark_session, bundles):
 
   blood_pressure = {'blood_pressure' : [('http://loinc.org', '8462-4')]}
 
-  push_valuesets(spark_session, blood_pressure)
+  spark_session.sql('create database custom_ontologies')
+  create_value_sets(spark_session).write_to_database('custom_ontologies')
+  create_hierarchies(spark_session).write_to_database('custom_ontologies')
+
+  push_valuesets(spark_session,
+                 blood_pressure,
+                 database='custom_ontologies')
 
   results = spark_session.sql("SELECT subject.reference, "
       + "effectiveDateTime, "
@@ -330,15 +365,3 @@ def test_isa_custom(spark_session, bundles):
 
   assert get_current_valuesets(spark_session) == blood_pressure
   assert results.count() == 14
-
-def test_valueset_from_bundle(spark_session):
-  bundles = load_from_directory(spark_session, 'tests/resources/bundles/json', 1)
-
-  vs = extract_entry(spark_session, bundles, 'ValueSet')
-
-  value_sets = create_value_sets(spark_session) \
-    .with_value_sets(vs)
-
-  assert value_sets.get_values("http://hl7.org/fhir/ValueSet/example-extensional", "20150622") \
-           .count() == 4
-
