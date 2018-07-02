@@ -365,3 +365,14 @@ def test_isa_custom(spark_session, bundles):
 
   assert get_current_valuesets(spark_session) == blood_pressure
   assert results.count() == 14
+
+def test_valueset_from_bundle(spark_session):
+  bundles = load_from_directory(spark_session, 'tests/resources/bundles/json', 1)
+
+  vs = extract_entry(spark_session, bundles, 'ValueSet')
+
+  value_sets = create_value_sets(spark_session) \
+    .with_value_sets(vs)
+
+  assert value_sets.get_values("http://hl7.org/fhir/ValueSet/example-extensional", "20150622") \
+    .count() == 4
