@@ -87,9 +87,11 @@ class ConceptMaps(object):
         :param url: the URL identifying a given concept map
         :return: the version of the given map
         """
-        df = get_maps().where(df.url == url)
-        results = df.agg({"version": "max"}).collect()
-        return results[0].min if resuls.count() > 0 else None
+        df = self.get_maps().where(functions.col('url') == url)
+        results = df.groupBy('version') \
+          .agg(functions.max('version').alias('latest')) \
+          .collect()
+        return results[0].latest if len(results) > 0 else None
 
     def get_maps(self):
         """
@@ -261,9 +263,11 @@ class ValueSets(object):
         :param url: URL of the ValueSet to return
         :return: the version of the ValueSet, or None if there is none
         """
-        df = get_value_sets().where(df.url == functions.lit(url))
-        results = df.agg({"version": "max"}).collect()
-        return results[0].min if results.count() > 0 else None
+        df = self.get_value_sets().where(functions.col('url') == url)
+        results = df.groupBy('version') \
+          .agg(functions.max('version').alias('latest')) \
+          .collect()
+        return results[0].latest if len(results) > 0 else None
 
     def get_value_sets(self):
         """
