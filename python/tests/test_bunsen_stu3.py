@@ -110,6 +110,23 @@ def test_add_mappings(spark_session):
       .where(col('conceptmapversion') == '0.2') \
       .count() == 3
 
+def test_latest_concept_map_version(spark_session):
+
+  concept_maps = create_concept_maps(spark_session)
+
+  appended = concept_maps.with_new_map(url='urn:cerner:test:snomed-to-loinc',
+                                       version='0.1',
+                                       source='urn:cerner:test:valueset',
+                                       target='http://hl7.org/fhir/ValueSet/observation-code',
+                                       mappings=[]) \
+                         .with_new_map(url='urn:cerner:test:snomed-to-loinc',
+                                       version='0.2',
+                                       source='urn:cerner:test:valueset',
+                                       target='http://hl7.org/fhir/ValueSet/observation-code',
+                                       mappings=[])
+
+  assert appended.latest_version('urn:cerner:test:snomed-to-loinc') == '0.2'
+
 def test_with_maps_from_directory(spark_session):
 
   concept_maps = create_concept_maps(spark_session) \
@@ -193,6 +210,19 @@ def test_add_valueset(spark_session):
 
   assert appended.get_value_sets().count() == 1
   assert appended.get_values().count() == 3
+
+def test_latest_valueset_version(spark_session):
+
+  value_sets = create_value_sets(spark_session)
+
+  added = value_sets.with_new_value_set(url='urn:cerner:test:valuesets:testvalueset',
+                                        version='0.1',
+                                        values=[]) \
+                    .with_new_value_set(url='urn:cerner:test:valuesets:testvalueset',
+                                        version='0.2',
+                                        values=[])
+
+  assert added.latest_version('urn:cerner:test:valuesets:testvalueset') == '0.2'
 
 def test_get_value_set_as_xml(spark_session):
 
