@@ -207,7 +207,7 @@ class ConceptMaps(object):
                          self._jfunctions,
                          self._java_package)
 
-    def add_mappings(self, url, version, mappings):
+    def add_mappings(self, url, version, new_version, mappings):
         """
         Returns a new ConceptMaps instance with the given mappings added to an existing map.
         The mappings parameter must be a list of tuples of the form
@@ -215,12 +215,15 @@ class ConceptMaps(object):
 
         :param url: URL of the ConceptMap to add mappings to
         :param version: Version of the ConceptMap to add mappings to
+        :param new_version: Version of the updated ConceptMap to which new mappings have been
+            added
         :param mappings: A list of tuples representing the mappings to add
         :return: a :class:`ConceptMaps` instance with the added mappings
         """
         concept_map = self._jconcept_maps.getConceptMap(url, version)
+        concept_map.setVersion(new_version)
 
-        _add_mappings_to_map(self._jvm, concept_map, mappings)
+        _add_mappings_to_map(self._jvm, concept_map, mappings, self._java_package)
 
         map_as_list = self._jvm.java.util.Collections.singletonList(concept_map)
 
