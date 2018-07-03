@@ -1,5 +1,12 @@
 # Bunsen Changelog
 
+## 0.4.1
+* Fix latest_version support for ValueSets and ConceptMaps in Python. See [issue 30](https://github.com/cerner/bunsen/issues/30).
+* Fix add_mappings support for ConceptMaps in Python. See [issue 28](https://github.com/cerner/bunsen/issues/28).
+
+## 0.4.0
+* Support for Spark 2.3
+
 ## 0.3.1
 * Improve Python API documentation
 
