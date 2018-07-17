@@ -94,6 +94,19 @@ public class ValueSetUdfs {
 
     Broadcast<BroadcastableValueSets> broadcast = ctx.broadcast(valueSets);
 
+    pushUdf(spark, broadcast);
+  }
+
+  /**
+   * Pushes an "in_valueset" UDF that uses an already broadcast instance of
+   * {@link BroadcastableValueSets} for its content.
+   *
+   * @param spark the spark session
+   * @param broadcast the broadcast valuesets to use in the UDF
+   */
+  public static synchronized void pushUdf(SparkSession spark,
+      Broadcast<BroadcastableValueSets> broadcast) {
+
     spark.udf()
         .register("in_valueset",
             new InValuesetUdf(broadcast),
@@ -102,7 +115,6 @@ public class ValueSetUdfs {
     // Push the broadcast variable
     valueSetStack.push(broadcast);
   }
-
 
   /**
    * Pops a BroadcastableValueSets from the user-defined function stack.
