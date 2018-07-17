@@ -1,5 +1,8 @@
 # Bunsen Changelog
 
+## 0.4.2
+* Accept previously broadcast valuesets for use in UDFs. See [issue 32](https://github.com/cerner/bunsen/issues/32).
+
 ## 0.4.1
 * Fix latest_version support for ValueSets and ConceptMaps in Python. See [issue 30](https://github.com/cerner/bunsen/issues/30).
 * Fix add_mappings support for ConceptMaps in Python. See [issue 28](https://github.com/cerner/bunsen/issues/28).
