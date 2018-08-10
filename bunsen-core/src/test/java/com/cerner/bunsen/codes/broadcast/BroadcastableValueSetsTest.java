@@ -166,35 +166,35 @@ public class BroadcastableValueSetsTest {
   public void testLoadReference() {
 
     BroadcastableValueSets valueSets = BroadcastableValueSets.newBuilder()
-        .addReference("married",
-            "urn:cerner:bunsen:valueset:married_maritalstatus",
-            "0.0.1")
+        .addReference("priorities",
+            "http://hl7.org/fhir/ValueSet/v3-ActPriority",
+            "2017-04-19")
         .build(spark, mockValueSets, Hierarchies.getEmpty(spark));
 
-    Assert.assertTrue(valueSets.hasCode("married",
-        "http://hl7.org/fhir/v3/MaritalStatus",
-        "M"));
+    Assert.assertTrue(valueSets.hasCode("priorities",
+        "http://hl7.org/fhir/v3/ActPriority",
+        "EM"));
 
-    Assert.assertFalse(valueSets.hasCode("married",
-        "http://hl7.org/fhir/v3/MaritalStatus",
-        "U"));
+    Assert.assertFalse(valueSets.hasCode("priorities",
+        "http://hl7.org/fhir/v3/ActPriority",
+        "R"));
   }
 
   @Test
   public void testLoadLatestReference() {
 
     BroadcastableValueSets valueSets = BroadcastableValueSets.newBuilder()
-        .addReference("married",
-            "urn:cerner:bunsen:valueset:married_maritalstatus")
+        .addReference("priorities",
+            "http://hl7.org/fhir/ValueSet/v3-ActPriority")
         .build(spark, mockValueSets, Hierarchies.getEmpty(spark));
 
-    Assert.assertTrue(valueSets.hasCode("married",
-        "http://hl7.org/fhir/v3/MaritalStatus",
-        "M"));
+    Assert.assertTrue(valueSets.hasCode("priorities",
+        "http://hl7.org/fhir/v3/ActPriority",
+        "EM"));
 
-    Assert.assertFalse(valueSets.hasCode("married",
-        "http://hl7.org/fhir/v3/MaritalStatus",
-        "U"));
+    Assert.assertFalse(valueSets.hasCode("priorities",
+        "http://hl7.org/fhir/v3/ActPriority",
+        "R"));
   }
 
   @Test
@@ -208,22 +208,22 @@ public class BroadcastableValueSetsTest {
             Loinc.LOINC_CODE_SYSTEM_URI,
             "LP14419-3",
             Loinc.LOINC_HIERARCHY_URI)
-        .addReference("married",
-            "urn:cerner:bunsen:valueset:married_maritalstatus")
+        .addReference("priorities",
+            "http://hl7.org/fhir/ValueSet/v3-ActPriority")
         .build(spark, mockValueSets, Hierarchies.getDefault(spark));
 
-    Assert.assertTrue(ImmutableSet.of("bp", "leukocytes", "married")
+    Assert.assertTrue(ImmutableSet.of("bp", "leukocytes", "priorities", "types")
         .containsAll(valueSets.getReferenceNames()));
 
     Map<String,Set<String>> leukocyteValues = valueSets.getValues("leukocytes");
-    Map<String,Set<String>> genderValues = valueSets.getValues("married");
+    Map<String,Set<String>> priorityValues = valueSets.getValues("priorities");
 
     Assert.assertTrue(leukocyteValues.containsKey("http://loinc.org"));
     Assert.assertTrue(ImmutableSet.of("LP14419-3", "5821-4")
         .containsAll(leukocyteValues.get("http://loinc.org")));
 
-    Assert.assertTrue(genderValues.containsKey("http://hl7.org/fhir/v3/MaritalStatus"));
-    Assert.assertTrue(ImmutableSet.of("M")
-        .containsAll(genderValues.get("http://hl7.org/fhir/v3/MaritalStatus")));
+    Assert.assertTrue(priorityValues.containsKey("http://hl7.org/fhir/v3/ActPriority"));
+    Assert.assertTrue(ImmutableSet.of("EM")
+        .containsAll(priorityValues.get("http://hl7.org/fhir/v3/ActPriority")));
   }
 }

@@ -3,6 +3,7 @@ package com.cerner.bunsen;
 import com.cerner.bunsen.codes.broadcast.BroadcastableValueSets;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Row;
@@ -15,14 +16,94 @@ import scala.collection.IndexedSeq;
  * Support for user-defined functions that use valuesets. This class offers users a stack
  * to push and pop valuesets used in the in_valuesets UDF, allowing callers to temporarily
  * override valuesets and then simply pop them to revert to the previous state.
+ *
+ * <p>
+ * The {@code in_valueset} UDF allows the user to check whether a given CodeableConcept (or
+ * sequence of CodeableConcepts) have a Coding field in a ValueSet specified by a Reference name. It
+ * can be called SparkSQL as {@code in_valueset(codeProperty, 'Reference')}.
+ * </p>
  */
 public class ValueSetUdfs {
 
   /**
-   * UDF implementation that checks if a given codeable concept is
-   * in a named valueset reference.
+   * Returns true if the given CodeableConcept row has a Coding belonging to the ValueSet having the
+   * given reference name, or false otherwise.
    */
-  static class InValuesetUdf implements UDF2<Row, String, Boolean> {
+  private static Boolean inValueSet(Row codeableRow,
+      String referenceName,
+      BroadcastableValueSets valueSets) {
+
+    boolean found = false;
+
+    if (codeableRow != null) {
+
+      List<Row> codingArray = codeableRow.getList(1);
+
+      if (codingArray != null) {
+
+        for (Row coding : codingArray) {
+
+          String system = coding.getAs("system");
+          String code = coding.getAs("code");
+
+          // If there exists a matching code, return true.
+          if (valueSets.hasCode(referenceName, system, code)) {
+
+            found = true;
+
+            break;
+          }
+        }
+      }
+    }
+
+    return found;
+  }
+
+  /**
+   * Returns true if the given input CodeableConcept, or sequence of CodeableConcept, has a Coding
+   * contained in the ValueSet having the given reference name, or false otherwise. This method
+   * is dynamically typed as it may be invoked over either a structure or sequence of structures in
+   * SparkSQL.
+   */
+  private static Boolean inValueSet(Object input,
+      String referenceName,
+      Broadcast<BroadcastableValueSets> valueSets) {
+
+    // A null code never matches.
+    if (input == null) {
+
+      return false;
+    }
+
+    if (input instanceof Row) {
+
+      return inValueSet((Row) input, referenceName, valueSets.getValue());
+    } else {
+
+      IndexedSeq<Row> codeableConceptSeq = (IndexedSeq<Row>) input;
+
+      boolean found = false;
+
+      for (int i = 0; i < codeableConceptSeq.size(); i++) {
+
+        if (inValueSet(codeableConceptSeq.apply(i), referenceName, valueSets.getValue())) {
+
+          found = true;
+
+          break;
+        }
+      }
+
+      return found;
+    }
+  }
+
+  /**
+   * Spark UDF to check FHIR resources' code-property fields for membership in a valueset. The input
+   * code-field can either be a CodeableConcept or an array of CodeableConcept structures.
+   */
+  static class InValuesetUdf implements UDF2<Object, String, Boolean> {
 
     private Broadcast<BroadcastableValueSets> broadcast;
 
@@ -31,49 +112,9 @@ public class ValueSetUdfs {
     }
 
     @Override
-    public Boolean call(Row row, String referenceName) throws Exception {
+    public Boolean call(Object input, String referenceName) throws Exception {
 
-      // A null code or concept never matches.
-      if (row == null || referenceName == null) {
-        return false;
-      }
-
-      BroadcastableValueSets valuesets = broadcast.getValue();
-
-      // Check if we are dealing with a codeable concept or directly with a coding.
-      boolean isCodeable = false;
-
-      for (String fieldName : row.schema().fieldNames()) {
-        if ("coding".equals(fieldName)) {
-          isCodeable = true;
-          break;
-        }
-      }
-
-      if (isCodeable) {
-
-        IndexedSeq<Row> array = row.<IndexedSeq<Row>>getAs("coding");
-
-        for (int i = 0; i < array.length(); ++i) {
-
-          Row coding = array.apply(i);
-
-          String sourceSystem = coding.getAs("system");
-          String sourceValue = coding.getAs("code");
-
-          if (valuesets.hasCode(referenceName, sourceSystem, sourceValue)) {
-            return true;
-          }
-        }
-
-        return false;
-      } else {
-
-        String sourceSystem = row.getAs("system");
-        String sourceValue = row.getAs("code");
-
-        return valuesets.hasCode(referenceName, sourceSystem, sourceValue);
-      }
+      return inValueSet(input, referenceName, broadcast);
     }
   }
 
