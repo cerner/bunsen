@@ -13,8 +13,8 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Condition;
+import org.hl7.fhir.dstu3.model.Encounter;
 import org.hl7.fhir.dstu3.model.Observation;
-import org.hl7.fhir.dstu3.model.Patient;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -29,8 +29,6 @@ public class ValueSetUdfsTest {
       new TestDataTypeMappings());
 
   private static SparkSession spark;
-
-
 
   private static CodeableConcept codeable(String system, String value) {
 
@@ -54,6 +52,7 @@ public class ValueSetUdfsTest {
   }
 
   private static Condition condition(String id, String code) {
+
     Condition condition = new Condition();
 
     // Condition based on example from FHIR:
@@ -65,14 +64,19 @@ public class ValueSetUdfsTest {
     return condition;
   }
 
-  private static Patient patient(String id, String marritalStatus) {
-    Patient patient = new Patient();
+  private static Encounter encounter(String id, String type, String priority) {
 
-    patient.setId(id);
+    Encounter encounter = new Encounter();
 
-    patient.setMaritalStatus(codeable("http://hl7.org/fhir/v3/MaritalStatus", marritalStatus));
+    encounter.setId(id);
 
-    return patient;
+    // CodeableConcept array field
+    encounter.setType(ImmutableList.of(codeable("http://www.ama-assn.org/go/cpt", type)));
+
+    // CodeableConcept singleton field
+    encounter.setPriority(codeable("http://hl7.org/fhir/v3/ActPriority", priority));
+
+    return encounter;
   }
 
   /**
@@ -117,8 +121,10 @@ public class ValueSetUdfsTest {
         .addCode("albumin",
             Loinc.LOINC_CODE_SYSTEM_URI,
             "14959-1")
-        .addReference("married",
-            "urn:cerner:bunsen:valueset:married_maritalstatus")
+        .addReference("types",
+            "http://hl7.org/fhir/us/core/ValueSet/us-core-encounter-type")
+        .addReference("priorities",
+            "http://hl7.org/fhir/ValueSet/v3-ActPriority")
         .addDescendantsOf("leukocytes",
             Loinc.LOINC_CODE_SYSTEM_URI,
             "LP14419-3",
@@ -160,13 +166,15 @@ public class ValueSetUdfsTest {
 
     conditions.createOrReplaceTempView("test_snomed_cond");
 
-    Dataset<Patient> patients = spark.createDataset(
+    Dataset<Encounter> encounters = spark.createDataset(
         ImmutableList.of(
-            patient("married", "M"),
-            patient("unmarried", "U")),
-        encoders.of(Patient.class));
+            encounter("emergency", null, "EM"),
+            encounter("routine", null, "R"),
+            encounter("encounter", "99200", null),
+            encounter("non_encounter", "99199", null)),
+        encoders.of(Encounter.class));
 
-    patients.createOrReplaceTempView("test_valueset_patient");
+    encounters.createOrReplaceTempView("test_valueset_encounter");
   }
 
   /**
@@ -236,10 +244,20 @@ public class ValueSetUdfsTest {
   @Test
   public void testHasValueSetCode() {
 
-    Dataset<Row> results = spark.sql("select id from test_valueset_patient "
-        + "where in_valueset(maritalStatus, 'married')");
+    Dataset<Row> encounters = spark.sql("select id from test_valueset_encounter "
+        + "where in_valueset(priority, 'priorities')");
 
-    Assert.assertEquals(1, results.count());
-    Assert.assertEquals("married", results.head().get(0));
+    Assert.assertEquals(1, encounters.count());
+    Assert.assertEquals("emergency", encounters.head().get(0));
+  }
+
+  @Test
+  public void testArrayHasValueSetCode() {
+
+    Dataset<Row> encounters = spark.sql("select id from test_valueset_encounter "
+        + "where in_valueset(type, 'types')");
+
+    Assert.assertEquals(1, encounters.count());
+    Assert.assertEquals("encounter", encounters.head().get(0));
   }
 }
