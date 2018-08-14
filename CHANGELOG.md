@@ -1,5 +1,8 @@
 # Bunsen Changelog
 
+## 0.4.3
+* Support for arrays of codeable concepts in the in_valueset function. See [issue 34](https://github.com/cerner/bunsen/issues/34).
+
 ## 0.4.2
 * Accept previously broadcast valuesets for use in UDFs. See [issue 32](https://github.com/cerner/bunsen/issues/32).
 
