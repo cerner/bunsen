@@ -33,6 +33,8 @@ Once the content is downloaded, users can import it with the following commands.
 :py:func:`~bunsen.codes.loinc.with_loinc_hierarchy` and :py:func:`~bunsen.codes.snomed.with_relationships`
 functions for details.
 
+
+
 >>> from bunsen.stu3.codes import create_hierarchies
 >>> from bunsen.codes.loinc import with_loinc_hierarchy
 >>> from bunsen.codes.snomed import with_relationships
@@ -51,9 +53,13 @@ functions for details.
 >>>        '/path/to/mappings/loinc_hierarchy/2.56/LOINC_2.56_MULTI-AXIAL_HIERARCHY.CSV',
 >>>        '2.56')
 >>>
+>>> # Make sure that a database called `ontologies` is created before writing to the database.
+>>> spark.sql("CREATE DATABASE IF NOT EXISTS ontologies")
+>>>
 >>> # Write the SNOMED and LOINC data to the ontologies database, where it is visible
 >>> # in Bunsen's valueset functions.
->>> hierarchies.write_to_database('ontologies')
+>>> loinc_hierarchy.write_to_database('ontologies')
+>>> snomed_hierarchy.write_to_database('ontologies')
 
 
 SNOMED and LOINC Import APIs
