@@ -62,7 +62,7 @@ terminologies. We use the set of all values with a transitive is-a relationship
 in the given termoniology.
 
 >>> observations.registerTempTable('observations')
->>> from bunsen.valuesets import push_valuesets, isa_loinc, isa_snomed
+>>> from bunsen.stu3.valuesets import push_valuesets, isa_loinc, isa_snomed
 >>> push_valuesets(spark,
 >>>                {'body_weight'          : isa_loinc('29463-7'),
 >>>                 'bmi'                  : isa_loinc('39156-5'),
