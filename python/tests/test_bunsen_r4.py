@@ -211,6 +211,32 @@ def test_add_valueset(spark_session):
   assert appended.get_value_sets().count() == 1
   assert appended.get_values().count() == 3
 
+def test_add_values(spark_session):
+
+  value_sets = create_value_sets(spark_session)
+
+  original = [('http://snomed.info/sct', '75367002')]
+
+  added = [('http://snomed.info/sct', '271649006')]
+
+  appended = value_sets.with_new_value_set(url='urn:cerner:test:valuesets:testvalueset',
+                                           version='0.1',
+                                           values=original) \
+                       .add_values(url='urn:cerner:test:valuesets:testvalueset',
+                                   version='0.1',
+                                   new_version='0.2',
+                                   values=added)
+
+  assert appended.get_values().count() == 3
+  assert appended.get_values() \
+      .where(col('valueseturi') == 'urn:cerner:test:valuesets:testvalueset') \
+      .where(col('valuesetversion') == '0.1') \
+      .count() == 1
+  assert appended.get_values() \
+      .where(col('valueseturi') == 'urn:cerner:test:valuesets:testvalueset') \
+      .where(col('valuesetversion') == '0.2') \
+      .count() == 2
+
 def test_latest_valueset_version(spark_session):
 
   value_sets = create_value_sets(spark_session)

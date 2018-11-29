@@ -48,3 +48,6 @@ docs/build
 
 # Test Artifacts #
 *.crc
+
+# VirtualEnv #
+venv

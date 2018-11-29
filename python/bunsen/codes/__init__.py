@@ -392,7 +392,7 @@ class ValueSets(object):
                        self._jfunctions,
                        self._java_package)
 
-    def add_values(self, url, version, values):
+    def add_values(self, url, version, new_version, values):
         """
         Returns a new ValueSets instance with the given values added to an
         existing value set. The values parameter must be a list of the form
@@ -400,10 +400,13 @@ class ValueSets(object):
 
         :param url: URL of the ValueSet to add values to
         :param version: Version of the ValueSet to add values to
+        :param new_version: Version of the updated ValueSet to which new values
+            have been added
         :param mappings: A list of tuples representing the values to add
         :return: a :class:`ValueSets` instance with the added values
         """
         value_set = self._jvalue_sets.getValueSet(url, version)
+        value_set.setVersion(new_version)
 
         _add_values_to_value_set(self._jvm, value_set, values)
 
