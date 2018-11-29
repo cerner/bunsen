@@ -1,5 +1,8 @@
 # Bunsen Changelog
 
+## 0.4.4
+* Fix support for adding to valuesets in Python code. See [issue 38](https://github.com/cerner/bunsen/issues/38).
+
 ## 0.4.3
 * Support for arrays of codeable concepts in the in_valueset function. See [issue 34](https://github.com/cerner/bunsen/issues/34).
 
