@@ -1,0 +1,310 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>How Bunsen Works &mdash; Bunsen 0.4.4 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="STU3 Python APIs" href="stu3_pythonapis.html" />
+    <link rel="prev" title="FHIR Versions" href="fhir_versions.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Bunsen
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.4.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="java_usage.html">Java Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How Bunsen Works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
+</ul>
+
+            
+          
+<li>
+  <a href="apidocs/index.html">JavaDocs</a>
+  <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
+</li>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bunsen</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>How Bunsen Works</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/how_bunsen_works.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="how-bunsen-works">
+<h1>How Bunsen Works<a class="headerlink" href="#how-bunsen-works" title="Permalink to this headline">¶</a></h1>
+<p>Bunsen encodes FHIR data in Apache Spark by generating <a class="reference external" href="https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-sql-Encoder.html">Spark Encoders</a>
+from the FHIR resource definitions. The encoders convert the FHIR data model
+into a Spark schema on a field-by-field, type-by-type basis. At runtime, they automatically generate
+byte code that serialises FHIR objects as Spark Datasets, which are an efficient binary representation
+that can be analysed at petabyte scale. Those datasets can then be saved or manipulated like any other
+Spark data.</p>
+<p>Because the Apache Spark schema and encoder bytecode is generated directly from the FHIR definitions,
+the resulting Spark dataset is a faithful representation of the original data. To illustrate, this,
+here is a excerpt of calling Spark’s printSchema() method on the observations dataset we created earlier.
+Notice that every field is a one-to-one mapping to its FHIR equivalent:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">observations</span><span class="o">.</span><span class="n">printSchema</span><span class="p">()</span>
+<span class="go">root</span>
+<span class="go"> |-- id: string (nullable = true)</span>
+<span class="go"> |-- meta: struct (nullable = true)</span>
+<span class="go"> |    |-- id: string (nullable = true)</span>
+<span class="go"> |    |-- versionId: string (nullable = true)</span>
+<span class="go">&lt;snip&gt;</span>
+<span class="go"> |-- status: string (nullable = true)</span>
+<span class="go"> |-- category: array (nullable = true)</span>
+<span class="go"> |    |-- element: struct (containsNull = true)</span>
+<span class="go"> |    |    |-- id: string (nullable = true)</span>
+<span class="go"> |    |    |-- coding: array (nullable = true)</span>
+<span class="go"> |    |    |    |-- element: struct (containsNull = true)</span>
+<span class="go"> |    |    |    |    |-- id: string (nullable = true)</span>
+<span class="go"> |    |    |    |    |-- system: string (nullable = true)</span>
+<span class="go"> |    |    |    |    |-- version: string (nullable = true)</span>
+<span class="go"> |    |    |    |    |-- code: string (nullable = true)</span>
+<span class="go"> |    |    |    |    |-- display: string (nullable = true)</span>
+<span class="go"> |    |    |    |    |-- userSelected: boolean (nullable = true)</span>
+<span class="go"> |    |    |-- text: string (nullable = true)</span>
+<span class="go"> |-- code: struct (nullable = true)</span>
+<span class="go"> |    |-- id: string (nullable = true)</span>
+<span class="go"> |    |-- coding: array (nullable = true)</span>
+<span class="go"> |    |    |-- element: struct (containsNull = true)</span>
+<span class="go">&lt;snip&gt;</span>
+<span class="go"> |-- valueDateTime: string (nullable = true)</span>
+<span class="go"> |-- valueQuantity: struct (nullable = true)</span>
+<span class="go"> |    |-- id: string (nullable = true)</span>
+<span class="go"> |    |-- value: decimal(12,4) (nullable = true)</span>
+<span class="go"> |    |-- comparator: string (nullable = true)</span>
+<span class="go"> |    |-- unit: string (nullable = true)</span>
+<span class="go"> |    |-- system: string (nullable = true)</span>
+<span class="go"> |    |-- code: string (nullable = true)</span>
+<span class="go"> |-- valueRatio: struct (nullable = true)</span>
+<span class="go"> |    |-- id: string (nullable = true)</span>
+<span class="go"> |    |-- numerator: struct (nullable = true)</span>
+<span class="go">&lt;snip&gt;</span>
+</pre></div>
+</div>
+<p>By encoding FHIR in this native Spark format, Bunsen can take advantages of Spark’s performance and scalability traits.
+For instance, analytic queries over hundreds of millions of results typically complete in single-digit seconds.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="stu3_pythonapis.html" class="btn btn-neutral float-right" title="STU3 Python APIs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="fhir_versions.html" class="btn btn-neutral" title="FHIR Versions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cerner.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.4.4',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/github_fork.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
