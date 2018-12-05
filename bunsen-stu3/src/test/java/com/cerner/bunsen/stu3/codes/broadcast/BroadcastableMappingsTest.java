@@ -25,6 +25,7 @@ public class BroadcastableMappingsTest {
   private static SparkSession spark;
 
   private static Broadcast<BroadcastableMappings> broadcast;
+  private static Broadcast<BroadcastableMappings> broadcastLatest;
 
   /**
    * Sets up Spark and concept maps for testing.
@@ -69,6 +70,25 @@ public class BroadcastableMappingsTest {
         .broadcast(ImmutableMap.of(
             "uri:test:concept:map", "0",
             "uri:test:concept:delegating", "0"));
+
+    ConceptMap conceptMapLatest = new ConceptMap();
+
+    conceptMapLatest.setUrl("uri:test:concept:map")
+        .setVersion("1")
+        .setSource(new UriType("uri:test:source:valueset"))
+        .setTarget(new UriType("uri:test:target:valueset"));
+
+    ConceptMapGroupComponent groupLatest = conceptMapLatest.addGroup()
+        .setSource("uri:test:source:system")
+        .setTarget("uri:test:target:system");
+
+    groupLatest.addElement().setCode("abc").addTarget().setCode("123");
+    groupLatest.addElement().setCode("def").addTarget().setCode("xyz");
+
+    ConceptMaps maps = ConceptMaps.getEmpty(spark)
+        .withConceptMaps(conceptMap, conceptMapLatest);
+
+    broadcastLatest = maps.broadcast(maps.getLatestVersions(true));
   }
 
   /**
@@ -124,5 +144,23 @@ public class BroadcastableMappingsTest {
             .getBroadcastConceptMap("uri:test:concept:map")
             .getTarget("uri:test:source:nosuchsystem", "abc"),
         Collections.emptyList());
+  }
+
+  @Test
+  public void testBroadcastLatest() {
+
+    BroadcastableConceptMap broadcastableConceptMap = broadcastLatest.getValue()
+            .getBroadcastConceptMap("uri:test:concept:map");
+
+    BroadcastableConceptMap.CodeValue value = broadcastableConceptMap
+        .getTarget("uri:test:source:system", "abc").get(0);
+
+    Assert.assertEquals("uri:test:target:system", value.getSystem());
+    Assert.assertEquals("123", value.getValue());
+
+    value = broadcastableConceptMap.getTarget("uri:test:source:system", "def").get(0);
+
+    Assert.assertEquals("uri:test:target:system", value.getSystem());
+    Assert.assertEquals("xyz", value.getValue());
   }
 }
