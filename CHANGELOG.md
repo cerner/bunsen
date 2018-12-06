@@ -1,5 +1,8 @@
 # Bunsen Changelog
 
+# 0.4.5
+* Fix support for broadcasting concept maps that have multiple versions. See [issue 40](https://github.com/cerner/bunsen/issues/40).
+
 ## 0.4.4
 * Fix support for adding to valuesets in Python code. See [issue 38](https://github.com/cerner/bunsen/issues/38).
 
