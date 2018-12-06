@@ -6,7 +6,7 @@
   <parent>
     <artifactId>bunsen-parent</artifactId>
     <groupId>com.cerner.bunsen</groupId>
-    <version>0.4.5</version>
+    <version>0.4.6-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <name>Bunsen Python</name>
