@@ -17,7 +17,7 @@ def with_loinc_hierarchy(sparkSession, hierarchies, loinc_hierarchy_path, loinc_
     :param loinc_version: the version of LOINC that is being loaded
     :return: a :class:`bunsen.codes.Hierarchies` with the added content.
     """
-    loinc = sparkSession._jvm.com.cerner.bunsen.codes.systems.Loinc
+    loinc = sparkSession._jvm.com.cerner.bunsen.spark.codes.systems.Loinc
 
     jhierarchies = loinc.withLoincHierarchy(sparkSession._jsparkSession,
                                            hierarchies._jhierarchies,

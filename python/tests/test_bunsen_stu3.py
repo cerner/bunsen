@@ -11,7 +11,7 @@ from pyspark.sql.functions import col
 from bunsen.codes.loinc import with_loinc_hierarchy
 from bunsen.codes.snomed import with_relationships
 from bunsen.stu3.codes import create_concept_maps, get_concept_maps, create_value_sets, get_value_sets, create_hierarchies
-from bunsen.stu3.bundles import load_from_directory, extract_entry, save_as_database, to_bundle, from_xml, from_json
+from bunsen.stu3.bundles import load_from_directory, extract_entry, to_bundle, from_xml, from_json
 from bunsen.stu3.valuesets import push_valuesets, isa_loinc, isa_snomed, get_current_valuesets
 
 import xml.etree.ElementTree as ET
@@ -336,23 +336,10 @@ def test_json_bundles_from_df(spark_session):
 def test_extract_entry(spark_session, bundles):
   assert extract_entry(spark_session, bundles, 'Condition').count() == 5
 
-def test_save_as_database(spark_session):
-  spark_session.sql("CREATE DATABASE IF NOT EXISTS test_db")
-
-  save_as_database(
-      spark_session,
-      'tests/resources/bundles/xml',
-      'test_db', 'Condition', 'Patient', 'Observation',
-      minPartitions=1)
-
-  assert spark_session.sql("SELECT * FROM test_db.condition").count() == 5
-  assert spark_session.sql("SELECT * FROM test_db.patient").count() == 3
-  assert spark_session.sql("SELECT * FROM test_db.observation").count() == 72
-
 def test_to_bundle(spark_session, bundles):
   conditions = extract_entry(spark_session, bundles, 'Condition')
 
-  assert to_bundle(spark_session, conditions) != None
+  assert to_bundle(spark_session, conditions, 'Condition') != None
 
 # ValueSetsUdfs Tests
 def test_isa_loinc(spark_session):
@@ -400,7 +387,7 @@ def test_isa_snomed(spark_session):
   assert get_current_valuesets(spark_session) == expected
 
 def test_isa_custom(spark_session, bundles):
-  observations = extract_entry(spark_session, bundles, 'observation')
+  observations = extract_entry(spark_session, bundles, 'Observation')
   observations.registerTempTable('observations')
 
   blood_pressure = {'blood_pressure' : [('http://loinc.org', '8462-4')]}
@@ -414,8 +401,8 @@ def test_isa_custom(spark_session, bundles):
                  database='custom_ontologies')
 
   results = spark_session.sql("SELECT subject.reference, "
-      + "effectiveDateTime, "
-      + "valueQuantity.value "
+      + "effective.dateTime, "
+      + "value.quantity.value "
       + "FROM observations "
       + "WHERE in_valueset(code, 'blood_pressure')")
 

@@ -6,7 +6,7 @@
   <parent>
     <artifactId>bunsen-parent</artifactId>
     <groupId>com.cerner.bunsen</groupId>
-    <version>0.4.6-SNAPSHOT</version>
+    <version>0.5.0-alpha1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <name>Bunsen Python</name>
@@ -41,8 +41,8 @@
               </arguments>
               <skip>${skip.python.tests}</skip>
               <environmentVariables>
-                <PYTHONPATH>${env.PYTHONPATH}:${project.basedir}</PYTHONPATH>
-                <SHADED_JAR_PATH>${project.parent.basedir}/bunsen-shaded/target/bunsen-shaded-${project.version}.jar</SHADED_JAR_PATH>
+                <PYTHONPATH>${project.basedir}</PYTHONPATH>
+                <SHADED_JAR_PATH>${project.parent.basedir}/bunsen-spark-shaded/target/bunsen-spark-shaded-${project.version}.jar</SHADED_JAR_PATH>
               </environmentVariables>
             </configuration>
             <id>python-tests</id>

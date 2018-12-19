@@ -82,7 +82,7 @@ def push_valuesets(spark_session, valueset_map, database='ontologies'):
 
     jvm = spark_session._jvm
 
-    builder = jvm.com.cerner.bunsen.codes.broadcast.BroadcastableValueSets.newBuilder()
+    builder = jvm.com.cerner.bunsen.spark.codes.broadcast.BroadcastableValueSets.newBuilder()
 
     for (name, content) in valueset_map.items():
 
@@ -122,7 +122,7 @@ def push_valuesets(spark_session, valueset_map, database='ontologies'):
                                   valuesets._jvalue_sets,
                                   hierarchies._jhierarchies)
 
-    jvm.com.cerner.bunsen.ValueSetUdfs.pushUdf(spark_session._jsparkSession, broadcastable)
+    jvm.com.cerner.bunsen.spark.ValueSetUdfs.pushUdf(spark_session._jsparkSession, broadcastable)
 
 def get_current_valuesets(spark_session):
     """
@@ -135,7 +135,7 @@ def get_current_valuesets(spark_session):
     """
     jvm = spark_session._jvm
 
-    current = jvm.com.cerner.bunsen.ValueSetUdfs.currentValueSets()
+    current = jvm.com.cerner.bunsen.spark.ValueSetUdfs.currentValueSets()
 
     if current is None:
         return None
@@ -156,4 +156,4 @@ def pop_valuesets(spark_session):
     """
     jvm = spark_session._jvm
 
-    return jvm.com.cerner.bunsen.ValueSetUdfs.popUdf(spark_session._jsparkSession)
+    return jvm.com.cerner.bunsen.spark.ValueSetUdfs.popUdf(spark_session._jsparkSession)

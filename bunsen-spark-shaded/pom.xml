@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>bunsen-spark-shaded</artifactId>
+  <packaging>jar</packaging>
+  <parent>
+    <artifactId>bunsen-parent</artifactId>
+    <groupId>com.cerner.bunsen</groupId>
+    <version>0.5.0-alpha1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <name>Bunsen Shaded Assembly for Spark</name>
+  <description>Shaded JAR containing Bunsen and FHIR dependencies.</description>
+
+  <build>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.1</version>
+        <executions>
+          <execution>
+            <id>spark-assembly</id>
+            <phase>package</phase>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              </transformers>
+              <artifactSet>
+                <includes>
+
+                  <!-- Include the Bunsen artifacts. -->
+                  <include>com.cerner.bunsen:bunsen-core</include>
+                  <include>com.cerner.bunsen:bunsen-core-stu3</include>
+
+                  <include>com.cerner.bunsen:bunsen-uscore-resources-stu3</include>
+
+                  <include>com.cerner.bunsen:bunsen-spark</include>
+                  <include>com.cerner.bunsen:bunsen-spark-stu3</include>
+
+                  <!-- Include the FHIR base APIS -->
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-base</include>
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-utilities</include>
+
+                  <!-- Include STU3 FHIR Support -->
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-validation</include>
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-structures-dstu3</include>
+                  <include>ca.uhn.hapi.fhir:hapi-fhir-validation-resources-dstu3</include>
+
+                </includes>
+              </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/LICENSE</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-core-stu3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-spark</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-spark-stu3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-uscore-resources-stu3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-validation</artifactId>
+    </dependency>
+  </dependencies>
+</project>

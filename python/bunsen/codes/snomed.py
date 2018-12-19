@@ -17,7 +17,7 @@ def with_relationships(sparkSession, hierarchies, snomed_relationship_path, snom
     :param snomed_version: the version of SNOMED that is being loaded
     :return: a :class:`bunsen.codes.Hierarchies` with the added content.
     """
-    snomed = sparkSession._jvm.com.cerner.bunsen.codes.systems.Snomed
+    snomed = sparkSession._jvm.com.cerner.bunsen.spark.codes.systems.Snomed
 
     jhierarchies = snomed.withRelationships(sparkSession._jsparkSession,
                                            hierarchies._jhierarchies,

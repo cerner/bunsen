@@ -10,7 +10,7 @@
       <outputDirectory>jars</outputDirectory>
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <includes>
-        <include>com.cerner.bunsen:bunsen-shaded:jar</include>
+        <include>com.cerner.bunsen:bunsen-spark-shaded:jar</include>
       </includes>
     </dependencySet>
 

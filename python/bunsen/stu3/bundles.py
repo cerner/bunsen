@@ -12,7 +12,7 @@ from pyspark.sql import DataFrame
 import json
 
 def _bundles(jvm):
-    return jvm.com.cerner.bunsen.Bundles.forStu3()
+    return jvm.com.cerner.bunsen.spark.Bundles.forStu3()
 
 def load_from_directory(sparkSession, path, minPartitions=1):
     """
@@ -59,24 +59,24 @@ def from_xml(df, column):
     bundles = _bundles(df._sc._jvm)
     return bundles.fromXml(df._jdf, column)
 
-def extract_entry(sparkSession, javaRDD, resourceName):
+def extract_entry(sparkSession, javaRDD, resourceTypeUrl):
     """
     Returns a dataset for the given entry type from the bundles.
 
     :param sparkSession: the SparkSession instance
     :param javaRDD: the RDD produced by :func:`load_from_directory` or other methods
         in this package
-    :param resourceName: the name of the FHIR resource to extract
-        (condition, observation, etc)
+    :param resourceTypeUrl: the type of the FHIR resource to extract
+        (Condition, Observation, etc, for the base profile, or the URL of the structure definition)
     :return: a DataFrame containing the given resource encoded into Spark columns
     """
 
     bundles = _bundles(sparkSession._jvm)
     return DataFrame(
-            bundles.extractEntry(sparkSession._jsparkSession, javaRDD, resourceName),
+            bundles.extractEntry(sparkSession._jsparkSession, javaRDD, resourceTypeUrl),
             sparkSession._wrapped)
 
-def write_to_database(sparkSession, javaRDD, databaseName, resourceNames):
+def write_to_database(sparkSession, javaRDD, databaseName, resourceTypeUrls):
     """
     Writes the bundles in the give RDD and saves them to a database, where
     each table in the database has the same name of the resource it represents.
@@ -85,55 +85,34 @@ def write_to_database(sparkSession, javaRDD, databaseName, resourceNames):
     :param javaRDD: the RDD produced by :func:`load_from_directory` or other methods
         in this package
     :param databaseName: name of the database to write the resources to
-    :param resourceNames: the names of the FHIR resource to extract
-        (condition, observation, etc)
+    :param resourceTypeUrls: the types of the FHIR resource to extract
+        (Condition, Observation, etc, for the base profile, or the URL of the structure definition)
     """
 
     gateway = sparkSession.sparkContext._gateway
-    namesArray = gateway.new_array(gateway.jvm.String, len(resourceNames))
-    for idx, name in enumerate(resourceNames):
+    namesArray = gateway.new_array(gateway.jvm.String, len(resourceTypeUrls))
+    for idx, name in enumerate(resourceTypeUrls):
         namesArray[idx] = name
 
     bundles = _bundles(sparkSession._jvm)
 
     bundles.saveAsDatabase(sparkSession._jsparkSession, javaRDD, databaseName, namesArray)
 
-def save_as_database(sparkSession, path, databaseName, *resourceNames, **kwargs):
-    """
-    DEPRECATED. Users can easily do this by combining the load_from_directory and
-    write_to_database functions.
-
-    Loads the bundles in the path and saves them to a database, where
-    each table in the database has the same name of the resource it represents.
-
-    :param sparkSession: the SparkSession instance
-    :param path: path to directory of FHIR bundles to load
-    :param databaseName: name of the database to write the resources to
-    :param resourceNames: the names of the FHIR resource to extract
-        (condition, observation, etc)
-    """
-    rdd = load_from_directory(sparkSession,path, kwargs.get('minPartitions', 1))
-
-    if (kwargs.get('cache', True)):
-        rdd.cache()
-
-    write_to_database(sparkSession, rdd, databaseName, resourceNames)
-
-    if (kwargs.get('cache', True)):
-        rdd.unpersist()
-
-def to_bundle(sparkSession, dataset):
+def to_bundle(sparkSession, dataset, resourceTypeUrl):
     """
     Converts a dataset of FHIR resources to a bundle containing those resources.
     Use with caution against large datasets.
 
     :param sparkSession: the SparkSession instance
     :param dataset: a DataFrame of encoded FHIR Resources
+    :param resourceTypeUrl: the type of the FHIR resource to extract
+        (Condition, Observation, etc, for the base profile, or the URL of the structure definition)
     :return: a JSON bundle of the dataset contents
     """
 
     jvm = sparkSession._jvm
 
-    json_string = jvm.com.cerner.bunsen.stu3.python.Functions.toJsonBundle(dataset._jdf)
+    json_string = jvm.com.cerner.bunsen.stu3.python.Functions.toJsonBundle(dataset._jdf,
+                                                                           resourceTypeUrl)
 
     return json.loads(json_string)

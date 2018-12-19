@@ -82,7 +82,7 @@ def push_valuesets(spark_session, valueset_map, database='ontologies'):
 
     jvm = spark_session._jvm
 
-    builder = jvm.com.cerner.bunsen.codes.broadcast.BroadcastableValueSets.newBuilder()
+    builder = jvm.BroadcastableValueSets.newBuilder()
 
     for (name, content) in valueset_map.items():
 

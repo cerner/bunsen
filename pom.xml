@@ -5,7 +5,7 @@
   <groupId>com.cerner.bunsen</groupId>
   <artifactId>bunsen-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.4.6-SNAPSHOT</version>
+  <version>0.5.0-alpha1-SNAPSHOT</version>
   <name>Bunsen Parent</name>
   <description>Use FHIR resources as native Spark data sets</description>
   <url>http://engineering.cerner.com/bunsen</url>
@@ -37,9 +37,11 @@
 
   <modules>
     <module>bunsen-core</module>
-    <module>bunsen-stu3</module>
-    <module>bunsen-r4</module>
-    <module>bunsen-shaded</module>
+    <module>bunsen-core-stu3</module>
+    <module>bunsen-uscore-resources-stu3</module>
+    <module>bunsen-spark</module>
+    <module>bunsen-spark-stu3</module>
+    <module>bunsen-spark-shaded</module>
     <module>python</module>
     <module>assembly</module>
   </modules>
@@ -154,7 +156,7 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <executions>
           <execution>
-            <!-- First run the checkstyle goal without output errors to console -->
+
             <id>verify_checkstyleReport</id>
             <phase>verify</phase>
             <goals>
@@ -171,7 +173,7 @@
             </configuration>
           </execution>
           <execution>
-            <!-- Next run the check goal and output errors to console -->
+
             <id>verify_checkstyleCheck</id>
             <goals>
               <goal>check</goal>
@@ -485,6 +487,30 @@
 
       <dependency>
         <groupId>com.cerner.bunsen</groupId>
+        <artifactId>bunsen-core-stu3</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.cerner.bunsen</groupId>
+        <artifactId>bunsen-spark</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.cerner.bunsen</groupId>
+        <artifactId>bunsen-spark-stu3</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.cerner.bunsen</groupId>
+        <artifactId>bunsen-uscore-resources-stu3</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.cerner.bunsen</groupId>
         <artifactId>bunsen-r4</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -545,6 +571,12 @@
       <dependency>
         <groupId>ca.uhn.hapi.fhir</groupId>
         <artifactId>hapi-fhir-validation-resources-dstu3</artifactId>
+        <version>${hapi.fhir.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ca.uhn.hapi.fhir</groupId>
+        <artifactId>hapi-fhir-validation</artifactId>
         <version>${hapi.fhir.version}</version>
       </dependency>
 

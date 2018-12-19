@@ -85,7 +85,7 @@ def get_hierarchies(spark_session, database='ontologies'):
     :param database: the database containing the hierarchies to load
     :return: a :class:`bunsen.codes.Hierarchies` with the loaded value sets
     """
-    jhierarchies = spark_session._jvm.com.cerner.bunsen.codes \
+    jhierarchies = spark_session._jvm.com.cerner.bunsen.spark.codes \
         .Hierarchies.getFromDatabase(spark_session._jsparkSession, database)
 
     return Hierarchies(spark_session, jhierarchies)
@@ -96,7 +96,7 @@ def create_hierarchies(spark_session):
 
     :return: an empty :class:`bunsen.codes.Hierarchies` instance
     """
-    jhierarchies = spark_session._jvm.com.cerner.bunsen.codes \
+    jhierarchies = spark_session._jvm.com.cerner.bunsen.spark.codes \
         .Hierarchies.getEmpty(spark_session._jsparkSession)
 
     return Hierarchies(spark_session, jhierarchies)
