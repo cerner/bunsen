@@ -3,10 +3,10 @@ package com.cerner.bunsen.spark;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 
+import com.cerner.bunsen.definitions.HapiConverter;
+import com.cerner.bunsen.definitions.HapiConverter.HapiObjectConverter;
 import com.cerner.bunsen.definitions.StructureDefinitions;
 import com.cerner.bunsen.spark.converters.DefinitionToSparkVisitor;
-import com.cerner.bunsen.spark.converters.HapiToSparkConverter;
-import com.cerner.bunsen.spark.converters.RowToHapiConverter;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,9 +24,9 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
  */
 public class SparkRowConverter {
 
-  private final HapiToSparkConverter hapiToSparkConverter;
+  private final HapiConverter hapiToSparkConverter;
 
-  private final RowToHapiConverter sparkToHapiConverter;
+  private final HapiObjectConverter sparkToHapiConverter;
 
   private final DefinitionToSparkVisitor visitor;
 
@@ -42,7 +42,7 @@ public class SparkRowConverter {
         context.getResourceDefinition(hapiToSparkConverter.getElementType());
 
     this.sparkToHapiConverter  =
-        (RowToHapiConverter) hapiToSparkConverter.toHapiConverter(resourceDefinition);
+        (HapiObjectConverter) hapiToSparkConverter.toHapiConverter(resourceDefinition);
   }
 
   /**
@@ -71,7 +71,7 @@ public class SparkRowConverter {
    */
   public Row resourceToRow(IBaseResource resource) {
 
-    return (Row) hapiToSparkConverter.toSpark(resource);
+    return (Row) hapiToSparkConverter.fromHapi(resource);
   }
 
   public IBaseResource rowToResource(Row row) {
