@@ -110,11 +110,17 @@ public class FhirEncodersTest {
 
   @Test
   public void boundCode() {
+    Row coding = (Row) conditionsDataset.select("verificationStatus")
+                                        .head()
+                                        .getStruct(0)
+                                        .getList(1)
+                                        .get(0);
 
-    Assert.assertEquals(condition.getVerificationStatus().toCode(),
-        conditionsDataset.select("verificationStatus").head().get(0));
-    Assert.assertEquals(condition.getVerificationStatus(),
-        decodedCondition.getVerificationStatus());
+    Assert.assertEquals(condition.getVerificationStatus().getCoding().size(), 1);
+    Assert.assertEquals(condition.getVerificationStatus().getCodingFirstRep().getSystem(),
+                        coding.getString(1));
+    Assert.assertEquals(condition.getVerificationStatus().getCodingFirstRep().getCode(),
+                        coding.getString(3));
   }
 
   @Test

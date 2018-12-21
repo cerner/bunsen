@@ -2,6 +2,7 @@ package com.cerner.bunsen.r4;
 
 import org.hl7.fhir.r4.model.Annotation;
 import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.Identifier;
@@ -12,6 +13,7 @@ import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Quantity;
 import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.codesystems.ConditionVerStatus;
 import org.hl7.fhir.utilities.xhtml.NodeType;
 import org.hl7.fhir.utilities.xhtml.XhtmlNode;
 
@@ -44,7 +46,11 @@ public class TestData {
 
     condition.setSubject(new Reference("Patient/example").setDisplay("Here is a display for you."));
 
-    condition.setVerificationStatus(Condition.ConditionVerificationStatus.CONFIRMED);
+    CodeableConcept verificationStatus = new CodeableConcept();
+    verificationStatus.addCoding(new Coding(ConditionVerStatus.CONFIRMED.getSystem(),
+                                            ConditionVerStatus.CONFIRMED.toCode(),
+                                            ConditionVerStatus.CONFIRMED.getDisplay()));
+    condition.setVerificationStatus(verificationStatus);
 
     // Condition code
     CodeableConcept code = new CodeableConcept();
