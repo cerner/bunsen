@@ -67,9 +67,8 @@ public class SchemaConverterTest {
 
 
   @Test
-  public void boundCodeToString() {
-
-    Assert.assertTrue(getField(conditionSchema, true, "verificationStatus") instanceof StringType);
+  public void boundCodeToStruct() {
+    Assert.assertTrue(getField(conditionSchema, true, "verificationStatus") instanceof StructType);
   }
 
   @Test
