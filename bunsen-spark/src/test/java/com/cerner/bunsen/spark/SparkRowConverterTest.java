@@ -2,6 +2,7 @@ package com.cerner.bunsen.spark;
 
 import ca.uhn.fhir.context.FhirContext;
 import com.cerner.bunsen.FhirContexts;
+import com.cerner.bunsen.stu3.TestData;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -40,11 +41,6 @@ import org.junit.Test;
 
 public class SparkRowConverterTest {
 
-  static final String US_CORE_BIRTHSEX
-      = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex";
-  static final String US_CORE_ETHNICITY
-      = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity";
-
   private static SparkSession spark;
 
   /**
@@ -65,30 +61,23 @@ public class SparkRowConverterTest {
 
   static FhirContext fhirContext;
 
-  private static final String US_CORE_PATIENT =
-      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient";
 
-  private static final String US_CORE_OBSERVATION =
-      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-observationresults";
-
-  private static final String US_CORE_CONDITION =
-      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition";
 
   private static final String BASE_VALUESET = "ValueSet";
 
-  private static final Patient testPatient = newPatient();
+  private static final Patient testPatient = TestData.newPatient();
 
   private static Dataset<Row> testPatientDataset;
 
   private static Patient testPatientDecoded;
 
-  private static final Observation testObservation = newObservation();
+  private static final Observation testObservation = TestData.newObservation();
 
   private static Dataset<Row> testObservationDataset;
 
   private static Observation testObservationDecoded;
 
-  private static final Condition testCondition = newCondition();
+  private static final Condition testCondition = TestData.newCondition();
 
   private static Dataset<Row> testConditionDataset;
 
@@ -103,7 +92,7 @@ public class SparkRowConverterTest {
     fhirContext = FhirContexts.forStu3();
 
     SparkRowConverter patientConverter = SparkRowConverter.forResource(fhirContext,
-        US_CORE_PATIENT);
+        TestData.US_CORE_PATIENT);
 
     Row testPatientRow = patientConverter.resourceToRow(testPatient);
 
@@ -113,7 +102,7 @@ public class SparkRowConverterTest {
     testPatientDecoded = (Patient) patientConverter.rowToResource(testPatientDataset.head());
 
     SparkRowConverter observationConverter = SparkRowConverter.forResource(fhirContext,
-        US_CORE_OBSERVATION);
+        TestData.US_CORE_OBSERVATION);
 
     Row testObservationRow = observationConverter.resourceToRow(testObservation);
 
@@ -124,7 +113,7 @@ public class SparkRowConverterTest {
         (Observation) observationConverter.rowToResource(testObservationDataset.head());
 
     SparkRowConverter conditionConverter = SparkRowConverter.forResource(fhirContext,
-        US_CORE_CONDITION);
+        TestData.US_CORE_CONDITION);
 
     Row testConditionRow = conditionConverter.resourceToRow(testCondition);
 
@@ -133,141 +122,6 @@ public class SparkRowConverterTest {
 
     testConditionDecoded =
         (Condition) conditionConverter.rowToResource(testConditionDataset.head());
-  }
-
-  /**
-   * Returns a FHIR Condition for testing purposes.
-   */
-  public static Condition newCondition() {
-
-    Condition condition = new Condition();
-
-    // Condition based on example from FHIR:
-    // https://www.hl7.org/fhir/condition-example.json.html
-    condition.setId("Condition/example");
-
-    condition.setLanguage("en_US");
-
-    // Narrative text
-    Narrative narrative = new Narrative();
-    narrative.setStatusAsString("generated");
-    narrative.setDivAsString("This data was generated for test purposes.");
-    XhtmlNode node = new XhtmlNode();
-    node.setNodeType(NodeType.Text);
-    node.setValue("Severe burn of left ear (Date: 24-May 2012)");
-    condition.setText(narrative);
-
-    condition.setSubject(new Reference("Patient/12345").setDisplay("Here is a display for you."));
-
-    condition.setVerificationStatus(Condition.ConditionVerificationStatus.CONFIRMED);
-
-    // Condition code
-    CodeableConcept code = new CodeableConcept();
-    code.addCoding()
-        .setSystem("http://snomed.info/sct")
-        .setCode("39065001")
-        .setDisplay("Severe");
-    condition.setSeverity(code);
-
-    // Severity code
-    CodeableConcept severity = new CodeableConcept();
-    severity.addCoding()
-        .setSystem("http://snomed.info/sct")
-        .setCode("24484000")
-        .setDisplay("Burn of ear")
-        .setUserSelected(true);
-    condition.setSeverity(severity);
-
-    // Onset date time
-    DateTimeType onset = new DateTimeType();
-    onset.setValueAsString("2012-05-24");
-    condition.setOnset(onset);
-
-    return condition;
-  }
-
-  private static Observation newObservation() {
-    Observation observation = new Observation();
-
-    observation.setId("blood-pressure");
-
-    Identifier identifier = observation.addIdentifier();
-    identifier.setSystem("urn:ietf:rfc:3986");
-    identifier.setValue("urn:uuid:187e0c12-8dd2-67e2-99b2-bf273c878281");
-
-    observation.setStatus(Observation.ObservationStatus.FINAL);
-
-
-    CodeableConcept obsCode = new CodeableConcept();
-
-
-    observation.setCode(obsCode);
-
-    Quantity quantity = new Quantity();
-    quantity.setValue(new java.math.BigDecimal("123.45"));
-    quantity.setUnit("mm[Hg]");
-    quantity.setSystem("http://unitsofmeasure.org");
-    observation.setValue(quantity);
-
-    ObservationComponentComponent component = observation.addComponent();
-
-    CodeableConcept code = new CodeableConcept()
-        .addCoding(new Coding()
-            .setCode("abc")
-            .setSystem("PLACEHOLDER"));
-
-    component.setCode(code);
-
-    return observation;
-  }
-
-  private static Patient newPatient() {
-
-    Patient patient = new Patient();
-
-    patient.setId("test-patient");
-    patient.setGender(AdministrativeGender.MALE);
-    patient.setActive(true);
-    patient.setMultipleBirth(new IntegerType(1));
-
-    patient.setBirthDateElement(new DateType("1945-01-02"));
-
-    Address address = patient.addAddress();
-
-    patient.addGeneralPractitioner().setReference("Practitioner/12345");
-
-    address.addLine("123 Fake Street");
-    address.setCity("Chicago");
-    address.setState("IL");
-    address.setDistrict("12345");
-
-    Extension birthSex = patient.addExtension();
-
-    birthSex.setUrl(US_CORE_BIRTHSEX);
-    birthSex.setValue(new CodeType("M"));
-
-    Extension ethnicity = patient.addExtension();
-    ethnicity.setUrl(US_CORE_ETHNICITY);
-    ethnicity.setValue(null);
-
-    Coding ombCoding = new Coding();
-
-    ombCoding.setSystem("urn:oid:2.16.840.1.113883.6.238");
-    ombCoding.setCode("2186-5");
-    ombCoding.setDisplay("Not Hispanic or Latino");
-
-    // Add category to ethnicity extension
-    Extension ombCategory = ethnicity.addExtension();
-
-    ombCategory.setUrl("ombCategory");
-    ombCategory.setValue(ombCoding);
-
-    // Add text display to ethnicity extension
-    Extension ethnicityText = ethnicity.addExtension();
-    ethnicityText.setUrl("text");
-    ethnicityText.setValue(new StringType("Not Hispanic or Latino"));
-
-    return patient;
   }
 
   @Test
@@ -390,13 +244,13 @@ public class SparkRowConverterTest {
   public void testSimpleExtension() {
 
     String testBirthSex = testPatient
-        .getExtensionsByUrl(US_CORE_BIRTHSEX)
+        .getExtensionsByUrl(TestData.US_CORE_BIRTHSEX)
         .get(0)
         .getValueAsPrimitive()
         .getValueAsString();
 
     String decodedBirthSex = testPatientDecoded
-        .getExtensionsByUrl(US_CORE_BIRTHSEX)
+        .getExtensionsByUrl(TestData.US_CORE_BIRTHSEX)
         .get(0)
         .getValueAsPrimitive()
         .getValueAsString();
@@ -411,7 +265,7 @@ public class SparkRowConverterTest {
   public void testNestedExtension() {
 
     Extension testEthnicity = testPatient
-        .getExtensionsByUrl(US_CORE_ETHNICITY)
+        .getExtensionsByUrl(TestData.US_CORE_ETHNICITY)
         .get(0);
 
     Coding testOmbCategory = (Coding) testEthnicity
@@ -426,7 +280,7 @@ public class SparkRowConverterTest {
         .getValueAsString();
 
     Extension decodedEthnicity = testPatientDecoded
-        .getExtensionsByUrl(US_CORE_ETHNICITY)
+        .getExtensionsByUrl(TestData.US_CORE_ETHNICITY)
         .get(0);
 
     Coding decodedOmbCategory = (Coding) decodedEthnicity
@@ -490,7 +344,7 @@ public class SparkRowConverterTest {
   public void testContentReferenceField() {
 
     // Fields may be a reference to a type defined elsewhere. Make sure they are populated.
-    StructType schema = SparkRowConverter.forResource(fhirContext, US_CORE_OBSERVATION).getSchema();
+    StructType schema = SparkRowConverter.forResource(fhirContext, TestData.US_CORE_OBSERVATION).getSchema();
 
     checkNoEmptyStructs(schema, null);
   }
