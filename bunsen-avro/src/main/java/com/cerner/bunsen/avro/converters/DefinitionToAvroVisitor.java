@@ -7,24 +7,32 @@ import com.cerner.bunsen.definitions.DefinitionVisitor;
 import com.cerner.bunsen.definitions.FhirConversionSupport;
 import com.cerner.bunsen.definitions.HapiCompositeConverter;
 import com.cerner.bunsen.definitions.HapiConverter;
+import com.cerner.bunsen.definitions.HapiConverter.HapiFieldSetter;
+import com.cerner.bunsen.definitions.HapiConverter.HapiObjectConverter;
+import com.cerner.bunsen.definitions.LeafExtensionConverter;
 import com.cerner.bunsen.definitions.PrimitiveConverter;
 import com.cerner.bunsen.definitions.StringConverter;
 import com.cerner.bunsen.definitions.StructureField;
 import com.google.common.collect.ImmutableMap;
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.avro.Conversion;
+import org.apache.avro.Conversions;
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.IndexedRecord;
 import org.hl7.fhir.instance.model.api.IBase;
+import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
 public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<Schema>> {
 
   private final FhirConversionSupport fhirSupport;
-
 
   private static final HapiConverter STRING_CONVERTER =
       new StringConverter(Schema.create(Type.STRING));
@@ -52,12 +60,46 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     }
   };
 
+  private static final LogicalTypes.Decimal DECIMAL_PRECISION
+      = LogicalTypes.decimal(12, 4);
+
+  private static final Schema DECIMAL_SCHEMA =
+      DECIMAL_PRECISION.addToSchema(Schema.create(Type.BYTES));
+
+  private static final HapiConverter DECIMAL_CONVERTER = new PrimitiveConverter<Schema>() {
+
+    private final Conversion<BigDecimal> conversion = new Conversions.DecimalConversion();
+
+    protected void toHapi(Object input, IPrimitiveType primitive) {
+
+      BigDecimal converted = conversion.fromBytes((ByteBuffer) input,
+          DECIMAL_SCHEMA,
+          DECIMAL_PRECISION);
+
+      primitive.setValue(converted);
+    }
+
+    protected Object fromHapi(IPrimitiveType primitive) {
+
+      BigDecimal decimalValue = (BigDecimal) primitive.getValue();
+
+      BigDecimal scaledValue = decimalValue.scale() == 4
+          ? decimalValue
+          : decimalValue.setScale(4);
+
+      return conversion.toBytes(scaledValue,
+          DECIMAL_SCHEMA,
+          DECIMAL_PRECISION);
+    }
+
+    @Override
+    public Schema getDataType() {
+      return DECIMAL_SCHEMA;
+    }
+  };
+
   private static final HapiConverter ENUM_CONVERTER =
       new StringConverter(Schema.create(Type.STRING));
-
-  private static final HapiConverter DECIMAL_CONVERTER =
-      new StringConverter(Schema.create(Type.STRING));
-
 
   static final Map<String,HapiConverter> TYPE_TO_CONVERTER =
       ImmutableMap.<String,HapiConverter>builder()
@@ -255,22 +297,142 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
         children, schema, fhirSupport);
   }
 
+  /**
+   * Field setter that does nothing for synthetic or unsupported field types.
+   */
+  private static class NoOpFieldSetter implements HapiFieldSetter,
+      HapiObjectConverter {
+
+    @Override
+    public void setField(IBase parentObject, BaseRuntimeChildDefinition fieldToSet,
+        Object sparkObject) {
+
+    }
+
+    @Override
+    public IBase toHapi(Object input) {
+      return null;
+    }
+
+  }
+
+  private static final HapiFieldSetter NOOP_FIELD_SETTER = new NoOpFieldSetter();
+
+  /**
+   * Converter that returns the relative value of a URI type.
+   */
+  private static class RelativeValueConverter extends HapiConverter<Schema> {
+
+    private final String prefix;
+
+    RelativeValueConverter(String prefix) {
+      this.prefix = prefix;
+    }
+
+    @Override
+    public Object fromHapi(Object input) {
+      String uri =  ((IPrimitiveType) input).getValueAsString();
+
+      return uri != null && uri.startsWith(prefix)
+          ? uri.substring(uri.lastIndexOf('/') + 1)
+          : null;
+    }
+
+    @Override
+    public Schema getDataType() {
+      return Schema.create(Type.STRING);
+    }
+
+    @Override
+    public String getElementType() {
+
+      return "String";
+    }
+
+    @Override
+    public HapiFieldSetter toHapiConverter(BaseRuntimeElementDefinition... elementDefinitions) {
+
+      // Returns a field setter that does nothing, since this is for a synthetic type-specific
+      // reference field, and the value will be set from the primary field.
+      return NOOP_FIELD_SETTER;
+    }
+
+  }
+
   @Override
   public HapiConverter<Schema> visitReference(String elementName, List<String> referenceTypes,
       List<StructureField<HapiConverter<Schema>>> children) {
-    return NoOpConverter.INSTANCE;
+
+    // Add direct references
+    List<StructureField<HapiConverter<Schema>>> fieldsWithReferences =
+        referenceTypes.stream()
+            .map(refUri -> {
+
+              String relativeType = refUri.substring(refUri.lastIndexOf('/') + 1);
+
+              return new StructureField<HapiConverter<Schema>>("reference",
+                  relativeType + "Id",
+                  null,
+                  false,
+                  new RelativeValueConverter(relativeType));
+
+            }).collect(Collectors.toList());
+
+    fieldsWithReferences.addAll(children);
+
+    List<Field> fields = fieldsWithReferences.stream()
+        .map(entry -> new Field(entry.fieldName(),
+            entry.result().getDataType(),
+            "Reference field",
+            (Object) null))
+        .collect(Collectors.toList());
+
+    String recordName = children.stream()
+        .map(StructureField::fieldName)
+        .collect(Collectors.joining());
+
+    Schema schema = Schema.createRecord(recordName,
+        "Structure for FHIR type " + recordName,
+        "com.cerner.bunsen.avro",
+        false, fields);
+
+    return new CompositeToAvroConverter(null,
+        fieldsWithReferences,
+        schema,
+        fhirSupport);
   }
 
   @Override
   public HapiConverter<Schema> visitParentExtension(String elementName, String extensionUrl,
       List<StructureField<HapiConverter<Schema>>> children) {
-    return NoOpConverter.INSTANCE;
+
+    // Ignore extension fields that don't have declared content for now.
+    if (children.isEmpty()) {
+      return null;
+    }
+
+    List<Field> fields = children.stream()
+        .map(entry ->
+            new Field(entry.fieldName(),
+                entry.result().getDataType(),
+                "Doc here",
+                (Object) null))
+        .collect(Collectors.toList());
+
+    Schema schema = Schema.createRecord(fields);
+
+    return new CompositeToAvroConverter(null,
+        children,
+        schema,
+        fhirSupport,
+        extensionUrl);
   }
 
   @Override
   public HapiConverter<Schema> visitLeafExtension(String elementName, String extensionUrl,
       HapiConverter<Schema> element) {
-    return NoOpConverter.INSTANCE;
+
+    return new LeafExtensionConverter<Schema>(extensionUrl, element);
   }
 
   @Override
