@@ -13,6 +13,11 @@ import org.hl7.fhir.instance.model.api.IBase;
 import org.hl7.fhir.instance.model.api.IBaseExtension;
 import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 
+/**
+ * Partial converter implementation for composite structures.
+ *
+ * @param <T> the type of the schema produced by the converter.
+ */
 public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
   private final String elementType;
@@ -220,6 +225,7 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
     return createComposite(values);
   }
 
+  @Override
   public HapiFieldSetter toHapiConverter(BaseRuntimeElementDefinition... elementDefinitions) {
 
     BaseRuntimeElementDefinition elementDefinition = elementDefinitions[0];

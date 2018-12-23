@@ -331,7 +331,8 @@ public class SparkRowConverterTest {
   public void testContentReferenceField() {
 
     // Fields may be a reference to a type defined elsewhere. Make sure they are populated.
-    StructType schema = SparkRowConverter.forResource(fhirContext, TestData.US_CORE_OBSERVATION).getSchema();
+    StructType schema = SparkRowConverter.forResource(fhirContext,
+        TestData.US_CORE_OBSERVATION).getSchema();
 
     checkNoEmptyStructs(schema, null);
   }

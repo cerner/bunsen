@@ -44,6 +44,9 @@ public class AvroConverterTest {
 
   private static Condition testConditionDecoded;
 
+  /**
+   * Initialize test data.
+   */
   @BeforeClass
   public static void convertTestData() {
 
@@ -68,17 +71,7 @@ public class AvroConverterTest {
 
     testConditionDecoded =  (Condition) conditionConverter.avroToResource(avroCondition);
   }
-
-  @Test
-  public void testHack() {
-
-    System.out.println(avroObservation.toString());
-    System.out.println(avroPatient.toString());
-
-//    System.out.println(avroObservation.getSchema().toString(true));
-
-  }
-
+  
   @Test
   public void testDecimal() {
 

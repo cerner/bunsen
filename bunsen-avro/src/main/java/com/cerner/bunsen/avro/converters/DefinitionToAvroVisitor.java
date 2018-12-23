@@ -257,6 +257,11 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     }
   }
 
+  /**
+   * Creates a visitor to construct Avro conversion objects.
+   *
+   * @param fhirSupport support for FHIR conversions.
+   */
   public DefinitionToAvroVisitor(FhirConversionSupport fhirSupport) {
 
     this.fhirSupport = fhirSupport;
@@ -287,6 +292,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
         }).collect(Collectors.toList());
 
+    System.out.println("COMPOSITE: " + elementName + " -- " + elementType);
     Schema schema = Schema.createRecord(elementType,
         "Structure for FHIR type " + elementType,
         "com.cerner.bunsen.avro",

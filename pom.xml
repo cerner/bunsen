@@ -184,7 +184,7 @@
               <configLocation>google_checks.xml</configLocation>
               <encoding>UTF-8</encoding>
               <consoleOutput>true</consoleOutput>
-              <failOnViolation>false</failOnViolation> <!-- FIXME -->
+              <failOnViolation>true</failOnViolation>
               <includeTestSourceDirectory>true</includeTestSourceDirectory>
               <violationSeverity>warning</violationSeverity>
               <maxAllowedViolations>0</maxAllowedViolations>

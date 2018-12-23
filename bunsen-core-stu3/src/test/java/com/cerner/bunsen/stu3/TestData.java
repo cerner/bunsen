@@ -92,6 +92,11 @@ public class TestData {
     return condition;
   }
 
+  /**
+   * Returns a new observation for testing.
+   *
+   * @return a FHIR observation for testing.
+   */
   public static Observation newObservation() {
     Observation observation = new Observation();
 
@@ -127,6 +132,11 @@ public class TestData {
     return observation;
   }
 
+  /**
+   * Returns a new Patient for testing.
+   *
+   * @return a FHIR patient for testing.
+   */
   public static Patient newPatient() {
 
     Patient patient = new Patient();

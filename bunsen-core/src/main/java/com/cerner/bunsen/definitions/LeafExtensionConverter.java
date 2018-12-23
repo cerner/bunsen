@@ -8,6 +8,11 @@ import org.hl7.fhir.instance.model.api.IBase;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.instance.model.api.IBaseExtension;
 
+/**
+ * Converter implementation for extension leaf primitives.
+ *
+ * @param <T> the type of the schema produced by the converter.
+ */
 public class LeafExtensionConverter<T> extends HapiConverter<T> {
 
   class LeafExensionFieldSetter implements HapiFieldSetter {
@@ -42,6 +47,12 @@ public class LeafExtensionConverter<T> extends HapiConverter<T> {
 
   private final HapiConverter<T> valueConverter;
 
+  /**
+   * Constructs a converter for the leaf extension.
+   *
+   * @param extensionUrl the URL of the extension
+   * @param valueConverter the converter for the extension's value.
+   */
   public LeafExtensionConverter(String extensionUrl, HapiConverter valueConverter) {
 
     this.extensionUrl = extensionUrl;
