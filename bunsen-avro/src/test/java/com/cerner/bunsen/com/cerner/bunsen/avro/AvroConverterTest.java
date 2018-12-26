@@ -71,7 +71,7 @@ public class AvroConverterTest {
 
     testConditionDecoded =  (Condition) conditionConverter.avroToResource(avroCondition);
   }
-  
+
   @Test
   public void testDecimal() {
 

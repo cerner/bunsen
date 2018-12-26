@@ -24,12 +24,16 @@ public interface DefinitionVisitor<T> {
    * Visits a composite type.
    *
    * @param elementName the element to visit.
-   * @param elementType the type of the composite type.
+   * @param elementPath the FHIR path to the element.
+   * @param baseType the type of the composite type.
+   * @param elementTypeUrl the URL of the resource containing the element.
    * @param children the composite type's children.
    * @return the visitor result.
    */
   public T visitComposite(String elementName,
-      String elementType,
+      String elementPath,
+      String baseType,
+      String elementTypeUrl,
       List<StructureField<T>> children);
 
   /**
@@ -87,4 +91,13 @@ public interface DefinitionVisitor<T> {
    */
   public T visitChoice(String elementName,
       Map<String,T> fhirToChoiceTypes);
+
+  /**
+   * Returns the maximum depth to use for recursive structures of the given type.
+   *
+   * @param elementTypeUrl the element type that is recursive
+   * @param path the path to the element that is recursive
+   * @return the depth the visitor should recur to.
+   */
+  public int getMaxDepth(String elementTypeUrl, String path);
 }

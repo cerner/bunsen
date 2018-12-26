@@ -275,7 +275,10 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
   }
 
   @Override
-  public HapiConverter<Schema> visitComposite(String elementName, String elementType,
+  public HapiConverter<Schema> visitComposite(String elementName,
+      String elementPath,
+      String baseType,
+      String elementTypeUrl,
       List<StructureField<HapiConverter<Schema>>> children) {
 
     List<Field> fields = children.stream()
@@ -292,14 +295,12 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
         }).collect(Collectors.toList());
 
-    System.out.println("COMPOSITE: " + elementName + " -- " + elementType);
-    Schema schema = Schema.createRecord(elementType,
-        "Structure for FHIR type " + elementType,
+    Schema schema = Schema.createRecord(baseType,
+        "Structure for FHIR type " + baseType,
         "com.cerner.bunsen.avro",
         false, fields);
 
-
-    return new CompositeToAvroConverter(elementType,
+    return new CompositeToAvroConverter(baseType,
         children, schema, fhirSupport);
   }
 
@@ -479,5 +480,10 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
         schema,
         fhirSupport);
 
+  }
+
+  @Override
+  public int getMaxDepth(String elementTypeUrl, String path) {
+    return 1;
   }
 }

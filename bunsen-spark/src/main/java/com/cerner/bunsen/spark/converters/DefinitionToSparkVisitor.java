@@ -305,8 +305,8 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
   @Override
   public HapiConverter<DataType> visitComposite(String elementName,
-      String elementType,
-      List<StructureField<HapiConverter<DataType>>> children) {
+      String elementPath, String baseType,
+      String elementTypeUrl, List<StructureField<HapiConverter<DataType>>> children) {
 
     StructField[] fields = children.stream()
         .map(entry -> new StructField(entry.fieldName(),
@@ -315,7 +315,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
             Metadata.empty()))
         .toArray(StructField[]::new);
 
-    return new CompositeToSparkConverter(elementType,
+    return new CompositeToSparkConverter(baseType,
         children, new StructType(fields), fhirSupport);
   }
 
@@ -415,5 +415,10 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
     return new ChoiceToSparkConverter(choiceTypes,
         new StructType(fields),
         fhirSupport);
+  }
+
+  @Override
+  public int getMaxDepth(String elementTypeUrl, String path) {
+    return 1;
   }
 }
