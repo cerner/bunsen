@@ -43,6 +43,7 @@
     <module>bunsen-spark</module>
     <module>bunsen-spark-stu3</module>
     <module>bunsen-avro</module>
+    <module>bunsen-avro-records-stu3</module>
     <module>bunsen-spark-shaded</module>
     <module>python</module>
     <module>assembly</module>
@@ -238,6 +239,12 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>2.9.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro-maven-plugin</artifactId>
+          <version>${avro.version}</version>
         </plugin>
 
         <plugin>

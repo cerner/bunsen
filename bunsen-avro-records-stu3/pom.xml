@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>bunsen-avro-records-stu3</artifactId>
+  <packaging>jar</packaging>
+  <parent>
+    <artifactId>bunsen-parent</artifactId>
+    <groupId>com.cerner.bunsen</groupId>
+    <version>0.5.0-alpha1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <name>Bunsen Avro Records STU3</name>
+  <description>STU3 Avro Records</description>
+
+  <properties>
+    <!-- Skip checkstyle for generated Avro code. -->
+    <checkstyle.skip>true</checkstyle.skip>
+  </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- Dependencies to support generation of the Avro scheams,
+         but not required at runtime. -->
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-avro</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-base</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-utilities</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-core-stu3</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Included for test data. -->
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-core-stu3</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.cerner.bunsen</groupId>
+      <artifactId>bunsen-uscore-resources-stu3</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-validation-resources-dstu3</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-validation</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-structures-dstu3</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+
+      <!-- Force creation of the project build directory so the generate schemas
+           task has a destination it can write to. -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <configuration>
+              <tasks>
+                <mkdir dir="${project.build.directory}"/>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Generate the AVPR file for the FHIR resources. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <mainClass>com.cerner.bunsen.avro.tools.GenerateSchemas</mainClass>
+
+          <!-- Test scope used so dependencies aren't needed at runtime. -->
+          <classpathScope>test</classpathScope>
+
+          <arguments>
+            <argument>${project.build.directory}/fhir_resources.avpr</argument>
+
+            <!-- FHIR resources to generate. All data elements contained in these
+                 resources will be generated as well. -->
+
+            <!-- Base Resources -->
+            <argument>http://hl7.org/fhir/StructureDefinition/Patient</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Observation</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Condition</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/AllergyIntolerance</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Procedure</argument>
+
+            <argument>http://hl7.org/fhir/StructureDefinition/MedicationRequest</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/MedicationStatement</argument>
+
+            <!-- US Core Resources -->
+            <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient</argument>
+            <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition</argument>
+          </arguments>
+
+        </configuration>
+
+      </plugin>
+
+      <!-- Generate Java objects from the above schema. -->
+      <plugin>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>protocol</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${project.build.directory}</sourceDirectory>
+              <fieldVisibility>PRIVATE</fieldVisibility>
+              <stringType>String</stringType>
+              <enableDecimalLogicalType>true</enableDecimalLogicalType>
+              <includes>
+                <include>**/*.avpr</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

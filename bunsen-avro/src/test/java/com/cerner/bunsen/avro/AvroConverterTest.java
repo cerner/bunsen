@@ -91,23 +91,10 @@ public class AvroConverterTest {
     BigDecimal originalDecimal = ((Quantity) testObservation.getValue()).getValue();
 
     // Decode the Avro decimal to ensure the expected value is there.
-    ByteBuffer decimalBytes = (ByteBuffer) ((Record)
+    BigDecimal avroDecimal  = (BigDecimal) ((Record)
         ((Record) avroObservation.get("value"))
         .get("quantity"))
         .get("value");
-
-    // rewind the buffer to read the full number.
-    decimalBytes.rewind();
-
-    LogicalTypes.Decimal decimalPrecision
-        = LogicalTypes.decimal(12, 4);
-
-    Schema decimalSchema =
-        decimalPrecision.addToSchema(Schema.create(Type.BYTES));
-
-    Conversion<BigDecimal> conversion = new Conversions.DecimalConversion();
-
-    BigDecimal avroDecimal = conversion.fromBytes(decimalBytes, decimalSchema, decimalPrecision);
 
     Assert.assertEquals(originalDecimal.compareTo(avroDecimal), 0);
 
@@ -115,7 +102,6 @@ public class AvroConverterTest {
         ((Quantity) testObservationDecoded
             .getValue())
             .getValue()), 0);
-
   }
 
   @Test

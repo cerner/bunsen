@@ -52,9 +52,9 @@ public class GenerateSchemas {
     List<Schema> schemas = AvroConverter.generateSchemas(FhirContexts.forStu3(), resourceTypeUrls);
 
     // Wrap the schemas in a protocol to simplify the invocation of the compiler.
-    Protocol protocol = new Protocol("fhir-generated-schemas",
+    Protocol protocol = new Protocol("FhirGeneratedSchemas",
         "Avro schemas generated from FHIR StructureDefinitions",
-        null);
+        "com.cerner.bunsen.avro");
 
     protocol.setTypes(schemas);
 

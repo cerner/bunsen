@@ -30,6 +30,7 @@ import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.IndexedRecord;
+import org.apache.avro.specific.SpecificData;
 import org.hl7.fhir.instance.model.api.IBase;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
@@ -77,24 +78,12 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
     protected void toHapi(Object input, IPrimitiveType primitive) {
 
-      BigDecimal converted = conversion.fromBytes((ByteBuffer) input,
-          DECIMAL_SCHEMA,
-          DECIMAL_PRECISION);
-
-      primitive.setValue(converted);
+      primitive.setValue(input);
     }
 
     protected Object fromHapi(IPrimitiveType primitive) {
 
-      BigDecimal decimalValue = (BigDecimal) primitive.getValue();
-
-      BigDecimal scaledValue = decimalValue.scale() == 4
-          ? decimalValue
-          : decimalValue.setScale(4);
-
-      return conversion.toBytes(scaledValue,
-          DECIMAL_SCHEMA,
-          DECIMAL_PRECISION);
+      return primitive.getValue();
     }
 
     @Override
@@ -130,6 +119,8 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
   private static class CompositeToAvroConverter extends HapiCompositeConverter<Schema> {
 
+    private final GenericData avroData = SpecificData.get();
+
     CompositeToAvroConverter(String elementType,
         List<StructureField<HapiConverter<Schema>>> children,
         Schema structType,
@@ -155,7 +146,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     @Override
     protected Object createComposite(Object[] children) {
 
-      IndexedRecord record = new GenericData.Record(getDataType());
+      IndexedRecord record = (IndexedRecord) avroData.newRecord(null, getDataType());
 
       for (int i = 0; i < children.length; ++i) {
 
@@ -174,6 +165,8 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
   private static class ChoiceToAvroConverter extends ChoiceConverter<Schema> {
 
+    private final GenericData avroData = SpecificData.get();
+
     ChoiceToAvroConverter(Map<String,HapiConverter<Schema>> choiceTypes,
         Schema structType,
         FhirConversionSupport fhirSupport) {
@@ -190,7 +183,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     @Override
     protected Object createComposite(Object[] children) {
 
-      IndexedRecord record = new GenericData.Record(getDataType());
+      IndexedRecord record = (IndexedRecord) avroData.newRecord(null, getDataType());
 
       for (int i = 0; i < children.length; ++i) {
 
@@ -283,6 +276,16 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     return TYPE_TO_CONVERTER.get(primitiveType);
   }
 
+  private static final Schema NULL_SCHEMA = Schema.create(Type.NULL);
+
+  /**
+   * Makes a given schema nullable.
+   */
+  private static Schema nullable(Schema schema) {
+
+    return Schema.createUnion(Arrays.asList(schema, NULL_SCHEMA));
+  }
+
   @Override
   public HapiConverter<Schema> visitComposite(String elementName,
       String elementPath,
@@ -306,7 +309,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
                 : "Field for FHIR property " + field.propertyName();
 
             return new Field(field.fieldName(),
-                field.result().getDataType(),
+                nullable(field.result().getDataType()),
                 doc,
                 (Object) null);
 
@@ -455,7 +458,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
       List<Field> fields = fieldsWithReferences.stream()
           .map(entry -> new Field(entry.fieldName(),
-              entry.result().getDataType(),
+              nullable(entry.result().getDataType()),
               "Reference field",
               (Object) null))
           .collect(Collectors.toList());
@@ -506,7 +509,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       List<Field> fields = children.stream()
           .map(entry ->
               new Field(entry.fieldName(),
-                  entry.result().getDataType(),
+                  nullable(entry.result().getDataType()),
                   "Doc here",
                   (Object) null))
           .collect(Collectors.toList());
@@ -554,7 +557,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
               + entry.getKey().substring(1);
 
           return new Field(fieldName,
-              entry.getValue().getDataType(),
+              nullable(entry.getValue().getDataType()),
               "Choice field",
               (Object) null);
 
