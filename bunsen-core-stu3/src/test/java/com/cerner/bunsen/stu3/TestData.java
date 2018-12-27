@@ -41,6 +41,9 @@ public class TestData {
   public static final String US_CORE_CONDITION =
       "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition";
 
+  public static final String VALUE_SET =
+      "http://hl7.org/fhir/StructureDefinition/ValueSet";
+
   /**
    * Returns a FHIR Condition for testing purposes.
    */

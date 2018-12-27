@@ -1,17 +1,27 @@
-package com.cerner.bunsen.com.cerner.bunsen.avro;
+package com.cerner.bunsen.avro;
 
 import com.cerner.bunsen.FhirContexts;
 import com.cerner.bunsen.avro.AvroConverter;
 import com.cerner.bunsen.stu3.TestData;
+import com.google.common.collect.ImmutableList;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;
 import org.apache.avro.LogicalTypes;
+import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
+import org.apache.avro.compiler.specific.SpecificCompiler;
 import org.apache.avro.generic.GenericData.Record;
+import org.hl7.fhir.dstu3.hapi.ctx.IValidationSupport;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Condition;
 import org.hl7.fhir.dstu3.model.Extension;
@@ -19,6 +29,8 @@ import org.hl7.fhir.dstu3.model.IntegerType;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Quantity;
+import org.hl7.fhir.dstu3.model.StructureDefinition;
+import org.hl7.fhir.dstu3.model.StructureDefinition.StructureDefinitionKind;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -44,11 +56,12 @@ public class AvroConverterTest {
 
   private static Condition testConditionDecoded;
 
+
   /**
    * Initialize test data.
    */
   @BeforeClass
-  public static void convertTestData() {
+  public static void convertTestData() throws IOException {
 
     AvroConverter observationConverter = AvroConverter.forResource(FhirContexts.forStu3(),
         "Observation");
@@ -185,16 +198,6 @@ public class AvroConverterTest {
   @Test
   public void testMultiReferenceTypes() {
 
-    // Row containing the general practitioner from our dataset.
-    /*
-    Row practitioner = testPatientDataset
-        .select(functions.explode(functions.col("generalpractitioner")))
-        .select("col.organizationId", "col.practitionerId")
-        .head();
-        */
-
-    // avroPatient.
-
     Record practitioner = (Record) ((List) avroPatient.get("generalPractitioner")).get(0);
 
     String organizationId = (String) practitioner.get("OrganizationId");
@@ -280,4 +283,48 @@ public class AvroConverterTest {
     Assert.assertEquals(testText, ethnicityRecord.get("text"));
   }
 
+  @Test
+  public void testCompile() throws IOException {
+
+    List<Schema> schemas = AvroConverter.generateSchemas(FhirContexts.forStu3(),
+        ImmutableList.of(TestData.US_CORE_PATIENT,
+            TestData.VALUE_SET));
+
+    // Wrap the schemas in a protocol to simplify the invocation of the compiler.
+    Protocol protocol = new Protocol("fhir-test",
+        "FHIR Resources for Testing",
+        null);
+
+    protocol.setTypes(schemas);
+
+    SpecificCompiler compiler = new SpecificCompiler(protocol);
+
+    Path generatedCodePath = Files.createTempDirectory("generated_code");
+
+    generatedCodePath.toFile().deleteOnExit();
+
+    compiler.compileToDestination(null, generatedCodePath.toFile());
+
+    // Check that java files were created as expected.
+    Set<String> javaFiles = Files.find(generatedCodePath,
+        10,
+        (path, basicFileAttributes) -> true)
+        .map(path -> generatedCodePath.relativize(path))
+        .map(Object::toString)
+        .collect(Collectors.toSet());
+
+    // Ensure common types were generated
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/Period.java"));
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/Coding.java"));
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/ValueSet.java"));
+
+    // The specific profile should be created in the expected sub-package.
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/us/core/Patient.java"));
+
+    // Check extension types.
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/us/core/UsCoreRace.java"));
+
+    // Choice types include each choice that could be used.
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/Choicebooleaninteger.java"));
+  }
 }

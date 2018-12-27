@@ -16,8 +16,11 @@ import com.cerner.bunsen.definitions.StructureField;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;
@@ -33,6 +36,8 @@ import org.hl7.fhir.instance.model.api.IPrimitiveType;
 public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<Schema>> {
 
   private final FhirConversionSupport fhirSupport;
+
+  private final Map<String, HapiConverter<Schema>> compositeConverters;
 
   private static final HapiConverter STRING_CONVERTER =
       new StringConverter(Schema.create(Type.STRING));
@@ -113,6 +118,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
           .put("dateTime", DATE_CONVERTER)
           .put("time", STRING_CONVERTER)
           .put("string", STRING_CONVERTER)
+          .put("oid", STRING_CONVERTER)
           .put("xhtml", STRING_CONVERTER)
           .put("decimal", DECIMAL_CONVERTER)
           .put("integer", INTEGER_CONVERTER)
@@ -261,11 +267,14 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
    * Creates a visitor to construct Avro conversion objects.
    *
    * @param fhirSupport support for FHIR conversions.
+   * @param compositeConverters a mutable cache of generated converters that may
+   *     be reused by types that contain them.
    */
-  public DefinitionToAvroVisitor(FhirConversionSupport fhirSupport) {
+  public DefinitionToAvroVisitor(FhirConversionSupport fhirSupport,
+      Map<String,HapiConverter<Schema>> compositeConverters) {
 
     this.fhirSupport = fhirSupport;
-
+    this.compositeConverters = compositeConverters;
   }
 
   @Override
@@ -281,27 +290,41 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       String elementTypeUrl,
       List<StructureField<HapiConverter<Schema>>> children) {
 
-    List<Field> fields = children.stream()
-        .map((StructureField<HapiConverter<Schema>> field) -> {
+    String recordName = recordNameFor(elementPath);
+    String recordNamespace = namespaceFor(elementTypeUrl);
+    String fullName = recordNamespace + "." + recordName;
 
-          String doc = field.extensionUrl() != null
-              ? "Extension field for " + field.extensionUrl()
-              : "Field for FHIR property " + field.propertyName();
+    HapiConverter<Schema> converter = compositeConverters.get(fullName);
 
-          return new Field(field.fieldName(),
-              field.result().getDataType(),
-              doc,
-              (Object) null);
+    if (converter == null) {
 
-        }).collect(Collectors.toList());
+      List<Field> fields = children.stream()
+          .map((StructureField<HapiConverter<Schema>> field) -> {
 
-    Schema schema = Schema.createRecord(baseType,
-        "Structure for FHIR type " + baseType,
-        "com.cerner.bunsen.avro",
-        false, fields);
+            String doc = field.extensionUrl() != null
+                ? "Extension field for " + field.extensionUrl()
+                : "Field for FHIR property " + field.propertyName();
 
-    return new CompositeToAvroConverter(baseType,
-        children, schema, fhirSupport);
+            return new Field(field.fieldName(),
+                field.result().getDataType(),
+                doc,
+                (Object) null);
+
+          }).collect(Collectors.toList());
+
+      Schema schema = Schema.createRecord(recordName,
+          "Structure for FHIR type " + baseType,
+          recordNamespace,
+          false,
+          fields);
+
+      converter = new CompositeToAvroConverter(baseType,
+          children, schema, fhirSupport);
+
+      compositeConverters.put(fullName, converter);
+    }
+
+    return converter;
   }
 
   /**
@@ -366,51 +389,96 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
   }
 
-  @Override
-  public HapiConverter<Schema> visitReference(String elementName, List<String> referenceTypes,
-      List<StructureField<HapiConverter<Schema>>> children) {
+  private static final Pattern STRUCTURE_URL_PATTERN =
+      Pattern.compile("http:\\/\\/hl7.org\\/fhir(\\/.*)?\\/StructureDefinition\\/([^\\/]*)$");
 
-    // Add direct references
-    List<StructureField<HapiConverter<Schema>>> fieldsWithReferences =
-        referenceTypes.stream()
-            .map(refUri -> {
+  private static String recordNameFor(String elementPath) {
 
-              String relativeType = refUri.substring(refUri.lastIndexOf('/') + 1);
+    return elementPath.replaceAll("\\.", "");
+  }
 
-              return new StructureField<HapiConverter<Schema>>("reference",
-                  relativeType + "Id",
-                  null,
-                  false,
-                  new RelativeValueConverter(relativeType));
+  private static String namespaceFor(String structuctureDefinitionUrl) {
 
-            }).collect(Collectors.toList());
+    Matcher matcher = STRUCTURE_URL_PATTERN.matcher(structuctureDefinitionUrl);
 
-    fieldsWithReferences.addAll(children);
+    if (matcher.matches()) {
 
-    List<Field> fields = fieldsWithReferences.stream()
-        .map(entry -> new Field(entry.fieldName(),
-            entry.result().getDataType(),
-            "Reference field",
-            (Object) null))
-        .collect(Collectors.toList());
+      String profile = matcher.group(1);
 
-    String recordName = children.stream()
-        .map(StructureField::fieldName)
-        .collect(Collectors.joining());
+      if (profile != null && profile.length() > 0) {
 
-    Schema schema = Schema.createRecord(recordName,
-        "Structure for FHIR type " + recordName,
-        "com.cerner.bunsen.avro",
-        false, fields);
+        String subPackage = profile.replaceAll("/", ".");
 
-    return new CompositeToAvroConverter(null,
-        fieldsWithReferences,
-        schema,
-        fhirSupport);
+        return "com.cerner.bunsen.avro" + subPackage;
+
+      } else {
+        return "com.cerner.bunsen.avro";
+      }
+
+    } else {
+      throw new IllegalArgumentException("Unregonized structure definition URL: "
+          + structuctureDefinitionUrl);
+    }
   }
 
   @Override
-  public HapiConverter<Schema> visitParentExtension(String elementName, String extensionUrl,
+  public HapiConverter<Schema> visitReference(String elementName,
+      List<String> referenceTypes,
+      List<StructureField<HapiConverter<Schema>>> children) {
+
+    // Generate a record name based on the type of references it can contain.
+    String recordName = referenceTypes.stream().collect(Collectors.joining()) + "Reference";
+
+    String recordNamespace = "com.cerner.bunsen.avro"; // FIXME
+    String fullName = recordNamespace + "." + recordName;
+
+    HapiConverter<Schema> converter = compositeConverters.get(fullName);
+
+    if (converter == null) {
+
+      // Add direct references
+      List<StructureField<HapiConverter<Schema>>> fieldsWithReferences =
+          referenceTypes.stream()
+              .map(refUri -> {
+
+                String relativeType = refUri.substring(refUri.lastIndexOf('/') + 1);
+
+                return new StructureField<HapiConverter<Schema>>("reference",
+                    relativeType + "Id",
+                    null,
+                    false,
+                    new RelativeValueConverter(relativeType));
+
+              }).collect(Collectors.toList());
+
+      fieldsWithReferences.addAll(children);
+
+      List<Field> fields = fieldsWithReferences.stream()
+          .map(entry -> new Field(entry.fieldName(),
+              entry.result().getDataType(),
+              "Reference field",
+              (Object) null))
+          .collect(Collectors.toList());
+
+      Schema schema = Schema.createRecord(recordName,
+          "Structure for FHIR type " + recordName,
+          "com.cerner.bunsen.avro",
+          false, fields);
+
+      converter = new CompositeToAvroConverter(null,
+          fieldsWithReferences,
+          schema,
+          fhirSupport);
+
+      compositeConverters.put(fullName, converter);
+    }
+
+    return converter;
+  }
+
+  @Override
+  public HapiConverter<Schema> visitParentExtension(String elementName,
+      String extensionUrl,
       List<StructureField<HapiConverter<Schema>>> children) {
 
     // Ignore extension fields that don't have declared content for now.
@@ -418,21 +486,46 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       return null;
     }
 
-    List<Field> fields = children.stream()
-        .map(entry ->
-            new Field(entry.fieldName(),
-                entry.result().getDataType(),
-                "Doc here",
-                (Object) null))
-        .collect(Collectors.toList());
 
-    Schema schema = Schema.createRecord(fields);
+    String recordNamespace = namespaceFor(extensionUrl);
 
-    return new CompositeToAvroConverter(null,
-        children,
-        schema,
-        fhirSupport,
-        extensionUrl);
+    String localPart = extensionUrl.substring(extensionUrl.lastIndexOf('/') + 1);
+
+    String[] parts = localPart.split("[-|_]");
+
+    String recordName = Arrays.stream(parts).map(part ->
+        part.substring(0,1).toUpperCase() + part.substring(1))
+        .collect(Collectors.joining());
+
+    String fullName = recordNamespace + "." + recordName;
+
+    HapiConverter<Schema> converter = compositeConverters.get(fullName);
+
+    if (converter == null) {
+
+      List<Field> fields = children.stream()
+          .map(entry ->
+              new Field(entry.fieldName(),
+                  entry.result().getDataType(),
+                  "Doc here",
+                  (Object) null))
+          .collect(Collectors.toList());
+
+      Schema schema = Schema.createRecord(recordName,
+          "Reference type.",
+          recordNamespace,
+          false, fields);
+
+      converter = new CompositeToAvroConverter(null,
+          children,
+          schema,
+          fhirSupport,
+          extensionUrl);
+
+      compositeConverters.put(fullName, converter);
+    }
+
+    return converter;
   }
 
   @Override

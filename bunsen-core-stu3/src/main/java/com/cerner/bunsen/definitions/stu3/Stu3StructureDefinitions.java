@@ -359,7 +359,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
       T result = visitor.visitComposite(elementName,
           element.getPath(),
           elementName,
-          null,
+          rootDefinition.getUrl(),
           childElements);
 
       return singleField(elementName, result);
@@ -496,6 +496,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
       List<String> referenceTypes = parentElement.getType()
           .stream()
           .filter(type -> "Reference".equals(type.getCode()))
+          .filter(type -> type.getTargetProfile() != null)
           .map(type -> {
 
             IContextValidationSupport validation = context.getValidationSupport();

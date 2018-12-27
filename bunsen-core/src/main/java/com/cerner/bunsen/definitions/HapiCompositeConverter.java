@@ -234,6 +234,12 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
       return NOOP_FIELD_SETTER;
     }
 
+    if (!(elementDefinition instanceof BaseRuntimeElementCompositeDefinition)) {
+      throw new IllegalArgumentException("Composite converter must be given a "
+          + "single composite element, received: "
+          + elementDefinition.getName());
+    }
+
     BaseRuntimeElementCompositeDefinition compositeDefinition =
         (BaseRuntimeElementCompositeDefinition) elementDefinition;
 

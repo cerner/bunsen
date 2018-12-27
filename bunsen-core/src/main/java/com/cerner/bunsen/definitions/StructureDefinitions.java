@@ -22,6 +22,7 @@ public abstract class StructureDefinitions {
       .add("datetime")
       .add("dateTime")
       .add("time")
+      .add("oid")
       .add("string")
       .add("decimal")
       .add("integer")
