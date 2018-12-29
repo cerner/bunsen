@@ -38,7 +38,7 @@
   <dependencies>
     <dependency>
       <groupId>com.cerner.bunsen</groupId>
-      <artifactId>bunsen-shaded</artifactId>
+      <artifactId>bunsen-spark-shaded</artifactId>
     </dependency>
     <dependency>
       <groupId>com.cerner.bunsen</groupId>
