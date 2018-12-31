@@ -15,7 +15,6 @@ import com.cerner.bunsen.definitions.StringConverter;
 import com.cerner.bunsen.definitions.StructureField;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,8 @@ import org.hl7.fhir.instance.model.api.IPrimitiveType;
 public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<Schema>> {
 
   private final FhirConversionSupport fhirSupport;
+
+  private final String basePackage;
 
   private final Map<String, HapiConverter<Schema>> compositeConverters;
 
@@ -260,13 +261,16 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
    * Creates a visitor to construct Avro conversion objects.
    *
    * @param fhirSupport support for FHIR conversions.
+   * @param basePackage the base package to be used for generated Avro structures.
    * @param compositeConverters a mutable cache of generated converters that may
    *     be reused by types that contain them.
    */
   public DefinitionToAvroVisitor(FhirConversionSupport fhirSupport,
+      String basePackage,
       Map<String,HapiConverter<Schema>> compositeConverters) {
 
     this.fhirSupport = fhirSupport;
+    this.basePackage = basePackage;
     this.compositeConverters = compositeConverters;
   }
 
@@ -395,12 +399,12 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
   private static final Pattern STRUCTURE_URL_PATTERN =
       Pattern.compile("http:\\/\\/hl7.org\\/fhir(\\/.*)?\\/StructureDefinition\\/([^\\/]*)$");
 
-  private static String recordNameFor(String elementPath) {
+  private String recordNameFor(String elementPath) {
 
     return elementPath.replaceAll("\\.", "");
   }
 
-  private static String namespaceFor(String structuctureDefinitionUrl) {
+  private String namespaceFor(String structuctureDefinitionUrl) {
 
     Matcher matcher = STRUCTURE_URL_PATTERN.matcher(structuctureDefinitionUrl);
 
@@ -412,10 +416,10 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
         String subPackage = profile.replaceAll("/", ".");
 
-        return "com.cerner.bunsen.avro" + subPackage;
+        return basePackage + subPackage;
 
       } else {
-        return "com.cerner.bunsen.avro";
+        return basePackage;
       }
 
     } else {
@@ -432,8 +436,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     // Generate a record name based on the type of references it can contain.
     String recordName = referenceTypes.stream().collect(Collectors.joining()) + "Reference";
 
-    String recordNamespace = "com.cerner.bunsen.avro"; // FIXME
-    String fullName = recordNamespace + "." + recordName;
+    String fullName = basePackage + "." + recordName;
 
     HapiConverter<Schema> converter = compositeConverters.get(fullName);
 
@@ -465,7 +468,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
       Schema schema = Schema.createRecord(recordName,
           "Structure for FHIR type " + recordName,
-          "com.cerner.bunsen.avro",
+          basePackage,
           false, fields);
 
       converter = new CompositeToAvroConverter(null,
@@ -549,27 +552,31 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
   public HapiConverter<Schema> visitChoice(String elementName,
       Map<String, HapiConverter<Schema>> choiceTypes) {
 
-    List<Field> fields = choiceTypes.entrySet().stream()
-        .map(entry -> {
+    List<Field> fields = choiceTypes.entrySet()
+            .stream()
+            .map(entry -> {
 
-          // Ensure first character of the field is lower case.
-          String fieldName = Character.toLowerCase(entry.getKey().charAt(0))
-              + entry.getKey().substring(1);
+              // Ensure first character of the field is lower case.
+              String fieldName = lowercase(entry.getKey());
 
-          return new Field(fieldName,
-              nullable(entry.getValue().getDataType()),
-              "Choice field",
-              (Object) null);
+              return new Field(fieldName,
+                      nullable(entry.getValue().getDataType()),
+                      "Choice field",
+                      (Object) null);
 
-        })
-        .collect(Collectors.toList());
+            })
+            .collect(Collectors.toList());
 
-    // TODO: Use path from root to define choice name?
-    String recordName = choiceTypes.keySet().stream().collect(Collectors.joining());
+    String fieldTypesString = choiceTypes
+            .keySet()
+            .stream()
+            .sorted()
+            .map(DefinitionToAvroVisitor::capitalize)
+            .collect(Collectors.joining());
 
-    Schema schema = Schema.createRecord("Choice" + recordName,
+    Schema schema = Schema.createRecord("Choice" + fieldTypesString,
         "Structure for FHIR choice type ",
-        "com.cerner.bunsen.avro",
+        basePackage,
         false, fields);
 
     return new ChoiceToAvroConverter(choiceTypes,
@@ -577,6 +584,28 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
         fhirSupport);
 
   }
+
+  private static final String capitalize(String string) {
+
+    if (string.length() == 0) {
+
+      return string;
+    }
+
+    return Character.toUpperCase(string.charAt(0)) + string.substring(1);
+  }
+
+  private static final String lowercase(String string) {
+
+    if (string.length() == 0) {
+
+      return string;
+    }
+
+    return Character.toLowerCase(string.charAt(0)) + string.substring(1);
+  }
+
+
 
   @Override
   public int getMaxDepth(String elementTypeUrl, String path) {

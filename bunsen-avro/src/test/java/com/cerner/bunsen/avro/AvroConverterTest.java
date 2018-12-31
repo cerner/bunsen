@@ -300,17 +300,17 @@ public class AvroConverterTest {
         .collect(Collectors.toSet());
 
     // Ensure common types were generated
-    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/Period.java"));
-    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/Coding.java"));
-    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/ValueSet.java"));
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/stu3/avro/Period.java"));
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/stu3/avro/Coding.java"));
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/stu3/avro/ValueSet.java"));
 
     // The specific profile should be created in the expected sub-package.
-    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/us/core/Patient.java"));
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/stu3/avro/us/core/Patient.java"));
 
     // Check extension types.
-    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/us/core/UsCoreRace.java"));
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/stu3/avro/us/core/UsCoreRace.java"));
 
     // Choice types include each choice that could be used.
-    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/avro/Choicebooleaninteger.java"));
+    Assert.assertTrue(javaFiles.contains("com/cerner/bunsen/stu3/avro/ChoiceBooleanInteger.java"));
   }
 }

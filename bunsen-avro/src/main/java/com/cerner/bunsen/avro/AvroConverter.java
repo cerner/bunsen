@@ -1,6 +1,7 @@
 package com.cerner.bunsen.avro;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import com.cerner.bunsen.avro.converters.DefinitionToAvroVisitor;
 import com.cerner.bunsen.definitions.HapiConverter;
@@ -37,8 +38,27 @@ public class AvroConverter {
       String resourceTypeUrl,
       Map<String,HapiConverter<Schema>> compositeConverters) {
 
+    FhirVersionEnum fhirVersion = context.getVersion().getVersion();
+
+    String basePackage;
+
+    if (FhirVersionEnum.DSTU3.equals(fhirVersion)) {
+
+      basePackage = "com.cerner.bunsen.stu3.avro";
+
+    } else if (FhirVersionEnum.R4.equals(fhirVersion)) {
+
+      basePackage = "com.cerner.bunsen.r4.avro";
+
+    } else {
+
+      throw new IllegalArgumentException("Unsupported FHIR version " + fhirVersion.toString());
+    }
+
     DefinitionToAvroVisitor visitor =
-        new DefinitionToAvroVisitor(structureDefinitions.conversionSupport(), compositeConverters);
+        new DefinitionToAvroVisitor(structureDefinitions.conversionSupport(),
+                basePackage,
+                compositeConverters);
 
     HapiConverter<Schema> converter =  structureDefinitions.transform(visitor, resourceTypeUrl);
 

@@ -1,10 +1,14 @@
 package com.cerner.bunsen.avro;
 
 import com.cerner.bunsen.FhirContexts;
-import com.cerner.bunsen.avro.us.core.UsCoreEthnicity;
+import com.cerner.bunsen.stu3.avro.Observation;
+import com.cerner.bunsen.stu3.avro.OrganizationPractitionerReference;
+import com.cerner.bunsen.stu3.avro.PatientReference;
+import com.cerner.bunsen.stu3.avro.us.core.UsCoreEthnicity;
 import com.cerner.bunsen.stu3.TestData;
 import java.math.BigDecimal;
 import java.util.List;
+
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IntegerType;
@@ -13,7 +17,7 @@ import org.hl7.fhir.exceptions.FHIRException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.cerner.bunsen.avro.us.core.Patient;
+import com.cerner.bunsen.stu3.avro.us.core.Patient;
 
 /**
  * Unit test for conversion of specific records to and from HAPI resources.
@@ -48,8 +52,8 @@ public class SpecificRecordsTest {
 
   private static final org.hl7.fhir.dstu3.model.Condition testCondition = TestData.newCondition();
 
-  public static com.cerner.bunsen.avro.us.core.Condition avroCondition =
-      (com.cerner.bunsen.avro.us.core.Condition) CONDITION_CONVERTER.resourceToAvro(testCondition);
+  public static com.cerner.bunsen.stu3.avro.us.core.Condition avroCondition =
+      (com.cerner.bunsen.stu3.avro.us.core.Condition) CONDITION_CONVERTER.resourceToAvro(testCondition);
 
   private static org.hl7.fhir.dstu3.model.Condition  testConditionDecoded =
       (org.hl7.fhir.dstu3.model.Condition ) CONDITION_CONVERTER.avroToResource(avroCondition);
@@ -101,6 +105,11 @@ public class SpecificRecordsTest {
     Assert.assertTrue(testPatient.getMultipleBirth()
         .equalsDeep(testPatientDecoded.getMultipleBirth()));
 
+    Assert.assertEquals(((IntegerType) testPatient.getMultipleBirth()).getValue(),
+            avroPatient.getMultipleBirth().getInteger());
+
+    // Choice types not populated should be null.
+    Assert.assertNull(avroPatient.getMultipleBirth().getBoolean$());
   }
 
   @Test
@@ -109,9 +118,9 @@ public class SpecificRecordsTest {
     org.hl7.fhir.dstu3.model.Coding testCoding = testCondition.getSeverity().getCodingFirstRep();
     Coding decodedCoding = testConditionDecoded.getSeverity().getCodingFirstRep();
 
-    List<com.cerner.bunsen.avro.Coding> severityCodings = avroCondition.getSeverity().getCoding();
+    List<com.cerner.bunsen.stu3.avro.Coding> severityCodings = avroCondition.getSeverity().getCoding();
 
-    com.cerner.bunsen.avro.Coding severityCoding = severityCodings.get(0);
+    com.cerner.bunsen.stu3.avro.Coding severityCoding = severityCodings.get(0);
 
     Assert.assertEquals(testCoding.getCode(),
         severityCoding.getCode());
@@ -225,7 +234,7 @@ public class SpecificRecordsTest {
 
     UsCoreEthnicity ethnicityRecord = avroPatient.getEthnicity();
 
-    com.cerner.bunsen.avro.Coding ombCategoryRecord =  ethnicityRecord.getOmbCategory();
+    com.cerner.bunsen.stu3.avro.Coding ombCategoryRecord =  ethnicityRecord.getOmbCategory();
 
     Assert.assertEquals(testOmbCategory.getSystem(), ombCategoryRecord.getSystem());
     Assert.assertEquals(testOmbCategory.getCode(), ombCategoryRecord.getCode());
