@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
 import org.apache.spark.sql.types.ArrayType;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
@@ -108,7 +109,20 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
     @Override
     protected Object getChild(Object composite, int index) {
 
-      return ((Row) composite).get(index);
+      // The row being converted may have come from a different schema or profile
+      // than what is being requested by the caller, so we must look up fields
+      // by name.
+      String fieldName = ((StructType) this.structType).fields()[index].name();
+
+      scala.Option fieldIndex = ((GenericRowWithSchema) composite)
+              .schema()
+              .getFieldIndex(fieldName);
+
+      if (fieldIndex.isDefined()) {
+        return ((Row) composite).get((Integer) fieldIndex.get());
+      } else {
+        return null;
+      }
     }
 
     @Override

@@ -345,4 +345,21 @@ public class SparkRowConverterTest {
 
     checkNoEmptyStructs(schema, null);
   }
+
+
+  @Test
+  public void testDecodeWithDifferentProfile() {
+
+    // Decoding with the base profile should still produce the expected fields.
+    SparkRowConverter patientConverter = SparkRowConverter.forResource(fhirContext,
+            "Patient");
+
+    Patient basePatientDecoded = (Patient) patientConverter
+            .rowToResource(testPatientDataset.head());
+
+    Assert.assertEquals(testPatient.getId(), basePatientDecoded.getId());
+    Assert.assertEquals(testPatient.getGender(), basePatientDecoded.getGender());
+    Assert.assertTrue(testPatient.getMultipleBirth()
+            .equalsDeep(basePatientDecoded.getMultipleBirth()));
+  }
 }

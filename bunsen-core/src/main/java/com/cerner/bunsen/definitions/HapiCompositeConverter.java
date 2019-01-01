@@ -24,7 +24,7 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
   private final List<StructureField<HapiConverter<T>>> children;
 
-  private final T structType;
+  protected final T structType;
 
   private final String extensionUrl;
 
@@ -76,15 +76,6 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
     public IBase toHapi(Object rowObject) {
 
       IBase fhirObject = compositeDefinition.newInstance();
-
-      // TODO: interrogate schema to obtain fields in case they are somehow reordered?
-
-      // Rows may be larger than the expected HAPI structure in case they
-      // include added columns.
-      // if (row.size() < children.size()) {
-      //  throw new IllegalStateException("Unexpected row during deserialization "
-      //      + row.toString());
-      // }
 
       Iterator<StructureField<HapiFieldSetter>> childIterator = children.iterator();
 

@@ -141,6 +141,9 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     @Override
     protected Object getChild(Object composite, int index) {
 
+      // This assumes the Avro datum reader has reconciled any differences between the writer schema
+      // (used to produce the Avro data) and the reader schema used in the process consuming it.
+      // This reconciliation ensures all field indexes match.
       return ((IndexedRecord) composite).get(index);
     }
 
