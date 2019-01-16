@@ -112,26 +112,29 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
     * Returns the accessor method for the given child field.
     */
   private def accessorFor(field: BaseRuntimeChildDefinition): String = {
+    // Elements called `class` have an underscore appended to the end of their name within getters.
+    val elementName = if (field.getElementName.equals("class"))
+      field.getElementName.capitalize + "_"
+    else field.getElementName.capitalize
 
     // Primitive single-value types typically use the Element suffix in their
     // accessors, with the exception of the "div" field for reasons that are not clear.
     if (field.isInstanceOf[RuntimeChildPrimitiveDatatypeDefinition] &&
       field.getMax == 1 &&
       field.getElementName != "div")
-      "get" + field.getElementName.capitalize + "Element"
-    else {
-      if (field.getElementName.equals("class")) {
-        "get" + field.getElementName.capitalize + "_"
-      } else {
-        "get" + field.getElementName.capitalize
-      }
-    }
+      "get" + elementName + "Element"
+    else
+      "get" + elementName
   }
 
   /**
     * Returns the setter for the given field name.s
     */
   private def setterFor(field: BaseRuntimeChildDefinition): String = {
+    // Elements called `class` have an underscore appended to the end of their name within getters.
+    val elementName = if (field.getElementName.equals("class"))
+      field.getElementName.capitalize + "_"
+    else field.getElementName.capitalize
 
     // Primitive single-value types typically use the Element suffix in their
     // setters, with the exception of the "div" field for reasons that are not clear.
@@ -140,9 +143,9 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
       // Enumerations are set directly rather than via elements.
       !field.isInstanceOf[RuntimeChildPrimitiveEnumerationDatatypeDefinition] &&
       field.getMax == 1 && field.getElementName != "div")
-      "set" + field.getElementName.capitalize + "Element"
+      "set" + elementName + "Element"
     else
-      "set" + field.getElementName.capitalize
+      "set" + elementName
   }
 
   /**
