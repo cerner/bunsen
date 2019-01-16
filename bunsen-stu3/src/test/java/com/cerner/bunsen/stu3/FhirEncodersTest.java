@@ -18,6 +18,7 @@ import org.hl7.fhir.dstu3.model.Annotation;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Condition;
 import org.hl7.fhir.dstu3.model.DateTimeType;
+import org.hl7.fhir.dstu3.model.ImagingStudy;
 import org.hl7.fhir.dstu3.model.IntegerType;
 import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
@@ -60,6 +61,10 @@ public class FhirEncodersTest {
   private static Dataset<MedicationRequest> medDataset;
   private static MedicationRequest decodedMedRequest;
 
+  private static ImagingStudy imagingStudy = TestData.newImagingStudy();
+  private static Dataset<ImagingStudy> imagingStudyDataset;
+  private static ImagingStudy decodedImagingStudy;
+
   /**
    * Set up Spark.
    */
@@ -85,6 +90,10 @@ public class FhirEncodersTest {
     medDataset = spark.createDataset(ImmutableList.of(medRequest),
         encoders.of(MedicationRequest.class, Medication.class, Provenance.class));
     decodedMedRequest = medDataset.head();
+
+    imagingStudyDataset = spark
+        .createDataset(ImmutableList.of(imagingStudy), encoders.of(ImagingStudy.class));
+    decodedImagingStudy = imagingStudyDataset.head();
   }
 
   /**
@@ -332,5 +341,13 @@ public class FhirEncodersTest {
 
     Assert.assertSame(encoders.of(Patient.class),
         encoders.of(Patient.class));
+  }
+
+  @Test
+  public void testOid() {
+    Assert.assertEquals(imagingStudy.getUid(),
+        imagingStudyDataset.select("uid").head().get(0));
+    Assert.assertEquals(imagingStudy.getUid(),
+        decodedImagingStudy.getUid());
   }
 }

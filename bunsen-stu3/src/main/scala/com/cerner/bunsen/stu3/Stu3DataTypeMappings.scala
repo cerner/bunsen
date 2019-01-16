@@ -39,6 +39,7 @@ class Stu3DataTypeMappings extends DataTypeMappings {
       classOf[CodeType] -> DataTypes.StringType,
       classOf[StringType] -> DataTypes.StringType,
       classOf[UriType] -> DataTypes.StringType,
+      classOf[OidType] -> DataTypes.StringType,
       classOf[IntegerType] -> DataTypes.IntegerType,
       classOf[UnsignedIntType] -> DataTypes.IntegerType,
       classOf[PositiveIntType] -> DataTypes.IntegerType,

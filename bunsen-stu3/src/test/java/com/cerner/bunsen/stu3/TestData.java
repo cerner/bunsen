@@ -1,11 +1,16 @@
 package com.cerner.bunsen.stu3;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 import org.hl7.fhir.dstu3.model.Annotation;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Condition;
 import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.Identifier;
+import org.hl7.fhir.dstu3.model.ImagingStudy;
+import org.hl7.fhir.dstu3.model.ImagingStudy.ImagingStudySeriesComponent;
 import org.hl7.fhir.dstu3.model.IntegerType;
 import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.Medication.MedicationIngredientComponent;
@@ -13,6 +18,7 @@ import org.hl7.fhir.dstu3.model.Medication.MedicationStatus;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
 import org.hl7.fhir.dstu3.model.Narrative;
 import org.hl7.fhir.dstu3.model.Observation;
+import org.hl7.fhir.dstu3.model.OidType;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Procedure;
 import org.hl7.fhir.dstu3.model.Provenance;
@@ -191,5 +197,24 @@ public class TestData {
     medReq.addContained(newProvenance());
 
     return medReq;
+  }
+
+  /**
+   * Returns a FHIR ImagingStudy resource for testing purposes.
+   */
+  public static ImagingStudy newImagingStudy() {
+    ImagingStudy imagingStudy = new ImagingStudy();
+
+    imagingStudy.setId("test-imaging-study");
+    imagingStudy.setUid("1.3.12.2.1107.5.1.4.45533.30000008102706401187500000052");
+    imagingStudy.setPatient(new Reference("Patient/test-patient"));
+    List<ImagingStudySeriesComponent> series = new ArrayList<>();
+    ImagingStudySeriesComponent seriesComponent = new ImagingStudySeriesComponent(
+        new OidType("1.3.12.2.1107.5.1.4.45533.30000008102706401187500000053"),
+        new Coding("http://dicom.nema.org/resources/ontology/DCM", "HD", "Hemodynamic Waveform"));
+    series.add(seriesComponent);
+    imagingStudy.setSeries(series);
+
+    return imagingStudy;
   }
 }
