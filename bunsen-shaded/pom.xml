@@ -48,6 +48,8 @@
                   <include>ca.uhn.hapi.fhir:hapi-fhir-structures-r4</include>
                   <include>ca.uhn.hapi.fhir:hapi-fhir-validation-resources-r4</include>
 
+                  <include>org.apache.commons:commons-text</include>
+
                 </includes>
               </artifactSet>
               <filters>
