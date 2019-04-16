@@ -8,8 +8,9 @@ import com.cerner.bunsen.datatypes.DataTypeMappings
 import org.apache.spark.sql.catalyst.analysis.{GetColumnByOrdinal, UnresolvedAttribute, UnresolvedExtractValue}
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, ExprCode}
 import org.apache.spark.sql.catalyst.expressions.objects._
-import org.apache.spark.sql.catalyst.expressions
+import org.apache.spark.sql.catalyst.{InternalRow, expressions}
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 import org.hl7.fhir.instance.model.api.{IBase, IBaseDatatype}
@@ -17,6 +18,7 @@ import org.hl7.fhir.utilities.xhtml.XhtmlNode
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.Stream.Empty
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -28,17 +30,19 @@ private[bunsen] object EncoderBuilder {
     * Returns an encoder for the FHIR resource implemented by the given class
     *
     * @param definition The FHIR resource definition
+    * @param contained The FHIR resources to be contained to the given definition
     * @return An ExpressionEncoder for the resource
     */
 
   def of(definition: BaseRuntimeElementCompositeDefinition[_],
          context: FhirContext,
          mappings: DataTypeMappings,
-         converter: SchemaConverter): ExpressionEncoder[_] = {
+         converter: SchemaConverter,
+         contained: mutable.Buffer[BaseRuntimeElementCompositeDefinition[_]] = mutable.Buffer.empty): ExpressionEncoder[_] = {
 
-    val fhirClass = definition.getImplementingClass()
+    val fhirClass = definition.getImplementingClass
 
-    val schema = converter.compositeToStructType(definition)
+    val schema = converter.parentToStructType(definition, contained)
 
     val inputObject = BoundReference(0, ObjectType(fhirClass), nullable = true)
 
@@ -46,12 +50,12 @@ private[bunsen] object EncoderBuilder {
       mappings,
       converter)
 
-    val serializers = encoderBuilder.serializer(inputObject, definition)
+    val serializers = encoderBuilder.serializer(inputObject, definition, contained)
 
-    assert(schema.fields.size == serializers.size,
+    assert(schema.fields.length == serializers.size,
       "Must have a serializer for each field.")
 
-    val deserializer = encoderBuilder.compositeToDeserializer(definition, None)
+    val deserializer = encoderBuilder.compositeToDeserializer(definition, None, contained)
 
     new ExpressionEncoder(
       schema,
@@ -292,16 +296,74 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
       createStruct)
   }
 
+  /**
+    * An Expression extracting an object having the given class definition from a List of FHIR
+    * Resources.
+    */
+  private case class GetClassFromContained(
+     targetObject: Expression,
+     containedDefinition: BaseRuntimeElementCompositeDefinition[_]) extends Expression {
+
+    override def nullable: Boolean = targetObject.nullable
+    override def children: Seq[Expression] = targetObject :: Nil
+
+    override def dataType: DataType = ObjectType(containedDefinition.getImplementingClass)
+
+    override def eval(input: InternalRow): Any =
+      throw new UnsupportedOperationException("Only code-generated evaluation is supported.")
+
+    override def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
+
+      val javaType = containedDefinition.getImplementingClass.getName
+      val obj = targetObject.genCode(ctx)
+
+      ev.copy(code =
+      s"""
+         |${obj.code}
+         |$javaType ${ev.value} = null;
+         |boolean ${ev.isNull} = true;
+         |java.util.List<Object> contained = ${obj.value}.getContained();
+         |
+         |for (int containedIndex = 0; containedIndex < contained.size(); containedIndex++) {
+         |  if (contained.get(containedIndex) instanceof $javaType) {
+         |    ${ev.value} = ($javaType) contained.get(containedIndex);
+         |    ${ev.isNull} = false;
+         |  }
+         |}
+       """.stripMargin)
+    }
+  }
+
   private def serializer(inputObject: Expression,
-                         definition: BaseRuntimeElementCompositeDefinition[_]): Seq[Expression] = {
+                         definition: BaseRuntimeElementCompositeDefinition[_],
+                         contained: Seq[BaseRuntimeElementCompositeDefinition[_]]):
+    Seq[Expression] = {
 
     // Map to (name, value, name, value) expressions for child elements.
     val childFields: Seq[Expression] =
       definition.getChildren
         .flatMap(child => childToExpr(inputObject, child))
 
+    // Map to (name, value, name, value) expressions for all contained resources.
+    val containedChildFields = contained.flatMap { containedDefinition =>
+
+      val containedChild = GetClassFromContained(inputObject, containedDefinition)
+
+      Literal(containedDefinition.getName) ::
+        CreateNamedStruct(containedDefinition.getChildren
+          .flatMap(child => childToExpr(containedChild, child))) ::
+        Nil
+    }
+
+    // Create a 'contained' struct having the contained elements if declared for the parent.
+    val containedChildren = if (contained.nonEmpty) {
+      Literal("contained") :: CreateNamedStruct(containedChildFields) :: Nil
+    } else {
+      Nil
+    }
+
     // The fields are (name, expr) tuples, so just get the expressions for the top level.
-    childFields.grouped(2)
+    (childFields ++ containedChildren).grouped(2)
       .map(group => group.get(1))
       .toList
   }
@@ -395,7 +457,6 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
 
   private def childToDeserializer(childDefinition: BaseRuntimeChildDefinition,
                                   path: Option[Expression]): Map[String, Expression] = {
-
 
     def getPath: Expression = path.getOrElse(GetColumnByOrdinal(0, ObjectType(classOf[String])))
 
@@ -534,10 +595,12 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
   }
 
   /**
-    * Returns an expression for deserializing a composite structure at the given path.
+    * Returns an expression for deserializing a composite structure at the given path along with
+    * any contained resources declared against the structure.
     */
   private def compositeToDeserializer(definition: BaseRuntimeElementCompositeDefinition[_],
-                                      path: Option[Expression]): Expression = {
+                                      path: Option[Expression],
+                                      contained: Seq[BaseRuntimeElementCompositeDefinition[_]] = Nil): Expression = {
 
     def addToPath(part: String): Expression = path
       .map(p => UnresolvedExtractValue(p, expressions.Literal(part)))
@@ -567,7 +630,18 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
       (setterFor(childDefinition), expression)
     }
 
-    val result = InitializeJavaBean(compositeInstance, setters)
+    val bean: Expression = InitializeJavaBean(compositeInstance, setters)
+
+    // Deserialize any Contained resources to the new Object through successive calls
+    // to 'addContained'.
+    val result = contained.foldLeft(bean)((value, containedResource) => {
+
+      Invoke(value,
+        "addContained",
+        ObjectType(definition.getImplementingClass),
+        compositeToDeserializer(containedResource,
+          Some(UnresolvedAttribute("contained." + containedResource.getName))) :: Nil)
+    })
 
     if (path.nonEmpty) {
       expressions.If(

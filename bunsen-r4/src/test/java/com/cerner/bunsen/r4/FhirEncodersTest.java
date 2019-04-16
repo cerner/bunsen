@@ -19,9 +19,12 @@ import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.IntegerType;
+import org.hl7.fhir.r4.model.Medication;
 import org.hl7.fhir.r4.model.MedicationRequest;
 import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.Provenance;
+import org.hl7.fhir.r4.model.Provenance.ProvenanceEntityComponent;
 import org.hl7.fhir.r4.model.Quantity;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -75,7 +78,7 @@ public class FhirEncodersTest {
     decodedObservation = observationsDataset.head();
 
     medDataset = spark.createDataset(ImmutableList.of(medRequest),
-        encoders.of(MedicationRequest.class));
+        encoders.of(MedicationRequest.class, Medication.class, Provenance.class));
 
     decodedMedRequest = medDataset.head();
   }
@@ -231,6 +234,42 @@ public class FhirEncodersTest {
     Assert.assertEquals(original.getAuthorReference().getReference(),
         decoded.getAuthorReference().getReference());
 
+  }
+
+  @Test
+  public void contained() throws FHIRException {
+
+    // Contained resources should be put to the Contained list in order of the Encoder arguments
+    Assert.assertTrue(decodedMedRequest.getContained().get(0) instanceof Medication);
+
+    Medication originalMedication = (Medication) medRequest.getContained().get(0);
+    Medication decodedMedication = (Medication) decodedMedRequest.getContained().get(0);
+
+    Assert.assertEquals(originalMedication.getId(), decodedMedication.getId());
+    Assert.assertEquals(originalMedication.getIngredientFirstRep()
+            .getItemCodeableConcept()
+            .getCodingFirstRep()
+            .getCode(),
+        decodedMedication.getIngredientFirstRep()
+            .getItemCodeableConcept()
+            .getCodingFirstRep()
+            .getCode());
+
+    Assert.assertTrue(decodedMedRequest.getContained().get(1) instanceof Provenance);
+
+    Provenance decodedProvenance = (Provenance) decodedMedRequest.getContained().get(1);
+    Provenance originalProvenance = (Provenance) medRequest.getContained().get(1);
+
+    Assert.assertEquals(originalProvenance.getId(), decodedProvenance.getId());
+    Assert.assertEquals(originalProvenance.getTargetFirstRep().getReference(),
+        decodedProvenance.getTargetFirstRep().getReference());
+
+    ProvenanceEntityComponent originalEntity = originalProvenance.getEntityFirstRep();
+    ProvenanceEntityComponent decodedEntity = decodedProvenance.getEntityFirstRep();
+
+    Assert.assertEquals(originalEntity.getRole(), decodedEntity.getRole());
+    Assert.assertEquals(originalEntity.getWhat().getReference(),
+        decodedEntity.getWhat().getReference());
   }
 
   /**

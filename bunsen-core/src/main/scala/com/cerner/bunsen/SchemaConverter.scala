@@ -98,4 +98,33 @@ class SchemaConverter(fhirContext: FhirContext, dataTypeMappings: DataTypeMappin
     StructType(fields)
   }
 
+  /**
+    * Returns the Spark struct type used to encode the given parent FHIR composite and any optional
+    * contained FHIR resources.
+    *
+    * @param definition The FHIR definition of the parent having a composite type.
+    * @param contained The FHIR definitions of resources contained to the parent having composite
+    *                  types.
+    * @return The schema of the parent as a Spark StructType
+    */
+  private[bunsen] def parentToStructType(definition: BaseRuntimeElementCompositeDefinition[_],
+                                         contained: Seq[BaseRuntimeElementCompositeDefinition[_]]): StructType = {
+
+    val parent = compositeToStructType(definition)
+
+    if (contained.nonEmpty) {
+      val containedFields = contained.map(containedElement =>
+        StructField(containedElement.getName,
+          compositeToStructType(containedElement)))
+
+      val containedStruct = StructType(containedFields)
+
+      parent.add(StructField("contained", containedStruct))
+
+    } else {
+
+      parent
+    }
+  }
+
 }
