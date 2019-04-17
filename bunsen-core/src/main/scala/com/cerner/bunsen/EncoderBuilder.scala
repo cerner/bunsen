@@ -296,44 +296,6 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
       createStruct)
   }
 
-  /**
-    * An Expression extracting an object having the given class definition from a List of FHIR
-    * Resources.
-    */
-  private case class GetClassFromContained(
-     targetObject: Expression,
-     containedDefinition: BaseRuntimeElementCompositeDefinition[_]) extends Expression {
-
-    override def nullable: Boolean = targetObject.nullable
-    override def children: Seq[Expression] = targetObject :: Nil
-
-    override def dataType: DataType = ObjectType(containedDefinition.getImplementingClass)
-
-    override def eval(input: InternalRow): Any =
-      throw new UnsupportedOperationException("Only code-generated evaluation is supported.")
-
-    override def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
-
-      val javaType = containedDefinition.getImplementingClass.getName
-      val obj = targetObject.genCode(ctx)
-
-      ev.copy(code =
-      s"""
-         |${obj.code}
-         |$javaType ${ev.value} = null;
-         |boolean ${ev.isNull} = true;
-         |java.util.List<Object> contained = ${obj.value}.getContained();
-         |
-         |for (int containedIndex = 0; containedIndex < contained.size(); containedIndex++) {
-         |  if (contained.get(containedIndex) instanceof $javaType) {
-         |    ${ev.value} = ($javaType) contained.get(containedIndex);
-         |    ${ev.isNull} = false;
-         |  }
-         |}
-       """.stripMargin)
-    }
-  }
-
   private def serializer(inputObject: Expression,
                          definition: BaseRuntimeElementCompositeDefinition[_],
                          contained: Seq[BaseRuntimeElementCompositeDefinition[_]]):
@@ -347,7 +309,8 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
     // Map to (name, value, name, value) expressions for all contained resources.
     val containedChildFields = contained.flatMap { containedDefinition =>
 
-      val containedChild = GetClassFromContained(inputObject, containedDefinition)
+      val containedChild = GetClassFromContained(inputObject,
+        containedDefinition.getImplementingClass)
 
       Literal(containedDefinition.getName) ::
         CreateNamedStruct(containedDefinition.getChildren
@@ -654,4 +617,39 @@ private[bunsen] class EncoderBuilder(fhirContext: FhirContext,
   }
 }
 
+/**
+  * An Expression extracting an object having the given class definition from a List of FHIR
+  * Resources.
+  */
+case class GetClassFromContained(targetObject: Expression,
+                                 containedClass: Class[_])
+  extends Expression with NonSQLExpression {
 
+  override def nullable: Boolean = targetObject.nullable
+  override def children: Seq[Expression] = targetObject :: Nil
+  override def dataType: DataType = ObjectType(containedClass)
+
+  override def eval(input: InternalRow): Any =
+    throw new UnsupportedOperationException("Only code-generated evaluation is supported.")
+
+  override def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
+
+    val javaType = containedClass.getName
+    val obj = targetObject.genCode(ctx)
+
+    ev.copy(code =
+      s"""
+         |${obj.code}
+         |$javaType ${ev.value} = null;
+         |boolean ${ev.isNull} = true;
+         |java.util.List<Object> contained = ${obj.value}.getContained();
+         |
+         |for (int containedIndex = 0; containedIndex < contained.size(); containedIndex++) {
+         |  if (contained.get(containedIndex) instanceof $javaType) {
+         |    ${ev.value} = ($javaType) contained.get(containedIndex);
+         |    ${ev.isNull} = false;
+         |  }
+         |}
+       """.stripMargin)
+  }
+}

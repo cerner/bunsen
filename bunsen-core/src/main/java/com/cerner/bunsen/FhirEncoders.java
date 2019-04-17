@@ -182,9 +182,8 @@ public class FhirEncoders {
    * @param <T> the type of the resource to be encoded.
    * @return an encoder for the resource.
    */
-  public final <T extends IBaseResource> ExpressionEncoder<T> of (Class<T> type,
+  public final <T extends IBaseResource> ExpressionEncoder<T> of(Class<T> type,
       List<Class> contained) {
-
 
     BaseRuntimeElementCompositeDefinition definition =
         context.getResourceDefinition(type);

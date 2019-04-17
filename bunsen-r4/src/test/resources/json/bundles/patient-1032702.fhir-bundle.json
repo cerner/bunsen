@@ -72,6 +72,12 @@
     {
       "resource": {
         "resourceType": "MedicationRequest",
+        "contained": [
+          {
+            "resourceType": "Medication",
+            "id": "201"
+          }
+        ],
         "id": "101",
         "text": {
           "status": "generated",

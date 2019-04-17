@@ -215,6 +215,32 @@ public class Bundles {
 
   /**
    * Extracts the given resource type from the RDD of bundles and returns
+   * it as a Dataset of that type, including any declared resources contained
+   * to the parent resource.
+   *
+   * @param spark the spark session
+   * @param bundles the RDD of FHIR Bundles
+   * @param resourceName the FHIR name of the resource type to extract
+   *      (e.g., condition, patient. etc).
+   * @param contained the FHIR names of the resources contained to the
+   *      parent resource.
+   * @param <T> the type fo the resource being extracted from the bundles.
+   * @return a dataset of the given resource
+   */
+  public <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
+      JavaRDD<BundleContainer> bundles,
+      String resourceName,
+      String... contained) {
+
+    return extractEntry(spark,
+        bundles,
+        resourceName,
+        FhirEncoders.forVersion(fhirVersion).getOrCreate(),
+        contained);
+  }
+
+  /**
+   * Extracts the given resource type from the RDD of bundles and returns
    * it as a Dataset of that type.
    *
    * @param spark the spark session
@@ -225,10 +251,34 @@ public class Bundles {
    * @param <T> the type of the resource being extracted from the bundles.
    * @return a dataset of the given resource
    */
-  public  <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
+  public <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
       JavaRDD<BundleContainer> bundles,
       String resourceName,
       FhirEncoders encoders) {
+
+    return extractEntry(spark, bundles, resourceName, encoders, new String[]{});
+  }
+
+  /**
+   * Extracts the given resource type from the RDD of bundles and returns
+   * it as a Dataset of that type, including any declared resources contained
+   * to the parent resource.
+   *
+   * @param spark the spark session
+   * @param bundles the RDD of FHIR Bundles
+   * @param resourceName the FHIR name of the resource type to extract
+   *      (e.g., condition, patient. etc).
+   * @param encoders the Encoders instance defining how the resources are encoded.
+   * @param contained the FHIR names of the resources contained to the
+   *      parent resource.
+   * @param <T> the type fo the resource being extracted from the bundles.
+   * @return a dataset of the given resource
+   */
+  public <T extends IBaseResource> Dataset<T> extractEntry(SparkSession spark,
+      JavaRDD<BundleContainer> bundles,
+      String resourceName,
+      FhirEncoders encoders,
+      String... contained) {
 
     FhirContext context = FhirEncoders.contextFor(encoders.getFhirVersion());
 
@@ -238,7 +288,7 @@ public class Bundles {
         new ToResource<T>(def.getName(),
           encoders.getFhirVersion()));
 
-    Encoder<T> encoder = encoders.of((Class<T>) def.getImplementingClass());
+    Encoder<T> encoder = encoders.of(resourceName, contained);
 
     return spark.createDataset(resourceRdd.rdd(), encoder);
   }
