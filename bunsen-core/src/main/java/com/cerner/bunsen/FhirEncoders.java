@@ -173,7 +173,6 @@ public class FhirEncoders {
     return new Builder(fhirVersion);
   }
 
-
   /**
    * Returns an encoder for the given FHIR resource.
    *
@@ -183,7 +182,7 @@ public class FhirEncoders {
    * @return an encoder for the resource.
    */
   public final <T extends IBaseResource> ExpressionEncoder<T> of(Class<T> type,
-      List<Class> contained) {
+      List<Class<? extends IBaseResource>> contained) {
 
     BaseRuntimeElementCompositeDefinition definition =
         context.getResourceDefinition(type);
@@ -233,7 +232,7 @@ public class FhirEncoders {
    * @return an encoder for the resource.
    */
   public final <T extends IBaseResource> ExpressionEncoder<T> of(Class<T> type,
-      Class... contained) {
+      Class<? extends IBaseResource>... contained) {
 
     return of(type, Arrays.asList(contained));
   }
@@ -253,7 +252,7 @@ public class FhirEncoders {
 
     RuntimeResourceDefinition definition = context.getResourceDefinition(resourceName);
 
-    List<Class> containedClasses = new ArrayList<>();
+    List<Class<? extends IBaseResource>> containedClasses = new ArrayList<>();
 
     for (String containedName : contained) {
 

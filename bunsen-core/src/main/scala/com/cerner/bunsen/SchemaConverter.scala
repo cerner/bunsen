@@ -126,5 +126,4 @@ class SchemaConverter(fhirContext: FhirContext, dataTypeMappings: DataTypeMappin
       parent
     }
   }
-
 }

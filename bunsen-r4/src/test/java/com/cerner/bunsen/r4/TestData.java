@@ -119,7 +119,6 @@ public class TestData {
     return patient;
   }
 
-
   /**
    * Returns a FHIR medication to be contained to a medication request for testing purposes.
    */
