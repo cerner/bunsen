@@ -1,15 +1,22 @@
 package com.cerner.bunsen.stu3;
 
+import com.google.common.collect.ImmutableList;
 import org.hl7.fhir.dstu3.model.Annotation;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Condition;
 import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.IntegerType;
+import org.hl7.fhir.dstu3.model.Medication;
+import org.hl7.fhir.dstu3.model.Medication.MedicationIngredientComponent;
+import org.hl7.fhir.dstu3.model.Medication.MedicationStatus;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
 import org.hl7.fhir.dstu3.model.Narrative;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Procedure;
+import org.hl7.fhir.dstu3.model.Provenance;
+import org.hl7.fhir.dstu3.model.Provenance.ProvenanceEntityRole;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.utilities.xhtml.NodeType;
@@ -109,13 +116,54 @@ public class TestData {
   }
 
   /**
+   * Returns a FHIR medication to be contained to a medication request for testing purposes.
+   */
+  public static Medication newMedication() {
+
+    Medication medication = new Medication();
+
+    medication.setId("test-med");
+
+    MedicationIngredientComponent ingredient = new MedicationIngredientComponent();
+
+    CodeableConcept item = new CodeableConcept();
+    item.addCoding()
+        .setSystem("test/ingredient/system")
+        .setCode("test-code");
+
+    ingredient.setItem(item);
+
+    medication.addIngredient(ingredient);
+
+    return medication;
+  }
+
+  /**
+   * Returns a FHIR Provenance to be contained to a medication request for testing purposes.
+   */
+  public static Provenance newProvenance() {
+
+    Provenance provenance = new Provenance();
+
+    provenance.setId("test-provenance");
+
+    provenance.setTarget(ImmutableList.of(new Reference("test-target")));
+
+    provenance.getEntityFirstRep()
+        .setRole(ProvenanceEntityRole.SOURCE)
+        .setWhat(new Reference("test-entity"));
+
+    return provenance;
+  }
+
+  /**
    * Returns a FHIR medication request for testing purposes.
    */
   public static MedicationRequest newMedRequest() {
 
     MedicationRequest medReq = new MedicationRequest();
 
-    medReq.setId("test-med");
+    medReq.setId("test-medreq");
 
     // Medication code
     CodeableConcept med = new CodeableConcept();
@@ -137,6 +185,10 @@ public class TestData {
             .setDisplay("Example provider."));
 
     medReq.addNote(annotation);
+
+    // Add contained resources
+    medReq.addContained(newMedication());
+    medReq.addContained(newProvenance());
 
     return medReq;
   }

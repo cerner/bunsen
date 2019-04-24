@@ -8,10 +8,14 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import com.cerner.bunsen.datatypes.DataTypeMappings;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import scala.collection.JavaConversions;
 
 /**
  * Spark Encoders for FHIR Resources. This object is thread safe.
@@ -46,7 +50,7 @@ public class FhirEncoders {
   /**
    * Cached encoders to avoid having to re-create them.
    */
-  private final Map<Class, ExpressionEncoder> encoderCache = new HashMap<>();
+  private final Map<Integer, ExpressionEncoder> encoderCache = new HashMap<>();
 
   /**
    * Consumers should generally use the {@link #forStu3()} or {@link #forR4()}
@@ -173,17 +177,35 @@ public class FhirEncoders {
    * Returns an encoder for the given FHIR resource.
    *
    * @param type the type of the resource to encode.
+   * @param contained a list of types for FHIR resources contained to the encoded resource.
    * @param <T> the type of the resource to be encoded.
    * @return an encoder for the resource.
    */
-  public <T extends IBaseResource> ExpressionEncoder<T> of(Class<T> type) {
+  public final <T extends IBaseResource> ExpressionEncoder<T> of(Class<T> type,
+      List<Class<? extends IBaseResource>> contained) {
 
     BaseRuntimeElementCompositeDefinition definition =
         context.getResourceDefinition(type);
 
+    List<BaseRuntimeElementCompositeDefinition<?>> containedDefinitions = new ArrayList<>();
+
+    for (Class resource : contained) {
+
+      containedDefinitions.add(context.getResourceDefinition(resource));
+    }
+
+    StringBuilder keyBuilder = new StringBuilder(type.getName());
+
+    for (Class resource : contained) {
+
+      keyBuilder.append(resource.getName());
+    }
+
+    int key = keyBuilder.toString().hashCode();
+
     synchronized (encoderCache) {
 
-      ExpressionEncoder<T> encoder = encoderCache.get(type);
+      ExpressionEncoder<T> encoder = encoderCache.get(key);
 
       if (encoder == null) {
 
@@ -191,13 +213,28 @@ public class FhirEncoders {
             EncoderBuilder.of(definition,
                 context,
                 mappings,
-                new SchemaConverter(context, mappings));
+                new SchemaConverter(context, mappings),
+                JavaConversions.asScalaBuffer(containedDefinitions));
 
-        encoderCache.put(type, encoder);
+        encoderCache.put(key, encoder);
       }
 
       return encoder;
     }
+  }
+
+  /**
+   * Returns an encoder for the given FHIR resource.
+   *
+   * @param type the type of the resource to encode.
+   * @param contained a list of types for FHIR resources contained to the encoded resource.
+   * @param <T> the type of the resource to be encoded.
+   * @return an encoder for the resource.
+   */
+  public final <T extends IBaseResource> ExpressionEncoder<T> of(Class<T> type,
+      Class<? extends IBaseResource>... contained) {
+
+    return of(type, Arrays.asList(contained));
   }
 
   /**
@@ -206,14 +243,23 @@ public class FhirEncoders {
    *
    * @param resourceName the name of the FHIR resource to encode, such as
    *     "Encounter", "Condition", "Observation", etc.
+   * @param contained the names of FHIR resources contained to the encoded resource.
    * @param <T> the type of the resource to be encoded.
    * @return an encoder for the resource.
    */
-  public <T extends IBaseResource> ExpressionEncoder<T> of(String resourceName) {
+  public <T extends IBaseResource> ExpressionEncoder<T> of(String resourceName,
+      String... contained) {
 
     RuntimeResourceDefinition definition = context.getResourceDefinition(resourceName);
 
-    return of((Class<T>) definition.getImplementingClass());
+    List<Class<? extends IBaseResource>> containedClasses = new ArrayList<>();
+
+    for (String containedName : contained) {
+
+      containedClasses.add(context.getResourceDefinition(containedName).getImplementingClass());
+    }
+
+    return of((Class<T>) definition.getImplementingClass(), containedClasses);
   }
 
   /**

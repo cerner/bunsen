@@ -12,8 +12,10 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.functions;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Condition;
+import org.hl7.fhir.r4.model.MedicationRequest;
 import org.hl7.fhir.r4.model.Patient;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -130,6 +132,22 @@ public class BundlesTest {
     Assert.assertTrue(conditionIds.containsAll(expectedIds));
   }
 
+  private void checkContained(Dataset<MedicationRequest> medicationRequests) {
+    List<String> medicationIds = medicationRequests
+        .select("contained.medication.id")
+        .where(functions.col("id").isNotNull())
+        .as(Encoders.STRING())
+        .collectAsList();
+
+    Assert.assertEquals(2, medicationIds.size());
+
+    List<String> expectedIds = ImmutableList.of(
+        "#201",
+        "#202");
+
+    Assert.assertTrue(medicationIds.containsAll(expectedIds));
+  }
+
   @Test
   public void testGetResourcesByClass() {
 
@@ -158,6 +176,17 @@ public class BundlesTest {
 
     checkPatients(patients);
     checkConditions(conditions);
+  }
+
+  @Test
+  public void getContained() {
+
+    Dataset<MedicationRequest> medicationRequests = bundles.extractEntry(spark,
+        bundlesRdd,
+        "MedicationRequest",
+        "Medication");
+
+    checkContained(medicationRequests);
   }
 
   @Test

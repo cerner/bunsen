@@ -59,7 +59,7 @@ def from_xml(df, column):
     bundles = _bundles(df._sc._jvm)
     return bundles.fromXml(df._jdf, column)
 
-def extract_entry(sparkSession, javaRDD, resourceName):
+def extract_entry(sparkSession, javaRDD, resourceName, contained=[]):
     """
     Returns a dataset for the given entry type from the bundles.
 
@@ -68,12 +68,20 @@ def extract_entry(sparkSession, javaRDD, resourceName):
         in this package
     :param resourceName: the name of the FHIR resource to extract
         (condition, observation, etc)
+    :param contained: the list of names of the FHIR resources contained to the parent
+        resource
     :return: a DataFrame containing the given resource encoded into Spark columns
     """
 
+    jArray = sparkSession.sparkContext._gateway \
+        .new_array(sparkSession._jvm.java.lang.String, len(contained))
+
+    for idx, c in enumerate(contained):
+        jArray[idx] = contained[idx]
+
     bundles = _bundles(sparkSession._jvm)
     return DataFrame(
-            bundles.extractEntry(sparkSession._jsparkSession, javaRDD, resourceName),
+            bundles.extractEntry(sparkSession._jsparkSession, javaRDD, resourceName, jArray),
             sparkSession._wrapped)
 
 def write_to_database(sparkSession, javaRDD, databaseName, resourceNames):

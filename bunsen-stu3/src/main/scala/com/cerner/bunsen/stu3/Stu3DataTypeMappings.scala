@@ -106,7 +106,7 @@ class Stu3DataTypeMappings extends DataTypeMappings {
   override def skipField(definition: BaseRuntimeElementCompositeDefinition[_],
                 child: BaseRuntimeChildDefinition ) : Boolean = {
 
-    // References may be recursive, so include only the reference adn display name.
+    // References may be recursive, so include only the reference and display name.
     val skipRecursiveReference = definition.getImplementingClass == classOf[Reference] &&
       !(child.getElementName == "reference" ||
         child.getElementName == "display")
