@@ -110,7 +110,6 @@ public class FhirEncodersTest {
         decodedCondition.getLanguage());
   }
 
-
   @Test
   public void boundCode() {
     Row coding = (Row) conditionsDataset.select("verificationStatus")

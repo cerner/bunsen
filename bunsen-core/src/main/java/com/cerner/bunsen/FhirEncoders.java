@@ -9,7 +9,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import com.cerner.bunsen.datatypes.DataTypeMappings;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,6 +177,83 @@ public class FhirEncoders {
    * Returns an encoder for the given FHIR resource.
    *
    * @param type the type of the resource to encode.
+   * @param <T> the type of the resource to be encoded.
+   * @return an encoder for the resource.
+   */
+  public final <T extends IBaseResource> ExpressionEncoder<T> of(String type) {
+
+    return of(type, new String[]{});
+  }
+
+  /**
+   * Returns an encoder for the given FHIR resource.
+   *
+   * @param type the type of the resource to encode.
+   * @param <T> the type of the resource to be encoded.
+   * @return an encoder for the resource.
+   */
+  public final <T extends IBaseResource> ExpressionEncoder<T> of(Class<T> type) {
+
+    return of(type, Collections.emptyList());
+  }
+
+  /**
+   * Returns an encoder for the given FHIR resource by name, as defined
+   * by the FHIR specification.
+   *
+   * @param resourceName the name of the FHIR resource to encode, such as
+   *     "Encounter", "Condition", "Observation", etc.
+   * @param contained the names of FHIR resources contained to the encoded resource.
+   * @param <T> the type of the resource to be encoded.
+   * @return an encoder for the resource.
+   */
+  public <T extends IBaseResource> ExpressionEncoder<T> of(String resourceName,
+      String... contained) {
+
+    RuntimeResourceDefinition definition = context.getResourceDefinition(resourceName);
+
+    List<Class<? extends IBaseResource>> containedClasses = new ArrayList<>();
+
+    for (String containedName : contained) {
+
+      containedClasses.add(context.getResourceDefinition(containedName).getImplementingClass());
+    }
+
+    return of((Class<T>) definition.getImplementingClass(), containedClasses);
+  }
+
+  /**
+   * Returns an encoder for the given FHIR resource.
+   *
+   * @param type the type of the resource to encode.
+   * @param contained a list of types for FHIR resources contained to the encoded resource.
+   * @param <T> the type of the resource to be encoded.
+   * @return an encoder for the resource.
+   */
+  public final <T extends IBaseResource> ExpressionEncoder<T> of(Class<T> type,
+      Class... contained) {
+
+    List<Class<? extends IBaseResource>> containedResourceList = new ArrayList<>();
+
+    for (Class element : contained) {
+
+      if (IBaseResource.class.isAssignableFrom(element)) {
+
+        containedResourceList.add((Class<IBaseResource>) element);
+      } else {
+
+        throw new IllegalArgumentException("The contained classes provided must all implement  "
+            + "FHIR IBaseResource");
+      }
+    }
+
+    return of(type, containedResourceList);
+  }
+
+  /**
+   * Returns an encoder for the given FHIR resource.
+   *
+   * @param type the type of the resource to encode.
    * @param contained a list of types for FHIR resources contained to the encoded resource.
    * @param <T> the type of the resource to be encoded.
    * @return an encoder for the resource.
@@ -189,7 +266,7 @@ public class FhirEncoders {
 
     List<BaseRuntimeElementCompositeDefinition<?>> containedDefinitions = new ArrayList<>();
 
-    for (Class resource : contained) {
+    for (Class<? extends IBaseResource> resource : contained) {
 
       containedDefinitions.add(context.getResourceDefinition(resource));
     }
@@ -221,45 +298,6 @@ public class FhirEncoders {
 
       return encoder;
     }
-  }
-
-  /**
-   * Returns an encoder for the given FHIR resource.
-   *
-   * @param type the type of the resource to encode.
-   * @param contained a list of types for FHIR resources contained to the encoded resource.
-   * @param <T> the type of the resource to be encoded.
-   * @return an encoder for the resource.
-   */
-  public final <T extends IBaseResource> ExpressionEncoder<T> of(Class<T> type,
-      Class<? extends IBaseResource>... contained) {
-
-    return of(type, Arrays.asList(contained));
-  }
-
-  /**
-   * Returns an encoder for the given FHIR resource by name, as defined
-   * by the FHIR specification.
-   *
-   * @param resourceName the name of the FHIR resource to encode, such as
-   *     "Encounter", "Condition", "Observation", etc.
-   * @param contained the names of FHIR resources contained to the encoded resource.
-   * @param <T> the type of the resource to be encoded.
-   * @return an encoder for the resource.
-   */
-  public <T extends IBaseResource> ExpressionEncoder<T> of(String resourceName,
-      String... contained) {
-
-    RuntimeResourceDefinition definition = context.getResourceDefinition(resourceName);
-
-    List<Class<? extends IBaseResource>> containedClasses = new ArrayList<>();
-
-    for (String containedName : contained) {
-
-      containedClasses.add(context.getResourceDefinition(containedName).getImplementingClass());
-    }
-
-    return of((Class<T>) definition.getImplementingClass(), containedClasses);
   }
 
   /**
