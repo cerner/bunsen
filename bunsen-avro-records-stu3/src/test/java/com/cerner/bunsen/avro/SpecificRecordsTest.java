@@ -243,4 +243,13 @@ public class SpecificRecordsTest {
     Assert.assertEquals(testText, ethnicityRecord.getText());
   }
 
+  @Test
+  public void testInstantiationUsingBuilder() {
+
+    Patient obj = Patient.newBuilder()
+        .setId("123").build();
+    Assert.assertEquals("123", obj.getId());
+    Assert.assertEquals(null, obj.getGender());
+  }
+
 }

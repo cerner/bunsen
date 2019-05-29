@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;
+import org.apache.avro.JsonProperties;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -290,7 +291,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
    */
   private static Schema nullable(Schema schema) {
 
-    return Schema.createUnion(Arrays.asList(schema, NULL_SCHEMA));
+    return Schema.createUnion(Arrays.asList(NULL_SCHEMA, schema));
   }
 
   @Override
@@ -318,7 +319,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
             return new Field(field.fieldName(),
                 nullable(field.result().getDataType()),
                 doc,
-                (Object) null);
+                JsonProperties.NULL_VALUE);
 
           }).collect(Collectors.toList());
 
