@@ -8,6 +8,7 @@ import com.cerner.bunsen.datatypes.DataTypeMappings
 import org.apache.spark.sql.catalyst.analysis.{GetColumnByOrdinal, UnresolvedAttribute, UnresolvedExtractValue}
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.expressions.codegen.Block._
 import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, ExprCode}
 import org.apache.spark.sql.catalyst.expressions.objects._
 import org.apache.spark.sql.catalyst.{InternalRow, expressions}
@@ -638,7 +639,7 @@ case class GetClassFromContained(targetObject: Expression,
     val obj = targetObject.genCode(ctx)
 
     ev.copy(code =
-      s"""
+      code"""
          |${obj.code}
          |$javaType ${ev.value} = null;
          |boolean ${ev.isNull} = true;

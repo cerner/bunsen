@@ -7,10 +7,10 @@
 package com.cerner.bunsen.backports
 
 import scala.language.existentials
-
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, ExprCode}
+import org.apache.spark.sql.catalyst.expressions.codegen.Block._
+import org.apache.spark.sql.catalyst.expressions.codegen.{CodeGenerator, CodegenContext, ExprCode, FalseLiteral}
 import org.apache.spark.sql.types._
 
 /**
@@ -37,13 +37,13 @@ case class StaticField(staticObject: Class[_],
     throw new UnsupportedOperationException("Only code-generated evaluation is supported.")
 
   override def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
-    val javaType = ctx.javaType(dataType)
+    val javaType = CodeGenerator.javaType(dataType)
 
     val code =
-      s"""
+      code"""
       final $javaType ${ev.value} = $objectName.$fieldName;
         """
-    ev.copy(code = code, isNull = "false")
+    ev.copy(code = code, isNull = FalseLiteral)
   }
 }
 
@@ -68,12 +68,12 @@ case class InstanceOf(value: Expression,
     val obj = value.genCode(ctx)
 
     val code =
-      s"""
+      code"""
          ${obj.code}
          final boolean ${ev.value} = ${obj.value} instanceof ${checkedType.getName};
        """
 
-    ev.copy(code = code, isNull = "false")
+    ev.copy(code = code, isNull = FalseLiteral)
   }
 }
 
@@ -95,11 +95,11 @@ case class ObjectCast(value: Expression, resultType: DataType)
 
   override protected def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
 
-    val javaType = ctx.javaType(resultType)
+    val javaType = CodeGenerator.javaType(resultType)
     val obj = value.genCode(ctx)
 
     val code =
-      s"""
+      code"""
          ${obj.code}
          final $javaType ${ev.value} = ($javaType) ${obj.value};
        """
