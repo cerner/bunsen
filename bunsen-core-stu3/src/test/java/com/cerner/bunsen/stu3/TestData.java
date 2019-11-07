@@ -11,6 +11,10 @@ import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.IntegerType;
+import org.hl7.fhir.dstu3.model.Medication;
+import org.hl7.fhir.dstu3.model.Medication.MedicationIngredientComponent;
+import org.hl7.fhir.dstu3.model.Medication.MedicationPackageComponent;
+import org.hl7.fhir.dstu3.model.Medication.MedicationPackageContentComponent;
 import org.hl7.fhir.dstu3.model.Narrative;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
@@ -41,11 +45,19 @@ public class TestData {
   public static final String US_CORE_CONDITION =
       "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition";
 
+  public static final String US_CORE_MEDICATION =
+      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication";
+
+  public static final String MEDICATION_REQUEST =
+      "http://hl7.org/fhir/StructureDefinition/MedicationRequest";
+
   public static final String VALUE_SET =
       "http://hl7.org/fhir/StructureDefinition/ValueSet";
 
   /**
    * Returns a FHIR Condition for testing purposes.
+   *
+   * @return a FHIR Condition for testing.
    */
   public static Condition newCondition() {
 
@@ -96,9 +108,9 @@ public class TestData {
   }
 
   /**
-   * Returns a new observation for testing.
+   * Returns a new Observation for testing.
    *
-   * @return a FHIR observation for testing.
+   * @return a FHIR Observation for testing.
    */
   public static Observation newObservation() {
     Observation observation = new Observation();
@@ -111,9 +123,7 @@ public class TestData {
 
     observation.setStatus(Observation.ObservationStatus.FINAL);
 
-
     CodeableConcept obsCode = new CodeableConcept();
-
 
     observation.setCode(obsCode);
 
@@ -138,7 +148,7 @@ public class TestData {
   /**
    * Returns a new Patient for testing.
    *
-   * @return a FHIR patient for testing.
+   * @return a FHIR Patient for testing.
    */
   public static Patient newPatient() {
 
@@ -187,6 +197,43 @@ public class TestData {
     ethnicityText.setValue(new StringType("Not Hispanic or Latino"));
 
     return patient;
+  }
+
+  /**
+   * Returns a new Medication for testing.
+   *
+   * @return a FHIR Medication for testing.
+   */
+  public static Medication newMedication() {
+
+    Medication medication = new Medication();
+
+    medication.setId("test-medication");
+
+    CodeableConcept itemCodeableConcept = new CodeableConcept();
+    itemCodeableConcept.addCoding()
+        .setSystem("http://www.nlm.nih.gov/research/umls/rxnorm")
+        .setCode("103109")
+        .setDisplay("Vitamin E 3 MG Oral Tablet [Ephynal]")
+        .setUserSelected(true);
+
+    MedicationIngredientComponent ingredientComponent = new MedicationIngredientComponent();
+    ingredientComponent.setItem(itemCodeableConcept);
+
+    medication.addIngredient(ingredientComponent);
+
+    Reference itemReference = new Reference("test-item-reference");
+
+    MedicationPackageContentComponent medicationPackageContentComponent =
+        new MedicationPackageContentComponent();
+    medicationPackageContentComponent.setItem(itemReference);
+
+    MedicationPackageComponent medicationPackageComponent = new MedicationPackageComponent();
+    medicationPackageComponent.addContent(medicationPackageContentComponent);
+
+    medication.setPackage(medicationPackageComponent);
+
+    return medication;
   }
 
 }

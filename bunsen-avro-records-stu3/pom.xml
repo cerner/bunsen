@@ -144,12 +144,16 @@
             <argument>http://hl7.org/fhir/StructureDefinition/AllergyIntolerance</argument>
             <argument>http://hl7.org/fhir/StructureDefinition/Procedure</argument>
 
+            <argument>http://hl7.org/fhir/StructureDefinition/Medication</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/MedicationDispense</argument>
             <argument>http://hl7.org/fhir/StructureDefinition/MedicationRequest</argument>
             <argument>http://hl7.org/fhir/StructureDefinition/MedicationStatement</argument>
 
             <!-- US Core Resources -->
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient</argument>
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition</argument>
+            <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication</argument>
+            <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest</argument>
           </arguments>
 
         </configuration>

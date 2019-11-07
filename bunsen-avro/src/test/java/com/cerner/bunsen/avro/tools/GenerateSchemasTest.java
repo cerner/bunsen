@@ -21,7 +21,9 @@ public class GenerateSchemasTest {
     int result = GenerateSchemas.main(new String[]
         {outputFile.toString(),
             TestData.US_CORE_PATIENT,
-            TestData.US_CORE_CONDITION});
+            TestData.US_CORE_CONDITION,
+            TestData.US_CORE_MEDICATION,
+            TestData.MEDICATION_REQUEST});
 
     Assert.assertEquals(0, result);
 

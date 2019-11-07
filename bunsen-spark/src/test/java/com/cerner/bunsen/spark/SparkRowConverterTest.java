@@ -143,7 +143,6 @@ public class SparkRowConverterTest {
     // Ensure that a decoded choice type matches the original
     Assert.assertTrue(testPatient.getMultipleBirth()
         .equalsDeep(testPatientDecoded.getMultipleBirth()));
-
   }
 
   @Test
