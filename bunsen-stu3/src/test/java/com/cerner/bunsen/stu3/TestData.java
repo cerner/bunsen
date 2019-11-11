@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.hl7.fhir.dstu3.model.Annotation;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Condition;
+import org.hl7.fhir.dstu3.model.Coverage;
 import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.IntegerType;
@@ -191,5 +192,23 @@ public class TestData {
     medReq.addContained(newProvenance());
 
     return medReq;
+  }
+
+  /**
+   * Returns a FHIR Coverage resource for testing purposes.
+   */
+  public static Coverage newCoverage() {
+    Coverage coverage = new Coverage();
+
+    coverage.setId("test-coverage");
+    coverage.setStatus(Coverage.CoverageStatus.ACTIVE);
+    coverage.setSubscriber(new Reference("Patient/test-patient"));
+
+    Coverage.GroupComponent groupComponent = new Coverage.GroupComponent();
+    groupComponent.setGroup("some-group");
+    groupComponent.setClass_("some-group-class");
+    coverage.setGrouping(groupComponent);
+
+    return coverage;
   }
 }
