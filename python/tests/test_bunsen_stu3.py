@@ -50,6 +50,7 @@ def spark_session(request):
   spark = SparkSession.builder \
     .appName('bunsen-test') \
     .master('local[2]') \
+    .config('spark.driver.host', 'localhost') \
     .config('spark.jars', shaded_jar) \
     .config('hive.exec.dynamic.partition.mode', 'nonstrict') \
     .config('spark.sql.warehouse.dir', mkdtemp()) \
