@@ -13,7 +13,6 @@ import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IntegerType;
 import org.hl7.fhir.dstu3.model.Quantity;
-import org.hl7.fhir.exceptions.FHIRException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,13 +37,13 @@ public class SpecificRecordsTest {
   private static final AvroConverter OBSERVATION_CONVERTER =
       AvroConverter.forResource(FhirContexts.forStu3(), "Observation");
 
-  private static final org.hl7.fhir.dstu3.model.Observation testObservation
-      = TestData.newObservation();
+  private static final org.hl7.fhir.dstu3.model.Observation testObservation =
+      TestData.newObservation();
 
-  public static Observation avroObservation =
+  private static final Observation avroObservation =
       (Observation) OBSERVATION_CONVERTER.resourceToAvro(testObservation);
 
-  private static org.hl7.fhir.dstu3.model.Observation testObservationDecoded =
+  private static final org.hl7.fhir.dstu3.model.Observation testObservationDecoded =
       (org.hl7.fhir.dstu3.model.Observation) OBSERVATION_CONVERTER.avroToResource(avroObservation);
 
   private static final AvroConverter CONDITION_CONVERTER =
@@ -52,12 +51,25 @@ public class SpecificRecordsTest {
 
   private static final org.hl7.fhir.dstu3.model.Condition testCondition = TestData.newCondition();
 
-  public static com.cerner.bunsen.stu3.avro.us.core.Condition avroCondition =
-      (com.cerner.bunsen.stu3.avro.us.core.Condition) CONDITION_CONVERTER.resourceToAvro(testCondition);
+  private static final com.cerner.bunsen.stu3.avro.us.core.Condition avroCondition =
+      (com.cerner.bunsen.stu3.avro.us.core.Condition) CONDITION_CONVERTER
+          .resourceToAvro(testCondition);
 
-  private static org.hl7.fhir.dstu3.model.Condition  testConditionDecoded =
-      (org.hl7.fhir.dstu3.model.Condition ) CONDITION_CONVERTER.avroToResource(avroCondition);
+  private static final org.hl7.fhir.dstu3.model.Condition  testConditionDecoded =
+      (org.hl7.fhir.dstu3.model.Condition) CONDITION_CONVERTER.avroToResource(avroCondition);
 
+  private static final AvroConverter MEDICATION_CONVERTER =
+      AvroConverter.forResource(FhirContexts.forStu3(), TestData.US_CORE_MEDICATION);
+
+  private static final org.hl7.fhir.dstu3.model.Medication testMedication =
+      TestData.newMedication();
+
+  private static final com.cerner.bunsen.stu3.avro.us.core.Medication avroMedication =
+      (com.cerner.bunsen.stu3.avro.us.core.Medication) MEDICATION_CONVERTER
+          .resourceToAvro(testMedication);
+
+  private static final org.hl7.fhir.dstu3.model.Medication testMedicationDecoded =
+      (org.hl7.fhir.dstu3.model.Medication) MEDICATION_CONVERTER.avroToResource(avroMedication);
 
   @Test
   public void testInteger() {
@@ -99,7 +111,7 @@ public class SpecificRecordsTest {
   }
 
   @Test
-  public void testChoice() throws FHIRException {
+  public void testChoice() {
 
     // Ensure that a decoded choice type matches the original
     Assert.assertTrue(testPatient.getMultipleBirth()
@@ -110,6 +122,22 @@ public class SpecificRecordsTest {
 
     // Choice types not populated should be null.
     Assert.assertNull(avroPatient.getMultipleBirth().getBoolean$());
+  }
+
+  /**
+   * Tests that FHIR StructureDefinitions that contain fields having identical ChoiceTypes generate
+   * an Avro definition that does not trigger an erroneous re-definition of the Avro, and that the
+   * converter functions can populate the separate fields even when they share an underlying Avro
+   * class for the ChoiceType.
+   */
+  @Test
+  public void testIdenticalChoicesTypes() {
+
+    Assert.assertTrue(testMedication.getIngredientFirstRep()
+        .equalsDeep(testMedicationDecoded.getIngredientFirstRep()));
+
+    Assert.assertTrue(testMedication.getPackage().getContentFirstRep()
+        .equalsDeep(testMedicationDecoded.getPackage().getContentFirstRep()));
   }
 
   @Test

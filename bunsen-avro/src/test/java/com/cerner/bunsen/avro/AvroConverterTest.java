@@ -26,6 +26,7 @@ import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Condition;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IntegerType;
+import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Quantity;
@@ -40,22 +41,27 @@ public class AvroConverterTest {
 
   private static final Observation testObservation = TestData.newObservation();
 
-  public static Record avroObservation;
+  private static Record avroObservation;
 
   private static Observation testObservationDecoded;
 
   private static final Patient testPatient = TestData.newPatient();
 
-  public static Record avroPatient;
+  private static Record avroPatient;
 
   private static Patient testPatientDecoded;
 
   private static final Condition testCondition = TestData.newCondition();
 
-  public static Record avroCondition;
+  private static Record avroCondition;
 
   private static Condition testConditionDecoded;
 
+  private static final Medication testMedication = TestData.newMedication();
+
+  private static Record avroMedication;
+
+  private static Medication testMedicationDecoded;
 
   /**
    * Initialize test data.
@@ -82,7 +88,14 @@ public class AvroConverterTest {
 
     avroCondition = (Record) conditionConverter.resourceToAvro(testCondition);
 
-    testConditionDecoded =  (Condition) conditionConverter.avroToResource(avroCondition);
+    testConditionDecoded = (Condition) conditionConverter.avroToResource(avroCondition);
+
+    AvroConverter medicationConverter = AvroConverter.forResource(FhirContexts.forStu3(),
+        TestData.US_CORE_MEDICATION);
+
+    avroMedication = (Record) medicationConverter.resourceToAvro(testMedication);
+
+    testMedicationDecoded = (Medication) medicationConverter.avroToResource(avroMedication);
   }
 
   @Test
@@ -110,7 +123,22 @@ public class AvroConverterTest {
     // Ensure that a decoded choice type matches the original
     Assert.assertTrue(testPatient.getMultipleBirth()
         .equalsDeep(testPatientDecoded.getMultipleBirth()));
+  }
 
+  /**
+   * Tests that FHIR StructureDefinitions that contain fields having identical ChoiceTypes generate
+   * an Avro definition that does not trigger an erroneous re-definition of the Avro, and that the
+   * converter functions can populate the separate fields even when they share an underlying Avro
+   * class for the ChoiceType.
+   */
+  @Test
+  public void testIdenticalChoicesTypes() {
+
+    Assert.assertTrue(testMedication.getIngredientFirstRep()
+        .equalsDeep(testMedicationDecoded.getIngredientFirstRep()));
+
+    Assert.assertTrue(testMedication.getPackage().getContentFirstRep()
+        .equalsDeep(testMedicationDecoded.getPackage().getContentFirstRep()));
   }
 
   @Test
@@ -123,7 +151,6 @@ public class AvroConverterTest {
 
     Assert.assertEquals(expectedMultipleBirth,
         ((Record) avroPatient.get("multipleBirth")).get("integer"));
-
   }
 
   @Test

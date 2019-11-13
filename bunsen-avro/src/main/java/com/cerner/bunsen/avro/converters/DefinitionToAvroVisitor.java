@@ -31,6 +31,7 @@ import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.IndexedRecord;
 import org.apache.avro.specific.SpecificData;
+import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.instance.model.api.IBase;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
@@ -40,7 +41,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
   private final String basePackage;
 
-  private final Map<String, HapiConverter<Schema>> compositeConverters;
+  private final Map<String, HapiConverter<Schema>> visitedConverters;
 
   private static final HapiConverter STRING_CONVERTER =
       new StringConverter(Schema.create(Type.STRING));
@@ -266,16 +267,16 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
    *
    * @param fhirSupport support for FHIR conversions.
    * @param basePackage the base package to be used for generated Avro structures.
-   * @param compositeConverters a mutable cache of generated converters that may
+   * @param visitedConverters a mutable cache of generated converters that may
    *     be reused by types that contain them.
    */
   public DefinitionToAvroVisitor(FhirConversionSupport fhirSupport,
       String basePackage,
-      Map<String,HapiConverter<Schema>> compositeConverters) {
+      Map<String,HapiConverter<Schema>> visitedConverters) {
 
     this.fhirSupport = fhirSupport;
     this.basePackage = basePackage;
-    this.compositeConverters = compositeConverters;
+    this.visitedConverters = visitedConverters;
   }
 
   @Override
@@ -305,7 +306,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     String recordNamespace = namespaceFor(elementTypeUrl);
     String fullName = recordNamespace + "." + recordName;
 
-    HapiConverter<Schema> converter = compositeConverters.get(fullName);
+    HapiConverter<Schema> converter = visitedConverters.get(fullName);
 
     if (converter == null) {
 
@@ -332,7 +333,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       converter = new CompositeToAvroConverter(baseType,
           children, schema, fhirSupport);
 
-      compositeConverters.put(fullName, converter);
+      visitedConverters.put(fullName, converter);
     }
 
     return converter;
@@ -405,7 +406,10 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
   private String recordNameFor(String elementPath) {
 
-    return elementPath.replaceAll("\\.", "");
+    return Arrays.stream(elementPath.split("\\."))
+        .map(StringUtils::capitalize)
+        .reduce(String::concat)
+        .get();
   }
 
   private String namespaceFor(String structuctureDefinitionUrl) {
@@ -442,7 +446,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
     String fullName = basePackage + "." + recordName;
 
-    HapiConverter<Schema> converter = compositeConverters.get(fullName);
+    HapiConverter<Schema> converter = visitedConverters.get(fullName);
 
     if (converter == null) {
 
@@ -480,7 +484,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
           schema,
           fhirSupport);
 
-      compositeConverters.put(fullName, converter);
+      visitedConverters.put(fullName, converter);
     }
 
     return converter;
@@ -496,7 +500,6 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       return null;
     }
 
-
     String recordNamespace = namespaceFor(extensionUrl);
 
     String localPart = extensionUrl.substring(extensionUrl.lastIndexOf('/') + 1);
@@ -509,7 +512,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
     String fullName = recordNamespace + "." + recordName;
 
-    HapiConverter<Schema> converter = compositeConverters.get(fullName);
+    HapiConverter<Schema> converter = visitedConverters.get(fullName);
 
     if (converter == null) {
 
@@ -532,7 +535,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
           fhirSupport,
           extensionUrl);
 
-      compositeConverters.put(fullName, converter);
+      visitedConverters.put(fullName, converter);
     }
 
     return converter;
@@ -575,28 +578,28 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
             .keySet()
             .stream()
             .sorted()
-            .map(DefinitionToAvroVisitor::capitalize)
+            .map(StringUtils::capitalize)
             .collect(Collectors.joining());
 
-    Schema schema = Schema.createRecord("Choice" + fieldTypesString,
-        "Structure for FHIR choice type ",
-        basePackage,
-        false, fields);
+    String fullName = basePackage + "." + "Choice" + fieldTypesString;
 
-    return new ChoiceToAvroConverter(choiceTypes,
-        schema,
-        fhirSupport);
+    HapiConverter<Schema> converter = visitedConverters.get(fullName);
 
-  }
+    if (converter == null) {
 
-  private static final String capitalize(String string) {
+      Schema schema = Schema.createRecord("Choice" + fieldTypesString,
+          "Structure for FHIR choice type ",
+          basePackage,
+          false, fields);
 
-    if (string.length() == 0) {
+      converter = new ChoiceToAvroConverter(choiceTypes,
+          schema,
+          fhirSupport);
 
-      return string;
+      visitedConverters.put(fullName, converter);
     }
 
-    return Character.toUpperCase(string.charAt(0)) + string.substring(1);
+    return converter;
   }
 
   private static final String lowercase(String string) {
@@ -608,8 +611,6 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
     return Character.toLowerCase(string.charAt(0)) + string.substring(1);
   }
-
-
 
   @Override
   public int getMaxDepth(String elementTypeUrl, String path) {
