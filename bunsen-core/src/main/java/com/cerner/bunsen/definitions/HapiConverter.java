@@ -23,10 +23,9 @@ public abstract class HapiConverter<T> {
      * @param fieldToSet the runtime definition of the field to set.
      * @param value the value to be converted and set on the FHIR object.
      */
-    public void setField(IBase parentObject,
+    void setField(IBase parentObject,
         BaseRuntimeChildDefinition fieldToSet,
         Object value);
-
   }
 
   /**
@@ -49,7 +48,7 @@ public abstract class HapiConverter<T> {
   }
 
   /**
-   * Converts a HAPI object or list of objects to the equiavelent
+   * Converts a HAPI object or list of objects to the equivalent
    * in the alternative data model
    *
    * @param input a HAPI object.
@@ -84,9 +83,9 @@ public abstract class HapiConverter<T> {
   }
 
   /**
-   * Returns a field setter to be used when converting a Spark object
-   * to HAPI. Choice types may have multiple element definitions, but
-   * in the common case there will be only one.
+   * Returns a field setter to be used when converting an object of an
+   * alternative model to HAPI. Choice types may have multiple element
+   * definitions, but in the common case there will be only one.
    *
    * @param elementDefinitions the set of element definitions that the element can be.
    * @return the field setter.

@@ -139,19 +139,29 @@
 
             <!-- Base Resources -->
             <argument>http://hl7.org/fhir/StructureDefinition/Patient</argument>
-            <argument>http://hl7.org/fhir/StructureDefinition/Observation</argument>
-            <argument>http://hl7.org/fhir/StructureDefinition/Condition</argument>
             <argument>http://hl7.org/fhir/StructureDefinition/AllergyIntolerance</argument>
-            <argument>http://hl7.org/fhir/StructureDefinition/Procedure</argument>
-
+            <argument>http://hl7.org/fhir/StructureDefinition/CarePlan</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Claim</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Condition</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Encounter</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/EpisodeOfCare</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Immunization</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Measure</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/MeasureReport</argument>
             <argument>http://hl7.org/fhir/StructureDefinition/Medication</argument>
             <argument>http://hl7.org/fhir/StructureDefinition/MedicationDispense</argument>
-            <argument>http://hl7.org/fhir/StructureDefinition/MedicationRequest</argument>
             <argument>http://hl7.org/fhir/StructureDefinition/MedicationStatement</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/MedicationRequest</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/ProcedureRequest</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Observation</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/Procedure</argument>
 
             <!-- US Core Resources -->
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient</argument>
+            <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan</argument>
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition</argument>
+            <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter</argument>
+            <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization</argument>
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication</argument>
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest</argument>
           </arguments>

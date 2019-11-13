@@ -578,7 +578,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
             .keySet()
             .stream()
             .sorted()
-            .map(DefinitionToAvroVisitor::capitalize)
+            .map(StringUtils::capitalize)
             .collect(Collectors.joining());
 
     String fullName = basePackage + "." + "Choice" + fieldTypesString;
@@ -600,16 +600,6 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     }
 
     return converter;
-  }
-
-  private static final String capitalize(String string) {
-
-    if (string.length() == 0) {
-
-      return string;
-    }
-
-    return Character.toUpperCase(string.charAt(0)) + string.substring(1);
   }
 
   private static final String lowercase(String string) {

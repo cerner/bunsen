@@ -506,6 +506,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
 
             return targetDefinition.getType();
           })
+          .sorted()
           .collect(Collectors.toList());
 
       return visitor.visitReference(rootName, referenceTypes, childElements);
