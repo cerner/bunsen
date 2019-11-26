@@ -1,5 +1,6 @@
 package com.cerner.bunsen.stu3;
 
+import java.util.Arrays;
 import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.CodeType;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
@@ -7,6 +8,7 @@ import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Condition;
 import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.DateType;
+import org.hl7.fhir.dstu3.model.Dosage;
 import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.Identifier;
@@ -15,6 +17,8 @@ import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.Medication.MedicationIngredientComponent;
 import org.hl7.fhir.dstu3.model.Medication.MedicationPackageComponent;
 import org.hl7.fhir.dstu3.model.Medication.MedicationPackageContentComponent;
+import org.hl7.fhir.dstu3.model.MedicationRequest;
+import org.hl7.fhir.dstu3.model.MedicationRequest.MedicationRequestSubstitutionComponent;
 import org.hl7.fhir.dstu3.model.Narrative;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
@@ -22,6 +26,8 @@ import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.dstu3.model.Timing;
+import org.hl7.fhir.dstu3.model.Timing.TimingRepeatComponent;
 import org.hl7.fhir.utilities.xhtml.NodeType;
 import org.hl7.fhir.utilities.xhtml.XhtmlNode;
 
@@ -48,8 +54,8 @@ public class TestData {
   public static final String US_CORE_MEDICATION =
       "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication";
 
-  public static final String MEDICATION_REQUEST =
-      "http://hl7.org/fhir/StructureDefinition/MedicationRequest";
+  public static final String US_CORE_MEDICATION_REQUEST =
+      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest";
 
   public static final String VALUE_SET =
       "http://hl7.org/fhir/StructureDefinition/ValueSet";
@@ -234,6 +240,38 @@ public class TestData {
     medication.setPackage(medicationPackageComponent);
 
     return medication;
+  }
+
+  /**
+   * Returns a new MedicationRequest for testing.
+   *
+   * @return a FHIR MedicationRequest for testing.
+   */
+  public static MedicationRequest newMedicationRequest() {
+
+    MedicationRequest medicationRequest = new MedicationRequest();
+
+    medicationRequest.setId("test-medication-request");
+
+    CodeableConcept itemCodeableConcept = new CodeableConcept();
+    itemCodeableConcept.addCoding()
+        .setSystem("http://www.nlm.nih.gov/research/umls/rxnorm")
+        .setCode("103109")
+        .setDisplay("Vitamin E 3 MG Oral Tablet [Ephynal]")
+        .setUserSelected(true);
+
+    medicationRequest.setMedication(itemCodeableConcept);
+
+    medicationRequest
+        .setSubject(new Reference("Patient/12345").setDisplay("Here is a display for you."));
+
+    medicationRequest.setDosageInstruction(Arrays.asList(
+        new Dosage().setTiming(new Timing().setRepeat(new TimingRepeatComponent().setCount(10)))));
+
+    medicationRequest
+        .setSubstitution(new MedicationRequestSubstitutionComponent().setAllowed(true));
+
+    return medicationRequest;
   }
 
 }

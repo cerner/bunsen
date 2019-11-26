@@ -23,7 +23,7 @@ public class GenerateSchemasTest {
             TestData.US_CORE_PATIENT,
             TestData.US_CORE_CONDITION,
             TestData.US_CORE_MEDICATION,
-            TestData.MEDICATION_REQUEST});
+            TestData.US_CORE_MEDICATION_REQUEST});
 
     Assert.assertEquals(0, result);
 
