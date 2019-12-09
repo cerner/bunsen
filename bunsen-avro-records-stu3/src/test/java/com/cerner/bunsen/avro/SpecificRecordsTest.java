@@ -23,6 +23,7 @@ import com.cerner.bunsen.stu3.avro.us.core.Patient;
  */
 public class SpecificRecordsTest {
 
+  // Patient
   private static final AvroConverter PATIENT_CONVERTER =
       AvroConverter.forResource(FhirContexts.forStu3(), TestData.US_CORE_PATIENT);
 
@@ -34,6 +35,7 @@ public class SpecificRecordsTest {
   private static final org.hl7.fhir.dstu3.model.Patient  testPatientDecoded =
       (org.hl7.fhir.dstu3.model.Patient ) PATIENT_CONVERTER.avroToResource(avroPatient);
 
+  // Observation
   private static final AvroConverter OBSERVATION_CONVERTER =
       AvroConverter.forResource(FhirContexts.forStu3(), "Observation");
 
@@ -46,6 +48,7 @@ public class SpecificRecordsTest {
   private static final org.hl7.fhir.dstu3.model.Observation testObservationDecoded =
       (org.hl7.fhir.dstu3.model.Observation) OBSERVATION_CONVERTER.avroToResource(avroObservation);
 
+  // Condition
   private static final AvroConverter CONDITION_CONVERTER =
       AvroConverter.forResource(FhirContexts.forStu3(), TestData.US_CORE_CONDITION);
 
@@ -58,6 +61,7 @@ public class SpecificRecordsTest {
   private static final org.hl7.fhir.dstu3.model.Condition  testConditionDecoded =
       (org.hl7.fhir.dstu3.model.Condition) CONDITION_CONVERTER.avroToResource(avroCondition);
 
+  // Medication
   private static final AvroConverter MEDICATION_CONVERTER =
       AvroConverter.forResource(FhirContexts.forStu3(), TestData.US_CORE_MEDICATION);
 
@@ -70,6 +74,22 @@ public class SpecificRecordsTest {
 
   private static final org.hl7.fhir.dstu3.model.Medication testMedicationDecoded =
       (org.hl7.fhir.dstu3.model.Medication) MEDICATION_CONVERTER.avroToResource(avroMedication);
+
+  // MedicationRequest
+  private static final AvroConverter MEDICATION_REQUEST_CONVERTER =
+      AvroConverter.forResource(FhirContexts.forStu3(), TestData.US_CORE_MEDICATION_REQUEST);
+
+  private static final org.hl7.fhir.dstu3.model.MedicationRequest testMedicationRequest =
+      TestData.newMedicationRequest();
+
+  private static final com.cerner.bunsen.stu3.avro.us.core.MedicationRequest avroMedicationRequest =
+      (com.cerner.bunsen.stu3.avro.us.core.MedicationRequest) MEDICATION_REQUEST_CONVERTER
+          .resourceToAvro(testMedicationRequest);
+
+  private static final org.hl7.fhir.dstu3.model.MedicationRequest testMedicationRequestDecoded =
+      (org.hl7.fhir.dstu3.model.MedicationRequest) MEDICATION_REQUEST_CONVERTER
+          .avroToResource(avroMedicationRequest);
+
 
   @Test
   public void testInteger() {
@@ -278,6 +298,35 @@ public class SpecificRecordsTest {
         .setId("123").build();
     Assert.assertEquals("123", obj.getId());
     Assert.assertEquals(null, obj.getGender());
+  }
+
+  @Test
+  public void testSimpleBackboneElement() {
+
+    Assert.assertTrue(avroMedicationRequest.getSubstitution().getAllowed());
+
+    Assert.assertTrue(testMedicationRequestDecoded.getSubstitution().getAllowed());
+
+    Assert.assertEquals(
+        testMedicationRequest.getSubstitution().getAllowed(),
+        testMedicationRequestDecoded.getSubstitution().getAllowed());
+  }
+
+  @Test
+  public void testSimpleElement() {
+
+    Assert.assertEquals(10,
+        avroMedicationRequest.getDosageInstruction().get(0).getTiming().getRepeat().getCount()
+            .intValue());
+
+    Assert.assertEquals(10,
+        testMedicationRequestDecoded.getDosageInstructionFirstRep().getTiming().getRepeat()
+            .getCount());
+
+    Assert.assertEquals(
+        testMedicationRequest.getDosageInstructionFirstRep().getTiming().getRepeat().getCount(),
+        testMedicationRequestDecoded.getDosageInstructionFirstRep().getTiming().getRepeat()
+            .getCount());
   }
 
 }

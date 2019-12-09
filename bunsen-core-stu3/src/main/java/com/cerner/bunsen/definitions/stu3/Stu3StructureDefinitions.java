@@ -90,6 +90,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
     return element.getTypeFirstRep() == null
         || element.getTypeFirstRep().getCode() == null
         || element.getTypeFirstRep().getCode().equals("BackboneElement")
+        || element.getTypeFirstRep().getCode().equals("Element")
         ? null
         : (StructureDefinition) validationSupport.fetchStructureDefinition(
             context, element.getTypeFirstRep().getCode());
