@@ -13,7 +13,7 @@ import org.hl7.fhir.instance.model.api.IBase;
 /**
  * Partial converter implementation for contained structures. Contained converters are distinct
  * from {@link HapiCompositeConverter} in that a Contained converter must translate between a static
- * Record Container and the dynamically typed container field of FHIR resources.
+ * Resource Container and FHIR's Any-typed container list of FHIR resources.
  *
  * @param <T> the type of the schema produced by the converter.
  */
@@ -21,7 +21,7 @@ public abstract class HapiContainedConverter<T> extends HapiConverter<T> {
 
   private final Map<String, StructureField<HapiConverter<T>>> contained;
 
-  protected final T structType;
+  private final T structType;
 
   /**
    * Retrieves the contained elements from their container, associated with their type.
@@ -37,17 +37,10 @@ public abstract class HapiContainedConverter<T> extends HapiConverter<T> {
    */
   protected abstract Object createContained(Object[] contained);
 
-  protected HapiContainedConverter(Map<String, StructureField<HapiConverter<T>>> contained,
-      T structType) {
-
-    this.contained = contained;
-    this.structType = structType;
-  }
-
   /**
    * Represents the association of a contained element to its type.
    */
-  protected class ContainerEntry {
+  protected final class ContainerEntry {
 
     private final String elementType;
     private final Object element;
@@ -69,7 +62,7 @@ public abstract class HapiContainedConverter<T> extends HapiConverter<T> {
     }
   }
 
-  private class ContainedFieldSetter implements HapiFieldSetter {
+  private final class ContainedFieldSetter implements HapiFieldSetter {
 
     private final Map<String, CompositeFieldSetter> contained;
 
@@ -88,12 +81,18 @@ public abstract class HapiContainedConverter<T> extends HapiConverter<T> {
       for (ContainerEntry containedEntry: containedEntries) {
 
         String containedElementType = containedEntry.getElementType();
-
         IBase resource = contained.get(containedElementType).toHapi(containedEntry.getElement());
 
         fieldToSet.getMutator().addValue(parentObject, resource);
       }
     }
+  }
+
+  protected HapiContainedConverter(Map<String, StructureField<HapiConverter<T>>> contained,
+      T structType) {
+
+    this.contained = contained;
+    this.structType = structType;
   }
 
   @Override
@@ -106,7 +105,6 @@ public abstract class HapiContainedConverter<T> extends HapiConverter<T> {
     for (int valueIndex = 0; valueIndex < containedList.size(); ++valueIndex) {
 
       DomainResource composite = (DomainResource) containedList.get(valueIndex);
-
       StructureField<HapiConverter<T>> schemaEntry = contained.get(composite.fhirType());
 
       values[valueIndex] = schemaEntry.result().fromHapi(composite);

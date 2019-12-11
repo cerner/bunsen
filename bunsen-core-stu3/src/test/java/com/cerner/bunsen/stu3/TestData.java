@@ -1,6 +1,6 @@
 package com.cerner.bunsen.stu3;
 
-import java.util.Arrays;
+import com.google.common.collect.ImmutableList;
 import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.CodeType;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
@@ -269,7 +269,7 @@ public class TestData {
     medicationRequest
         .setSubject(new Reference("Patient/12345").setDisplay("Here is a display for you."));
 
-    medicationRequest.setDosageInstruction(Arrays.asList(
+    medicationRequest.setDosageInstruction(ImmutableList.of(
         new Dosage().setTiming(new Timing().setRepeat(new TimingRepeatComponent().setCount(10)))));
 
     medicationRequest

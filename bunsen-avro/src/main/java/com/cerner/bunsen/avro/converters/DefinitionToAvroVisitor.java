@@ -221,17 +221,17 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
       List<ContainerEntry> containedEntries = new ArrayList<>();
 
-      for (int i = 0; i < containedArray.size(); i++) {
+      for (Object arrayItem: containedArray) {
 
-        GenericData.Record resourceContainer = (GenericData.Record) containedArray.get(i);
+        GenericData.Record resourceContainer = (GenericData.Record) arrayItem;
 
-        // The number of contained fields will be low, so this nested loop has low cost
+        // Coalesce to non-null element in each Resource Container. The number of contained fields
+        // will be low, so this nested loop has low cost.
         for (int j = 0; j < resourceContainer.getSchema().getFields().size(); j++) {
 
           if (resourceContainer.get(j) != null) {
 
             GenericData.Record record = (GenericData.Record) resourceContainer.get(j);
-
             String recordType = record.getSchema().getName();
 
             containedEntries.add(new ContainerEntry(recordType, record));
@@ -255,7 +255,6 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       for (Object containedEntry: contained) {
 
         IndexedRecord containedRecord = (IndexedRecord) avroData.newRecord(null, containerType);
-
         String recordName = ((Record) containedEntry).getSchema().getName();
 
         List<Field> fields = containerType.getFields();
@@ -323,7 +322,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
     HapiConverter<Schema> elementConverter;
 
-    MultiValuedToAvroConverter(HapiConverter elementConverter) {
+    MultiValuedToAvroConverter(HapiConverter<Schema> elementConverter) {
       this.elementConverter = elementConverter;
     }
 
@@ -697,12 +696,21 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
             })
             .collect(Collectors.toList());
 
-    String fieldTypesString = choiceTypes
-            .keySet()
-            .stream()
-            .sorted()
-            .map(StringUtils::capitalize)
-            .collect(Collectors.joining());
+    String fieldTypesString = choiceTypes.entrySet()
+        .stream()
+        .map(choiceEntry -> {
+
+          // References need their full record name, which includes the permissible referent types
+          if (choiceEntry.getKey().equals("Reference")) {
+
+            return choiceEntry.getValue().getDataType().getName();
+          } else {
+
+            return choiceEntry.getKey();
+          }
+        }).sorted()
+        .map(StringUtils::capitalize)
+        .collect(Collectors.joining());
 
     String fullName = basePackage + "." + "Choice" + fieldTypesString;
 

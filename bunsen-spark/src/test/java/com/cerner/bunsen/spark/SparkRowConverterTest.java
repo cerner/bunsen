@@ -30,7 +30,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import scala.collection.mutable.WrappedArray;
 
 public class SparkRowConverterTest {
 
@@ -335,17 +334,13 @@ public class SparkRowConverterTest {
   public void testContainedResources() throws FHIRException {
 
     Medication testMedicationOne = (Medication) testMedicationRequest.getContained().get(0);
-
     String testMedicationOneId = testMedicationOne.getId();
-
     CodeableConcept testMedicationIngredientItem = testMedicationOne.getIngredientFirstRep()
         .getItemCodeableConcept();
 
     Medication decodedMedicationOne = (Medication) testMedicationRequestDecoded.getContained()
         .get(0);
-
     String decodedMedicationOneId = decodedMedicationOne.getId();
-
     CodeableConcept decodedMedicationOneIngredientItem = decodedMedicationOne
         .getIngredientFirstRep()
         .getItemCodeableConcept();
@@ -354,22 +349,18 @@ public class SparkRowConverterTest {
     Assert.assertTrue(decodedMedicationOneIngredientItem.equalsDeep(testMedicationIngredientItem));
 
     Provenance testProvenance = (Provenance) testMedicationRequest.getContained().get(1);
-
     String testProvenanceId = testProvenance.getId();
 
     Provenance decodedProvenance = (Provenance) testMedicationRequestDecoded.getContained().get(1);
-
     String decodedProvenanceId = decodedProvenance.getId();
 
     Assert.assertEquals(testProvenanceId, decodedProvenanceId);
 
     Medication testMedicationTwo = (Medication) testMedicationRequest.getContained().get(2);
-
     String testMedicationTwoId = testMedicationTwo.getId();
 
     Medication decodedMedicationTwo = (Medication) testMedicationRequestDecoded.getContained()
         .get(2);
-
     String decodedMedicationTwoId = decodedMedicationTwo.getId();
 
     Assert.assertEquals(testMedicationTwoId, decodedMedicationTwoId);

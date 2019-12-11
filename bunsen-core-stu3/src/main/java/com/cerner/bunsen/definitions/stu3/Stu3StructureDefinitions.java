@@ -39,11 +39,13 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
 
       if (!parent.getContentReference().startsWith("#")) {
 
-        throw new IllegalStateException("Non-local references are not supported");
+        throw new IllegalStateException("Non-local references are not yet supported");
       }
 
+      // Remove the leading hash (#) to get the referenced type.
       String referencedType = parent.getContentReference().substring(1);
 
+      // Find the actual type to use.
       parent = definitions.stream()
           .filter(definition -> definition.getPath().equals(referencedType))
           .findFirst()
@@ -293,7 +295,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
         }
       }
 
-      StructureField<T> field = new StructureField<T>(elementName,
+      StructureField<T> field = new StructureField<>(elementName,
           elementName,
           null,
           true,

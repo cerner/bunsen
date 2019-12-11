@@ -58,7 +58,7 @@ public class SpecificRecordsTest {
       (com.cerner.bunsen.stu3.avro.us.core.Condition) CONDITION_CONVERTER
           .resourceToAvro(testCondition);
 
-  private static final org.hl7.fhir.dstu3.model.Condition  testConditionDecoded =
+  private static final org.hl7.fhir.dstu3.model.Condition testConditionDecoded =
       (org.hl7.fhir.dstu3.model.Condition) CONDITION_CONVERTER.avroToResource(avroCondition);
 
   // Medication

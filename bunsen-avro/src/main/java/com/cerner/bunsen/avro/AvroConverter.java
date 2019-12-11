@@ -73,11 +73,12 @@ public class AvroConverter {
 
     for (int i = 0; i < containedResourceTypeUrls.size(); i++) {
 
+      // Retrieve the name of the contained resources from the Resource Container's schema
       Field containedField = converter.getDataType()
           .getField("contained")
           .schema()
           .getTypes()
-          .get(1)
+          .get(1) // Get non-null element of the Union
           .getElementType()
           .getFields()
           .get(i);
@@ -162,16 +163,22 @@ public class AvroConverter {
   }
 
   /**
-   * Converts a given FHIR resource to a Spark row.
+   * Converts a given FHIR resource to an Avro {@link IndexedRecord}.
    *
    * @param resource the FHIR resource
-   * @return the row
+   * @return the record.
    */
   public IndexedRecord resourceToAvro(IBaseResource resource) {
 
     return (IndexedRecord) hapiToAvroConverter.fromHapi(resource);
   }
 
+  /**
+   * Converts a given Avro {@link IndexedRecord} to a FHIR resource.
+   *
+   * @param record the record
+   * @return the FHIR resource.
+   */
   public IBaseResource avroToResource(IndexedRecord record) {
 
     return (IBaseResource) avroToHapiConverter.toHapi(record);
@@ -180,7 +187,7 @@ public class AvroConverter {
   /**
    * Returns the Avro schema equivalent for the FHIR resource.
    *
-   * @return the Spark schema
+   * @return the Avro schema
    */
   public Schema getSchema() {
 

@@ -52,7 +52,7 @@ public class GenerateSchemas {
     }
 
     Map<String, List<String>> resourceTypeUrls = Arrays.stream(args)
-        .skip(2)
+        .skip(1)
         .collect(Collectors.toMap(Function.identity(), item -> Collections.emptyList()));
 
     List<Schema> schemas = AvroConverter.generateSchemas(FhirContexts.forStu3(), resourceTypeUrls);

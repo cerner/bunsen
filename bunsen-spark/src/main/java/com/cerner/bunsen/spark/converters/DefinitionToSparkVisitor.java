@@ -176,7 +176,6 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
           if (resourceContainer.get(j) != null) {
 
             GenericRowWithSchema row = (GenericRowWithSchema) resourceContainer.get(j);
-
             String columnName = resourceContainer.schema().fields()[j].name();
 
             containedEntries.add(new ContainerEntry(columnName, row));
@@ -200,7 +199,6 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
             new GenericRowWithSchema[structTypeHashToIndex.size()];
 
         GenericRowWithSchema containedRow = (GenericRowWithSchema) contained[i];
-
         int containedEntryStructTypeHash = containedRow.schema().hashCode();
 
         containerFields[structTypeHashToIndex.get(containedEntryStructTypeHash)] = containedRow;
@@ -222,6 +220,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
       MultiValuedtoHapiConverter(BaseRuntimeElementDefinition elementDefinition,
           HapiObjectConverter rowToHapiConverter) {
+
         this.elementDefinition = elementDefinition;
         this.rowToHapiConverter = rowToHapiConverter;
       }

@@ -37,23 +37,10 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
   protected abstract boolean isMultiValued(T schemaType);
 
-  protected HapiCompositeConverter(String elementType,
-      List<StructureField<HapiConverter<T>>> children,
-      T structType,
-      FhirConversionSupport fhirSupport,
-      String extensionUrl) {
-
-    this.elementType = elementType;
-    this.children = children;
-    this.structType = structType;
-    this.extensionUrl = extensionUrl;
-    this.fhirSupport = fhirSupport;
-  }
-
   /**
    * Field setter that does nothing for synthetic or unsupported field types.
    */
-  private static class NoOpFieldSetter implements HapiFieldSetter,
+  private static final class NoOpFieldSetter implements HapiFieldSetter,
       HapiObjectConverter {
 
     @Override
@@ -68,7 +55,7 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
   private static final HapiFieldSetter NOOP_FIELD_SETTER = new NoOpFieldSetter();
 
-  protected class CompositeFieldSetter implements HapiFieldSetter,
+  protected final class CompositeFieldSetter implements HapiFieldSetter,
       HapiObjectConverter {
 
     private final List<StructureField<HapiFieldSetter>> children;
@@ -147,8 +134,20 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
       } else {
         fieldToSet.getMutator().setValue(parentObject, fhirObject);
       }
-
     }
+  }
+
+  protected HapiCompositeConverter(String elementType,
+      List<StructureField<HapiConverter<T>>> children,
+      T structType,
+      FhirConversionSupport fhirSupport,
+      String extensionUrl) {
+
+    this.elementType = elementType;
+    this.children = children;
+    this.structType = structType;
+    this.extensionUrl = extensionUrl;
+    this.fhirSupport = fhirSupport;
   }
 
   @Override
@@ -341,9 +340,5 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
   @Override
   public String getElementType() {
     return elementType;
-  }
-
-  public List<StructureField<HapiConverter<T>>> getChildren() {
-    return children;
   }
 }

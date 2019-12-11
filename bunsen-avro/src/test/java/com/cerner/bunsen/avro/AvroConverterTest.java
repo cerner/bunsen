@@ -1,14 +1,11 @@
 package com.cerner.bunsen.avro;
 
 import com.cerner.bunsen.FhirContexts;
-import com.cerner.bunsen.avro.AvroConverter;
 import com.cerner.bunsen.stu3.TestData;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -16,17 +13,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javafx.beans.binding.ObjectBinding;
-import org.apache.avro.Conversion;
-import org.apache.avro.Conversions;
-import org.apache.avro.LogicalTypes;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Type;
 import org.apache.avro.compiler.specific.SpecificCompiler;
-import org.apache.avro.generic.GenericData.Array;
 import org.apache.avro.generic.GenericData.Record;
-import org.hl7.fhir.dstu3.hapi.ctx.IValidationSupport;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Condition;
@@ -38,8 +28,6 @@ import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Provenance;
 import org.hl7.fhir.dstu3.model.Quantity;
-import org.hl7.fhir.dstu3.model.StructureDefinition;
-import org.hl7.fhir.dstu3.model.StructureDefinition.StructureDefinitionKind;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -330,17 +318,13 @@ public class AvroConverterTest {
   public void testContainedResources() throws FHIRException {
 
     Medication testMedicationOne = (Medication) testMedicationRequest.getContained().get(0);
-
     String testMedicationOneId = testMedicationOne.getId();
-
     CodeableConcept testMedicationIngredientItem = testMedicationOne.getIngredientFirstRep()
         .getItemCodeableConcept();
 
     Medication decodedMedicationOne = (Medication) testMedicationRequestDecoded.getContained()
         .get(0);
-
     String decodedMedicationOneId = decodedMedicationOne.getId();
-
     CodeableConcept decodedMedicationOneIngredientItem = decodedMedicationOne
         .getIngredientFirstRep()
         .getItemCodeableConcept();
@@ -349,22 +333,18 @@ public class AvroConverterTest {
     Assert.assertTrue(decodedMedicationOneIngredientItem.equalsDeep(testMedicationIngredientItem));
 
     Provenance testProvenance = (Provenance) testMedicationRequest.getContained().get(1);
-
     String testProvenanceId = testProvenance.getId();
 
     Provenance decodedProvenance = (Provenance) testMedicationRequestDecoded.getContained().get(1);
-
     String decodedProvenanceId = decodedProvenance.getId();
 
     Assert.assertEquals(testProvenanceId, decodedProvenanceId);
 
     Medication testMedicationTwo = (Medication) testMedicationRequest.getContained().get(2);
-
     String testMedicationTwoId = testMedicationTwo.getId();
 
     Medication decodedMedicationTwo = (Medication) testMedicationRequestDecoded.getContained()
         .get(2);
-
     String decodedMedicationTwoId = decodedMedicationTwo.getId();
 
     Assert.assertEquals(testMedicationTwoId, decodedMedicationTwoId);
@@ -417,6 +397,6 @@ public class AvroConverterTest {
 
     // Contained types created.
     Assert.assertTrue(javaFiles.contains(
-        "com/cerner/bunsen/stu3/avro/MedicationRequestContained.java"));
+        "com/cerner/bunsen/stu3/avro/us/core/MedicationRequestContained.java"));
   }
 }

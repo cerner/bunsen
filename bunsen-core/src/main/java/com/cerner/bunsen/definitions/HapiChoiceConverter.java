@@ -20,16 +20,7 @@ public abstract class HapiChoiceConverter<T> extends HapiConverter<T> {
 
   private final FhirConversionSupport fhirSupport;
 
-  protected HapiChoiceConverter(Map<String,HapiConverter<T>> choiceTypes,
-      T structType,
-      FhirConversionSupport fhirSupport) {
-
-    this.choiceTypes = choiceTypes;
-    this.structType = structType;
-    this.fhirSupport = fhirSupport;
-  }
-
-  private class ChoiceFieldSetter implements HapiFieldSetter {
+  private final class ChoiceFieldSetter implements HapiFieldSetter {
 
     private final Map<String,HapiFieldSetter> choiceFieldSetters;
 
@@ -62,6 +53,16 @@ public abstract class HapiChoiceConverter<T> extends HapiConverter<T> {
       }
     }
   }
+
+  protected HapiChoiceConverter(Map<String, HapiConverter<T>> choiceTypes,
+      T structType,
+      FhirConversionSupport fhirSupport) {
+
+    this.choiceTypes = choiceTypes;
+    this.structType = structType;
+    this.fhirSupport = fhirSupport;
+  }
+
 
   @Override
   public Object fromHapi(Object input) {
