@@ -7,11 +7,14 @@ import com.cerner.bunsen.avro.converters.DefinitionToAvroVisitor;
 import com.cerner.bunsen.definitions.HapiConverter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiObjectConverter;
 import com.cerner.bunsen.definitions.StructureDefinitions;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
 import org.apache.avro.generic.IndexedRecord;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
@@ -24,18 +27,17 @@ public class AvroConverter {
 
   private final HapiObjectConverter avroToHapiConverter;
 
-  AvroConverter(HapiConverter<Schema> hapiToAvroConverter,
-      RuntimeResourceDefinition resourceDefinition) {
+  private AvroConverter(HapiConverter<Schema> hapiToAvroConverter,
+      RuntimeResourceDefinition... resources) {
 
     this.hapiToAvroConverter = hapiToAvroConverter;
-
-    this.avroToHapiConverter  =
-        (HapiObjectConverter) hapiToAvroConverter.toHapiConverter(resourceDefinition);
+    this.avroToHapiConverter = (HapiObjectConverter) hapiToAvroConverter.toHapiConverter(resources);
   }
 
   private static AvroConverter visitResource(FhirContext context,
       StructureDefinitions structureDefinitions,
       String resourceTypeUrl,
+      List<String> containedResourceTypeUrls,
       Map<String,HapiConverter<Schema>> compositeConverters) {
 
     FhirVersionEnum fhirVersion = context.getVersion().getVersion();
@@ -60,60 +62,102 @@ public class AvroConverter {
                 basePackage,
                 compositeConverters);
 
-    HapiConverter<Schema> converter =  structureDefinitions.transform(visitor, resourceTypeUrl);
+    HapiConverter<Schema> converter =  structureDefinitions.transform(visitor,
+        resourceTypeUrl,
+        containedResourceTypeUrls);
 
-    RuntimeResourceDefinition resourceDefinition =
-        context.getResourceDefinition(converter.getElementType());
+    RuntimeResourceDefinition[] resources =
+        new RuntimeResourceDefinition[1 + containedResourceTypeUrls.size()];
 
-    return new AvroConverter(converter, resourceDefinition);
+    resources[0] = context.getResourceDefinition(converter.getElementType());
+
+    for (int i = 0; i < containedResourceTypeUrls.size(); i++) {
+
+      Field containedField = converter.getDataType()
+          .getField("contained")
+          .schema()
+          .getTypes()
+          .get(1)
+          .getElementType()
+          .getFields()
+          .get(i);
+
+      // Shift array by 1, since the 0 index holds the parent definition
+      resources[i + 1] = context.getResourceDefinition(containedField.name());
+    }
+
+    return new AvroConverter(converter, resources);
   }
 
   /**
    * Returns a list of Avro schemas to support the given FHIR resource types.
    *
    * @param context the FHIR context
-   * @param resourceTypeUrls the URLs of the resource type
+   * @param resourceTypeUrls the URLs of the resource types and any resources URLs contained to them
    * @return a list of Avro schemas
    */
   public static List<Schema> generateSchemas(FhirContext context,
-      List<String> resourceTypeUrls) {
+      Map<String, List<String>> resourceTypeUrls) {
 
     StructureDefinitions structureDefinitions = StructureDefinitions.create(context);
 
-    Map<String,HapiConverter<Schema>> converters = new HashMap<>();
+    Map<String, HapiConverter<Schema>> converters = new HashMap<>();
 
-    for (String resourceTypeUrl: resourceTypeUrls) {
+    for (Entry<String, List<String>> resourceTypeUrlEntry: resourceTypeUrls.entrySet()) {
 
       visitResource(context,
           structureDefinitions,
-          resourceTypeUrl,
+          resourceTypeUrlEntry.getKey(),
+          resourceTypeUrlEntry.getValue(),
           converters);
     }
 
     return converters.values()
         .stream()
-        .map(converter -> converter.getDataType())
+        .map(HapiConverter::getDataType)
         .collect(Collectors.toList());
   }
 
   /**
-   * Returns a row converter for the given resource type. The resource type can
+   * Returns an Avro converter for the given resource type. The resource type can
    * either be a relative URL for a base resource (e.g., "Condition" or "Observation"),
    * or a URL identifying the structure definition for a given profile, such as
    * "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient".
    *
    * @param context the FHIR context
    * @param resourceTypeUrl the URL of the resource type
-   * @return an avro converter instance.
+   * @return an Avro converter instance.
    */
   public static AvroConverter forResource(FhirContext context,
       String resourceTypeUrl) {
+
+    return forResource(context, resourceTypeUrl, Collections.emptyList());
+  }
+
+  /**
+   * Returns an Avro converter for the given resource type. The resource type can
+   * either be a relative URL for a base resource (e.g. "Condition" or "Observation"),
+   * or a URL identifying the structure definition for a given profile, such as
+   * "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient".
+   * <p>
+   * Resources that would be contained must be statically declared through this method
+   * via similar URLs.
+   * </p>
+   * @param context the FHIR context
+   * @param resourceTypeUrl the URL of the resource type
+   * @param containedResourceTypeUrls the list of URLs of contained resource types
+   * @return an Avro converter instance.
+   */
+  public static AvroConverter forResource(FhirContext context,
+      String resourceTypeUrl,
+      List<String> containedResourceTypeUrls) {
 
     StructureDefinitions structureDefinitions = StructureDefinitions.create(context);
 
     return visitResource(context,
         structureDefinitions,
         resourceTypeUrl,
+        containedResourceTypeUrls,
         new HashMap<>());
   }
 

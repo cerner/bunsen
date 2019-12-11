@@ -37,6 +37,18 @@ public interface DefinitionVisitor<T> {
       List<StructureField<T>> children);
 
   /**
+   * Visits a container type.
+   *
+   * @param elementPath the FHIR path to the element.
+   * @param baseType the type of the container type.
+   * @param contained the map of types to their contained elements.
+   * @return the visitor result.
+   */
+  public T visitContained(String elementPath,
+      String baseType,
+      Map<String, StructureField<T>> contained);
+
+  /**
    * Visits a reference type.
    *
    * @param elementName the element to visit.

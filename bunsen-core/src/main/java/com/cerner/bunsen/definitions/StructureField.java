@@ -103,7 +103,7 @@ public class StructureField<T> {
    */
   public static <T> StructureField<T> property(String propertyName, T visitorResult) {
 
-    return new StructureField<T>(propertyName, propertyName, null, false, visitorResult);
+    return new StructureField<>(propertyName, propertyName, null, false, visitorResult);
   }
 
   /**
@@ -119,6 +119,6 @@ public class StructureField<T> {
       String extensionUrl,
       T visitorResult) {
 
-    return new StructureField<T>(null, fieldName, extensionUrl, false, visitorResult);
+    return new StructureField<>(null, fieldName, extensionUrl, false, visitorResult);
   }
 }

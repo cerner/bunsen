@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.ArrayType;
+import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.StructType;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
@@ -28,21 +30,12 @@ public class SparkRowConverter {
 
   private final HapiObjectConverter sparkToHapiConverter;
 
-  private final DefinitionToSparkVisitor visitor;
+  private SparkRowConverter(HapiConverter hapiToSparkConverter,
+      RuntimeResourceDefinition... resources) {
 
-  SparkRowConverter(FhirContext context,
-      StructureDefinitions structureDefinitions,
-      String resourceTypeUrl) {
-
-    this.visitor = new DefinitionToSparkVisitor(structureDefinitions.conversionSupport());
-
-    this.hapiToSparkConverter = structureDefinitions.transform(visitor, resourceTypeUrl);
-
-    RuntimeResourceDefinition resourceDefinition =
-        context.getResourceDefinition(hapiToSparkConverter.getElementType());
-
-    this.sparkToHapiConverter  =
-        (HapiObjectConverter) hapiToSparkConverter.toHapiConverter(resourceDefinition);
+    this.hapiToSparkConverter = hapiToSparkConverter;
+    this.sparkToHapiConverter =
+        (HapiObjectConverter) hapiToSparkConverter.toHapiConverter(resources);
   }
 
   /**
@@ -58,9 +51,51 @@ public class SparkRowConverter {
   public static SparkRowConverter forResource(FhirContext context,
       String resourceTypeUrl) {
 
+    return forResource(context, resourceTypeUrl, Collections.emptyList());
+  }
+
+  /**
+   * Returns a row converter for the given resource type. The resource type can
+   * either be a relative URL for a base resource (e.g. "Condition" or "Observation"),
+   * or a URL identifying the structure definition for a given profile, such as
+   * "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient".
+   * <p>
+   * Resources that would be contained must be statically declared through this method
+   * via similar URLs.
+   * </p>
+   * @param context the FHIR context
+   * @param resourceTypeUrl the URL of the resource type
+   * @param containedResourceTypeUrls the list of URLs of contained resource types
+   * @return an Avro converter instance.
+   */
+  public static SparkRowConverter forResource(FhirContext context,
+      String resourceTypeUrl,
+      List<String> containedResourceTypeUrls) {
+
     StructureDefinitions structureDefinitions = StructureDefinitions.create(context);
 
-    return new SparkRowConverter(context, structureDefinitions, resourceTypeUrl);
+    DefinitionToSparkVisitor visitor =
+        new DefinitionToSparkVisitor(structureDefinitions.conversionSupport());
+
+    HapiConverter<DataType> converter = structureDefinitions.transform(visitor,
+        resourceTypeUrl,
+        containedResourceTypeUrls);
+
+    RuntimeResourceDefinition[] resources =
+        new RuntimeResourceDefinition[1 + containedResourceTypeUrls.size()];
+
+    resources[0] = context.getResourceDefinition(converter.getElementType());
+
+    for (int i = 0; i < containedResourceTypeUrls.size(); i++) {
+
+      StructType parentType = (StructType) converter.getDataType();
+      ArrayType containerArrayType = (ArrayType) parentType.apply("contained").dataType();
+      StructType containerType = (StructType) containerArrayType.elementType();
+
+      resources[i + 1] = context.getResourceDefinition(containerType.apply(i).name());
+    }
+
+    return new SparkRowConverter(converter, resources);
   }
 
   /**
@@ -119,7 +154,7 @@ public class SparkRowConverter {
   public Dataset<Row> toDataFrame(SparkSession spark, List<IBaseResource> resources) {
 
     List<Row> rows = resources.stream()
-        .map(resource -> resourceToRow(resource))
+        .map(this::resourceToRow)
         .collect(Collectors.toList());
 
     return spark.createDataFrame(rows, getSchema());

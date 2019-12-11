@@ -5,6 +5,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.support.IContextValidationSupport;
 import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.Constructor;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -61,6 +62,19 @@ public abstract class StructureDefinitions {
    */
   public abstract <T> T transform(DefinitionVisitor<T> visitor,
       String resourceTypeUrl);
+
+  /**
+   * Transforms a FHIR resource to a type defined by the visitor.
+   * @param visitor a visitor class to recursively transform the structure.
+   * @param resourceTypeUrl the URL defining the resource type or profile.
+   * @param containedResourceTypeUrls the URLs defining the resource types or profiles to be
+   *        contained to the given resource.
+   * @param <T> the return type of the visitor.
+   * @return the transformed result.
+   */
+  public abstract <T> T transform(DefinitionVisitor<T> visitor,
+      String resourceTypeUrl,
+      List<String> containedResourceTypeUrls);
 
   /**
    * Returns supporting functions to make FHIR conversion work independent of version.

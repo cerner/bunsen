@@ -6,7 +6,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 
@@ -47,7 +51,9 @@ public class GenerateSchemas {
       return 1;
     }
 
-    List<String> resourceTypeUrls = Arrays.asList(args).subList(1, args.length);
+    Map<String, List<String>> resourceTypeUrls = Arrays.stream(args)
+        .skip(2)
+        .collect(Collectors.toMap(Function.identity(), item -> Collections.emptyList()));
 
     List<Schema> schemas = AvroConverter.generateSchemas(FhirContexts.forStu3(), resourceTypeUrls);
 
