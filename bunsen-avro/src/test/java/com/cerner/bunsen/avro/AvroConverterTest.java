@@ -55,7 +55,7 @@ public class AvroConverterTest {
 
   private static final Medication testMedicationOne = TestData.newMedication("test-medication-1");
 
-  private static final Medication testMedicationOTwo = TestData.newMedication("test-medication-2");
+  private static final Medication testMedicationTwo = TestData.newMedication("test-medication-2");
 
   private static Medication testMedicationDecoded;
 
@@ -65,7 +65,7 @@ public class AvroConverterTest {
       (MedicationRequest) TestData.newMedicationRequest()
           .addContained(testMedicationOne)
           .addContained(testProvenance)
-          .addContained(testMedicationOTwo);
+          .addContained(testMedicationTwo);
 
   private static Record avroMedicationRequest;
 
