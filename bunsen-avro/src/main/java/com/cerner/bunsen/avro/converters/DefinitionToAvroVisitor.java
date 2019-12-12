@@ -2,10 +2,11 @@ package com.cerner.bunsen.avro.converters;
 
 import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
-import com.cerner.bunsen.definitions.ChoiceConverter;
 import com.cerner.bunsen.definitions.DefinitionVisitor;
 import com.cerner.bunsen.definitions.FhirConversionSupport;
+import com.cerner.bunsen.definitions.HapiChoiceConverter;
 import com.cerner.bunsen.definitions.HapiCompositeConverter;
+import com.cerner.bunsen.definitions.HapiContainedConverter;
 import com.cerner.bunsen.definitions.HapiConverter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiFieldSetter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiObjectConverter;
@@ -15,6 +16,7 @@ import com.cerner.bunsen.definitions.StringConverter;
 import com.cerner.bunsen.definitions.StructureField;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.IndexedRecord;
 import org.apache.avro.specific.SpecificData;
 import org.apache.commons.lang3.StringUtils;
@@ -169,11 +172,11 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     }
   }
 
-  private static class ChoiceToAvroConverter extends ChoiceConverter<Schema> {
+  private static class HapiChoiceToAvroConverter extends HapiChoiceConverter<Schema> {
 
     private final GenericData avroData = SpecificData.get();
 
-    ChoiceToAvroConverter(Map<String,HapiConverter<Schema>> choiceTypes,
+    HapiChoiceToAvroConverter(Map<String ,HapiConverter<Schema>> choiceTypes,
         Schema structType,
         FhirConversionSupport fhirSupport) {
 
@@ -197,6 +200,95 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       }
 
       return record;
+    }
+  }
+
+  private static class HapiContainedToAvroConverter extends HapiContainedConverter<Schema> {
+
+    private final GenericData avroData = SpecificData.get();
+
+    private HapiContainedToAvroConverter(
+        Map<String, StructureField<HapiConverter<Schema>>> contained,
+        Schema structType) {
+
+      super(contained, structType);
+    }
+
+    @Override
+    protected List<ContainerEntry> getContained(Object container) {
+
+      GenericData.Array containedArray = (GenericData.Array) container;
+
+      List<ContainerEntry> containedEntries = new ArrayList<>();
+
+      for (Object arrayItem: containedArray) {
+
+        GenericData.Record resourceContainer = (GenericData.Record) arrayItem;
+
+        // Coalesce to non-null element in each Resource Container. The number of contained fields
+        // will be low, so this nested loop has low cost.
+        for (int j = 0; j < resourceContainer.getSchema().getFields().size(); j++) {
+
+          if (resourceContainer.get(j) != null) {
+
+            GenericData.Record record = (GenericData.Record) resourceContainer.get(j);
+            String recordType = record.getSchema().getName();
+
+            containedEntries.add(new ContainerEntry(recordType, record));
+
+            break;
+          }
+        }
+      }
+
+      return containedEntries;
+    }
+
+    @Override
+    protected Object createContained(Object[] contained) {
+
+      GenericData.Array<IndexedRecord> containedArray =
+          new GenericData.Array<>(contained.length, getDataType());
+
+      Schema containerType = getDataType().getElementType();
+
+      for (Object containedEntry: contained) {
+
+        IndexedRecord containedRecord = (IndexedRecord) avroData.newRecord(null, containerType);
+        String recordName = ((Record) containedEntry).getSchema().getName();
+
+        List<Field> fields = containerType.getFields();
+
+        int containedPosition = -1;
+
+        // Find index in the Contained Array which should hold the current contained element; the
+        // contained elements Schema name should match the field name.
+        for (int j = 0; j < fields.size(); j++) {
+
+          if (fields.get(j).name().equals(recordName)) {
+
+            containedPosition = j;
+
+            break;
+          }
+        }
+
+        if (containedPosition == -1) {
+          String fieldNames = containerType.getFields().stream().map(Field::name)
+              .collect(Collectors.joining(", "));
+
+          throw new IllegalArgumentException("Expected a field to exist in the Contained List"
+              + " having the name of the current record, but found none."
+              + " Contained Field Names: " + fieldNames + ","
+              + " Record Name: " + recordName);
+        }
+
+        containedRecord.put(containedPosition, containedEntry);
+
+        containedArray.add(containedRecord);
+      }
+
+      return containedArray;
     }
   }
 
@@ -230,7 +322,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
     HapiConverter<Schema> elementConverter;
 
-    MultiValuedToAvroConverter(HapiConverter elementConverter) {
+    MultiValuedToAvroConverter(HapiConverter<Schema> elementConverter) {
       this.elementConverter = elementConverter;
     }
 
@@ -296,6 +388,37 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
   }
 
   @Override
+  public HapiConverter<Schema> visitContained(String elementPath,
+      String elementTypeUrl,
+      Map<String, StructureField<HapiConverter<Schema>>> contained) {
+
+    String recordName = recordNameFor(elementPath);
+    String recordNamespace = namespaceFor(elementTypeUrl);
+
+    List<Field> fields = contained.values()
+        .stream()
+        .map(containedEntry -> {
+
+          String doc = "Field for FHIR property " + containedEntry.propertyName();
+
+          return new Field(containedEntry.fieldName(),
+              nullable(containedEntry.result().getDataType()),
+              doc,
+              JsonProperties.NULL_VALUE);
+
+        }).collect(Collectors.toList());
+
+    Schema containerType = Schema.createArray(
+        Schema.createRecord(recordName,
+            "Structure for FHIR type contained",
+            recordNamespace,
+            false,
+            fields));
+
+    return new HapiContainedToAvroConverter(contained, containerType);
+  }
+
+  @Override
   public HapiConverter<Schema> visitComposite(String elementName,
       String elementPath,
       String baseType,
@@ -330,8 +453,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
           false,
           fields);
 
-      converter = new CompositeToAvroConverter(baseType,
-          children, schema, fhirSupport);
+      converter = new CompositeToAvroConverter(baseType, children, schema, fhirSupport);
 
       visitedConverters.put(fullName, converter);
     }
@@ -574,12 +696,21 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
             })
             .collect(Collectors.toList());
 
-    String fieldTypesString = choiceTypes
-            .keySet()
-            .stream()
-            .sorted()
-            .map(StringUtils::capitalize)
-            .collect(Collectors.joining());
+    String fieldTypesString = choiceTypes.entrySet()
+        .stream()
+        .map(choiceEntry -> {
+
+          // References need their full record name, which includes the permissible referent types
+          if (choiceEntry.getKey().equals("Reference")) {
+
+            return choiceEntry.getValue().getDataType().getName();
+          } else {
+
+            return choiceEntry.getKey();
+          }
+        }).sorted()
+        .map(StringUtils::capitalize)
+        .collect(Collectors.joining());
 
     String fullName = basePackage + "." + "Choice" + fieldTypesString;
 
@@ -592,9 +723,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
           basePackage,
           false, fields);
 
-      converter = new ChoiceToAvroConverter(choiceTypes,
-          schema,
-          fhirSupport);
+      converter = new HapiChoiceToAvroConverter(choiceTypes, schema, fhirSupport);
 
       visitedConverters.put(fullName, converter);
     }
@@ -602,7 +731,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     return converter;
   }
 
-  private static final String lowercase(String string) {
+  private static String lowercase(String string) {
 
     if (string.length() == 0) {
 

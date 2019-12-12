@@ -58,7 +58,7 @@ public class SpecificRecordsTest {
       (com.cerner.bunsen.stu3.avro.us.core.Condition) CONDITION_CONVERTER
           .resourceToAvro(testCondition);
 
-  private static final org.hl7.fhir.dstu3.model.Condition  testConditionDecoded =
+  private static final org.hl7.fhir.dstu3.model.Condition testConditionDecoded =
       (org.hl7.fhir.dstu3.model.Condition) CONDITION_CONVERTER.avroToResource(avroCondition);
 
   // Medication
@@ -66,7 +66,7 @@ public class SpecificRecordsTest {
       AvroConverter.forResource(FhirContexts.forStu3(), TestData.US_CORE_MEDICATION);
 
   private static final org.hl7.fhir.dstu3.model.Medication testMedication =
-      TestData.newMedication();
+      TestData.newMedication("test-medication-1");
 
   private static final com.cerner.bunsen.stu3.avro.us.core.Medication avroMedication =
       (com.cerner.bunsen.stu3.avro.us.core.Medication) MEDICATION_CONVERTER

@@ -2,10 +2,11 @@ package com.cerner.bunsen.spark.converters;
 
 import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
-import com.cerner.bunsen.definitions.ChoiceConverter;
 import com.cerner.bunsen.definitions.DefinitionVisitor;
 import com.cerner.bunsen.definitions.FhirConversionSupport;
+import com.cerner.bunsen.definitions.HapiChoiceConverter;
 import com.cerner.bunsen.definitions.HapiCompositeConverter;
+import com.cerner.bunsen.definitions.HapiContainedConverter;
 import com.cerner.bunsen.definitions.HapiConverter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiFieldSetter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiObjectConverter;
@@ -15,6 +16,8 @@ import com.cerner.bunsen.definitions.StringConverter;
 import com.cerner.bunsen.definitions.StructureField;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,6 +33,7 @@ import org.apache.spark.sql.types.StructType;
 import org.hl7.fhir.instance.model.api.IBase;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 import scala.collection.JavaConversions;
+import scala.collection.mutable.WrappedArray;
 
 /**
  * A visitor implementation to travers a FHIR resource definition and produce
@@ -45,9 +49,9 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
   private static final DataType decimalType = DataTypes.createDecimalType(12, 4);
 
-  private static class ChoiceToSparkConverter extends ChoiceConverter<DataType> {
+  private static class HapiChoiceToSparkConverter extends HapiChoiceConverter<DataType> {
 
-    ChoiceToSparkConverter(Map<String,HapiConverter<DataType>> choiceTypes,
+    HapiChoiceToSparkConverter(Map<String,HapiConverter<DataType>> choiceTypes,
         StructType structType,
         FhirConversionSupport fhirSupport) {
 
@@ -74,9 +78,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
     @Override
     public void setField(IBase parentObject, BaseRuntimeChildDefinition fieldToSet,
-        Object sparkObject) {
-
-    }
+        Object sparkObject) {}
 
     @Override
     public IBase toHapi(Object input) {
@@ -88,16 +90,16 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
   private static final HapiFieldSetter NOOP_FIELD_SETTER = new NoOpFieldSetter();
 
 
-  private static class CompositeToSparkConverter extends HapiCompositeConverter<DataType> {
+  private static class HapiCompositeToSparkConverter extends HapiCompositeConverter<DataType> {
 
-    CompositeToSparkConverter(String elementType,
+    HapiCompositeToSparkConverter(String elementType,
         List<StructureField<HapiConverter<DataType>>> children,
         StructType structType,
         FhirConversionSupport fhirSupport) {
       this(elementType, children, structType, fhirSupport, null);
     }
 
-    CompositeToSparkConverter(String elementType,
+    HapiCompositeToSparkConverter(String elementType,
         List<StructureField<HapiConverter<DataType>>> children,
         StructType structType,
         FhirConversionSupport fhirSupport,
@@ -112,7 +114,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
       // The row being converted may have come from a different schema or profile
       // than what is being requested by the caller, so we must look up fields
       // by name.
-      String fieldName = ((StructType) this.structType).fields()[index].name();
+      String fieldName = ((StructType) getDataType()).apply(index).name();
 
       scala.Option fieldIndex = ((GenericRowWithSchema) composite)
               .schema()
@@ -127,12 +129,84 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
     @Override
     protected Object createComposite(Object[] children) {
-      return RowFactory.create(children);
+
+      return new GenericRowWithSchema(children, (StructType) getDataType());
     }
 
     @Override
     protected boolean isMultiValued(DataType schemaType) {
       return schemaType instanceof ArrayType;
+    }
+  }
+
+  private static class HapiContainedToSparkConverter extends HapiContainedConverter<DataType> {
+
+    private final Map<Integer, Integer> structTypeHashToIndex = new HashMap<>();
+
+    private final StructType containerType;
+
+    private HapiContainedToSparkConverter(
+        Map<String, StructureField<HapiConverter<DataType>>> contained,
+        DataType dataType) {
+
+      super(contained, dataType);
+
+      this.containerType = (StructType) ((ArrayType) dataType).elementType();
+
+      for (int i = 0; i < containerType.fields().length; i++) {
+
+        structTypeHashToIndex.put(containerType.apply(i).dataType().hashCode(), i);
+      }
+    }
+
+    @Override
+    protected List<ContainerEntry> getContained(Object container) {
+
+      WrappedArray containedArray = (WrappedArray) container;
+
+      List<ContainerEntry> containedEntries = new ArrayList<>();
+
+      for (int i = 0; i < containedArray.length(); i++) {
+
+        GenericRowWithSchema resourceContainer = (GenericRowWithSchema) containedArray.apply(i);
+
+        // The number of contained fields will be low, so this nested loop has low cost
+        for (int j = 0; j < resourceContainer.schema().fields().length; j++) {
+
+          if (resourceContainer.get(j) != null) {
+
+            GenericRowWithSchema row = (GenericRowWithSchema) resourceContainer.get(j);
+            String columnName = resourceContainer.schema().fields()[j].name();
+
+            containedEntries.add(new ContainerEntry(columnName, row));
+
+            break;
+          }
+        }
+      }
+
+      return containedEntries;
+    }
+
+    @Override
+    protected Object createContained(Object[] contained) {
+
+      GenericRowWithSchema[] containerArray = new GenericRowWithSchema[contained.length];
+
+      for (int i = 0; i < contained.length; i++) {
+
+        GenericRowWithSchema[] containerFields =
+            new GenericRowWithSchema[structTypeHashToIndex.size()];
+
+        GenericRowWithSchema containedRow = (GenericRowWithSchema) contained[i];
+        int containedEntryStructTypeHash = containedRow.schema().hashCode();
+
+        containerFields[structTypeHashToIndex.get(containedEntryStructTypeHash)] = containedRow;
+
+        containerArray[i] = new GenericRowWithSchema(containerFields, containerType);
+      }
+
+      return containerArray;
     }
   }
 
@@ -146,6 +220,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
       MultiValuedtoHapiConverter(BaseRuntimeElementDefinition elementDefinition,
           HapiObjectConverter rowToHapiConverter) {
+
         this.elementDefinition = elementDefinition;
         this.rowToHapiConverter = rowToHapiConverter;
       }
@@ -329,8 +404,26 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
             Metadata.empty()))
         .toArray(StructField[]::new);
 
-    return new CompositeToSparkConverter(baseType,
+    return new HapiCompositeToSparkConverter(baseType,
         children, new StructType(fields), fhirSupport);
+  }
+
+  @Override
+  public HapiConverter visitContained(String elementPath,
+      String elementTypeUrl,
+      Map<String, StructureField<HapiConverter<DataType>>> contained) {
+
+    StructField[] fields = contained.values()
+        .stream()
+        .map(containedEntry -> new StructField(containedEntry.fieldName(),
+              containedEntry.result().getDataType(),
+              true,
+              Metadata.empty()))
+        .toArray(StructField[]::new);
+
+    ArrayType container = new ArrayType(new StructType(fields), true);
+
+    return new HapiContainedToSparkConverter(contained, container);
   }
 
   @Override
@@ -362,7 +455,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
             Metadata.empty()))
         .toArray(StructField[]::new);
 
-    return new CompositeToSparkConverter(null,
+    return new HapiCompositeToSparkConverter(null,
         fieldsWithReferences,
         new StructType(fields), fhirSupport);
   }
@@ -385,7 +478,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
                 Metadata.empty()))
         .toArray(StructField[]::new);
 
-    return new CompositeToSparkConverter(null,
+    return new HapiCompositeToSparkConverter(null,
         children,
         new StructType(fields),
         fhirSupport,
@@ -397,7 +490,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
       String extensionUri,
       HapiConverter elementConverter) {
 
-    return new LeafExtensionConverter<DataType>(extensionUri, elementConverter);
+    return new LeafExtensionConverter<>(extensionUri, elementConverter);
   }
 
   @Override
@@ -409,7 +502,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
   @Override
   public HapiConverter<DataType> visitChoice(String elementName,
-      Map<String,HapiConverter<DataType>> choiceTypes) {
+      Map<String, HapiConverter<DataType>> choiceTypes) {
 
     StructField[] fields = choiceTypes.entrySet().stream()
         .map(entry -> {
@@ -426,7 +519,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
         })
         .toArray(StructField[]::new);
 
-    return new ChoiceToSparkConverter(choiceTypes,
+    return new HapiChoiceToSparkConverter(choiceTypes,
         new StructType(fields),
         fhirSupport);
   }

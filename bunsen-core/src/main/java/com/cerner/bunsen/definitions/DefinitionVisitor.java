@@ -17,7 +17,7 @@ public interface DefinitionVisitor<T> {
    * @param primitiveType the FHIR type of the primitive.
    * @return the visitor result.
    */
-  public T visitPrimitive(String elementName,
+  T visitPrimitive(String elementName,
       String primitiveType);
 
   /**
@@ -30,11 +30,23 @@ public interface DefinitionVisitor<T> {
    * @param children the composite type's children.
    * @return the visitor result.
    */
-  public T visitComposite(String elementName,
+  T visitComposite(String elementName,
       String elementPath,
       String baseType,
       String elementTypeUrl,
       List<StructureField<T>> children);
+
+  /**
+   * Visits a container type.
+   *
+   * @param elementPath the FHIR path to the element.
+   * @param baseType the type of the container type.
+   * @param contained the map of types to their contained elements.
+   * @return the visitor result.
+   */
+  T visitContained(String elementPath,
+      String baseType,
+      Map<String, StructureField<T>> contained);
 
   /**
    * Visits a reference type.
@@ -44,7 +56,7 @@ public interface DefinitionVisitor<T> {
    * @param children the child fields of the reference
    * @return the visitor result.
    */
-  public T visitReference(String elementName,
+  T visitReference(String elementName,
       List<String> referenceTypes,
       List<StructureField<T>> children);
 
@@ -56,7 +68,7 @@ public interface DefinitionVisitor<T> {
    * @param children the children of the extension
    * @return the visitor result.
    */
-  public T visitParentExtension(String elementName,
+  T visitParentExtension(String elementName,
       String extensionUrl,
       List<StructureField<T>> children);
 
@@ -68,7 +80,7 @@ public interface DefinitionVisitor<T> {
    * @param element the children of the extension.
    * @return the visitor result.
    */
-  public T visitLeafExtension(String elementName,
+  T visitLeafExtension(String elementName,
       String extensionUrl,
       T element);
 
@@ -79,7 +91,7 @@ public interface DefinitionVisitor<T> {
    * @param arrayElement the visitor result for a single element of the array.
    * @return the visitor result.
    */
-  public T visitMultiValued(String elementName,
+  T visitMultiValued(String elementName,
       T arrayElement);
 
   /**
@@ -89,7 +101,7 @@ public interface DefinitionVisitor<T> {
    * @param fhirToChoiceTypes a map of the choice type with the returned children.
    * @return the visitor result.
    */
-  public T visitChoice(String elementName,
+  T visitChoice(String elementName,
       Map<String,T> fhirToChoiceTypes);
 
   /**
@@ -99,5 +111,5 @@ public interface DefinitionVisitor<T> {
    * @param path the path to the element that is recursive
    * @return the depth the visitor should recur to.
    */
-  public int getMaxDepth(String elementTypeUrl, String path);
+  int getMaxDepth(String elementTypeUrl, String path);
 }

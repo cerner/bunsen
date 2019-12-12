@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementCompositeDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
 import ca.uhn.fhir.context.RuntimeElemContainedResourceList;
+import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,41 +40,37 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
   /**
    * Field setter that does nothing for synthetic or unsupported field types.
    */
-  private static class NoOpFieldSetter implements HapiFieldSetter,
+  private static final class NoOpFieldSetter implements HapiFieldSetter,
       HapiObjectConverter {
 
     @Override
     public void setField(IBase parentObject, BaseRuntimeChildDefinition fieldToSet,
-        Object sparkObject) {
-
-    }
+        Object sourceObject) {}
 
     @Override
     public IBase toHapi(Object input) {
       return null;
     }
-
   }
 
   private static final HapiFieldSetter NOOP_FIELD_SETTER = new NoOpFieldSetter();
 
-  private class CompositeFieldSetter implements HapiFieldSetter,
+  protected final class CompositeFieldSetter implements HapiFieldSetter,
       HapiObjectConverter {
 
     private final List<StructureField<HapiFieldSetter>> children;
-
 
     private final BaseRuntimeElementCompositeDefinition compositeDefinition;
 
     CompositeFieldSetter(BaseRuntimeElementCompositeDefinition compositeDefinition,
         List<StructureField<HapiFieldSetter>> children) {
+
       this.compositeDefinition = compositeDefinition;
       this.children = children;
     }
 
-
     @Override
-    public IBase toHapi(Object rowObject) {
+    public IBase toHapi(Object sourceObject) {
 
       IBase fhirObject = compositeDefinition.newInstance();
 
@@ -89,7 +86,7 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
           continue;
         }
 
-        Object fieldValue = getChild(rowObject, fieldIndex);
+        Object fieldValue = getChild(sourceObject, fieldIndex);
 
         if (fieldValue != null) {
 
@@ -126,9 +123,9 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
     @Override
     public void setField(IBase parentObject,
         BaseRuntimeChildDefinition fieldToSet,
-        Object sparkObject) {
+        Object sourceObject) {
 
-      IBase fhirObject = toHapi(sparkObject);
+      IBase fhirObject = toHapi(sourceObject);
 
       if (extensionUrl != null) {
 
@@ -137,7 +134,6 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
       } else {
         fieldToSet.getMutator().setValue(parentObject, fhirObject);
       }
-
     }
   }
 
@@ -166,7 +162,7 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
       values[0] = ((IAnyResource) composite).getIdElement().getValueAsString();
     }
 
-    Map<String,List> properties = fhirSupport.compositeValues(composite);
+    Map<String, List> properties = fhirSupport.compositeValues(composite);
 
     Iterator<StructureField<HapiConverter<T>>> schemaIterator
         = children.iterator();
@@ -221,6 +217,8 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
     BaseRuntimeElementDefinition elementDefinition = elementDefinitions[0];
 
+    // The Contained element is not set when discovered recursively as a child, but is rather set
+    // explicitly from the root
     if (elementDefinition instanceof RuntimeElemContainedResourceList) {
       return NOOP_FIELD_SETTER;
     }
@@ -238,9 +236,40 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
       HapiFieldSetter childConverter;
 
-      // Handle extensions.
-      if (child.extensionUrl() != null) {
+      if ("contained".equals(child.propertyName())) {
 
+        // Handle contained resources.
+        HapiFieldSetter containedFieldSetter = NOOP_FIELD_SETTER;
+
+        if (elementDefinitions.length > 1) {
+
+          BaseRuntimeElementDefinition containedDefinition = compositeDefinition
+              .getChildByName("contained")
+              .getChildByName("contained");
+
+          BaseRuntimeElementDefinition[] containedDefinitions =
+              new BaseRuntimeElementDefinition[elementDefinitions.length];
+
+          containedDefinitions[0] = containedDefinition;
+
+          System.arraycopy(elementDefinitions,
+              1,
+              containedDefinitions,
+              1,
+              containedDefinitions.length - 1);
+
+          containedFieldSetter = child.result().toHapiConverter(containedDefinitions);
+        }
+
+        return new StructureField<>("contained",
+            "contained",
+            null,
+            false,
+            containedFieldSetter);
+
+      } else if (child.extensionUrl() != null) {
+
+        // Handle extensions.
         BaseRuntimeChildDefinition childDefinition =
             compositeDefinition.getChildByName("extension");
 
@@ -287,7 +316,7 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
         childConverter = child.result().toHapiConverter(childElementDefinitions);
       }
 
-      return new StructureField<HapiFieldSetter>(child.propertyName(),
+      return new StructureField<>(child.propertyName(),
           child.fieldName(),
           child.extensionUrl(),
           child.isChoice(),

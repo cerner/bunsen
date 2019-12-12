@@ -5,6 +5,7 @@ import com.cerner.bunsen.FhirContexts;
 import com.cerner.bunsen.stu3.TestData;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collections;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -13,12 +14,16 @@ import org.apache.spark.sql.functions;
 import org.apache.spark.sql.types.ArrayType;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Condition;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IntegerType;
+import org.hl7.fhir.dstu3.model.Medication;
+import org.hl7.fhir.dstu3.model.MedicationRequest;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Provenance;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.junit.AfterClass;
@@ -48,8 +53,6 @@ public class SparkRowConverterTest {
 
   static FhirContext fhirContext;
 
-
-
   private static final String BASE_VALUESET = "ValueSet";
 
   private static final Patient testPatient = TestData.newPatient();
@@ -69,6 +72,22 @@ public class SparkRowConverterTest {
   private static Dataset<Row> testConditionDataset;
 
   private static Condition testConditionDecoded;
+
+  private static final Medication testMedicationOne = TestData.newMedication("test-medication-1");
+
+  private static final Medication testMedicationTwo = TestData.newMedication("test-medication-2");
+
+  private static final Provenance testProvenance =  TestData.newProvenance();
+
+  private static final MedicationRequest testMedicationRequest =
+      (MedicationRequest) TestData.newMedicationRequest()
+      .addContained(testMedicationOne)
+      .addContained(testProvenance)
+      .addContained(testMedicationTwo);
+
+  private static Dataset<Row> testMedicationRequestDataset;
+
+  private static MedicationRequest testMedicationRequestDecoded;
 
   /**
    * Loads resource definitions used for testing.
@@ -109,6 +128,19 @@ public class SparkRowConverterTest {
 
     testConditionDecoded =
         (Condition) conditionConverter.rowToResource(testConditionDataset.head());
+
+    SparkRowConverter medicationRequestConverter = SparkRowConverter.forResource(fhirContext,
+        TestData.US_CORE_MEDICATION_REQUEST,
+        Arrays.asList(TestData.US_CORE_MEDICATION, TestData.PROVENANCE));
+
+    Row testMedicationRequestRow = medicationRequestConverter.resourceToRow(testMedicationRequest);
+
+    testMedicationRequestDataset = spark.createDataFrame(
+        Collections.singletonList(testMedicationRequestRow),
+        medicationRequestConverter.getSchema());
+
+    testMedicationRequestDecoded = (MedicationRequest) medicationRequestConverter
+        .rowToResource(testMedicationRequestDataset.head());
   }
 
   @Test
@@ -298,6 +330,42 @@ public class SparkRowConverterTest {
     Assert.assertEquals(testText, textRow.get(0));
   }
 
+  @Test
+  public void testContainedResources() throws FHIRException {
+
+    Medication testMedicationOne = (Medication) testMedicationRequest.getContained().get(0);
+    String testMedicationOneId = testMedicationOne.getId();
+    CodeableConcept testMedicationIngredientItem = testMedicationOne.getIngredientFirstRep()
+        .getItemCodeableConcept();
+
+    Medication decodedMedicationOne = (Medication) testMedicationRequestDecoded.getContained()
+        .get(0);
+    String decodedMedicationOneId = decodedMedicationOne.getId();
+    CodeableConcept decodedMedicationOneIngredientItem = decodedMedicationOne
+        .getIngredientFirstRep()
+        .getItemCodeableConcept();
+
+    Assert.assertEquals(testMedicationOneId, decodedMedicationOneId);
+    Assert.assertTrue(decodedMedicationOneIngredientItem.equalsDeep(testMedicationIngredientItem));
+
+    Provenance testProvenance = (Provenance) testMedicationRequest.getContained().get(1);
+    String testProvenanceId = testProvenance.getId();
+
+    Provenance decodedProvenance = (Provenance) testMedicationRequestDecoded.getContained().get(1);
+    String decodedProvenanceId = decodedProvenance.getId();
+
+    Assert.assertEquals(testProvenanceId, decodedProvenanceId);
+
+    Medication testMedicationTwo = (Medication) testMedicationRequest.getContained().get(2);
+    String testMedicationTwoId = testMedicationTwo.getId();
+
+    Medication decodedMedicationTwo = (Medication) testMedicationRequestDecoded.getContained()
+        .get(2);
+    String decodedMedicationTwoId = decodedMedicationTwo.getId();
+
+    Assert.assertEquals(testMedicationTwoId, decodedMedicationTwoId);
+  }
+
   /**
    * Recursively walks the schema to ensure there are no struct fields that are empty.
    */
@@ -309,7 +377,6 @@ public class SparkRowConverterTest {
 
     for (StructField field: schema.fields()) {
 
-
       if (field.dataType() instanceof StructType) {
 
         checkNoEmptyStructs((StructType) field.dataType(), field.name());
@@ -320,7 +387,10 @@ public class SparkRowConverterTest {
 
         if (arrayType.elementType() instanceof StructType) {
 
-          checkNoEmptyStructs((StructType) arrayType.elementType(), field.name());
+          if (!field.name().equals("contained")) {
+
+            checkNoEmptyStructs((StructType) arrayType.elementType(), field.name());
+          }
         }
       }
     }
@@ -344,7 +414,6 @@ public class SparkRowConverterTest {
 
     checkNoEmptyStructs(schema, null);
   }
-
 
   @Test
   public void testDecodeWithDifferentProfile() {

@@ -10,7 +10,6 @@ import com.cerner.bunsen.definitions.StructureField;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,20 +27,18 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
 
   private static final FhirConversionSupport CONVERSION_SUPPORT = new Stu3FhirConversionSupport();
 
-  /**
-   * Returns the immediate children of the given element from the list of all defined
-   * elements in the structure definition.
-   *
-   * @param parent the element to get the children for
-   * @param definitions the full list of element definitions
-   * @return the list of elements that are children of the given element
-   */
+  public Stu3StructureDefinitions(FhirContext context) {
+
+    super(context);
+  }
+
   private List<ElementDefinition> getChildren(ElementDefinition parent,
       List<ElementDefinition> definitions) {
 
     if (parent.getContentReference() != null) {
 
       if (!parent.getContentReference().startsWith("#")) {
+
         throw new IllegalStateException("Non-local references are not yet supported");
       }
 
@@ -52,48 +49,68 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
       parent = definitions.stream()
           .filter(definition -> definition.getPath().equals(referencedType))
           .findFirst()
-          .get();
+          .orElseThrow(() -> new IllegalArgumentException("Expected a reference type"));
     }
 
     String startsWith = parent.getId() + ".";
 
-    // Get nodes
-    return definitions.stream().filter(definition ->
-        definition.getId().startsWith(startsWith)
+    return definitions.stream()
+        .filter(definition -> definition.getId().startsWith(startsWith)
             && definition.getId().indexOf('.', startsWith.length()) < 0)
         .collect(Collectors.toList());
   }
 
-  public Stu3StructureDefinitions(FhirContext context) {
-
-    super(context);
-  }
-
   private String elementName(ElementDefinition element) {
 
-    String suffix = element.getPath().substring(element.getPath().lastIndexOf(".") + 1);
+    String suffix = element.getPath().substring(element.getPath().lastIndexOf('.') + 1);
 
-    // Remove the [x] suffix used by choise types, if applicable.
     return suffix.endsWith("[x]")
         ? suffix.substring(0, suffix.length() - 3)
         : suffix;
   }
 
-  /**
-   * Returns the StructureDefinition for the given element if it is an
-   * externally defined datatype. Returns null otherwise.
-   */
   private StructureDefinition getDefinition(ElementDefinition element) {
 
-    // Elements that don't specify a type or are backbone elements defined
-    // within the parent structure do not have a separate structure definition.
     return element.getTypeFirstRep() == null
         || element.getTypeFirstRep().getCode() == null
         || element.getTypeFirstRep().getCode().equals("BackboneElement")
         || element.getTypeFirstRep().getCode().equals("Element")
         ? null
-        : (StructureDefinition) validationSupport.fetchStructureDefinition(
-            context, element.getTypeFirstRep().getCode());
+        : (StructureDefinition) validationSupport.fetchStructureDefinition(context,
+            element.getTypeFirstRep().getCode());
+  }
+
+  private <T> List<StructureField<T>> singleField(String elementName, T result) {
+
+    return Collections.singletonList(StructureField.property(elementName, result));
+  }
+
+  private boolean shouldTerminateRecursive(DefinitionVisitor visitor,
+      StructureDefinition structureDefinition,
+      Deque<QualifiedPath> stack) {
+
+    ElementDefinition definitionRootElement = structureDefinition.getSnapshot().getElement().get(0);
+
+    return shouldTerminateRecursive(visitor, structureDefinition, definitionRootElement, stack);
+  }
+
+  private boolean shouldTerminateRecursive(DefinitionVisitor visitor,
+      StructureDefinition rootDefinition,
+      ElementDefinition elementDefinition, Deque<QualifiedPath> stack) {
+
+
+    return shouldTerminateRecursive(visitor,
+        new QualifiedPath(rootDefinition.getUrl(), elementDefinition.getPath()),
+        stack);
+  }
+
+  private boolean shouldTerminateRecursive(DefinitionVisitor visitor,
+      QualifiedPath newPath,
+      Deque<QualifiedPath> stack) {
+
+    int maxDepth = visitor.getMaxDepth(newPath.getParentTypeUrl(), newPath.getElementPath());
+
+    return stack.stream().filter(path -> path.equals(newPath)).count() > maxDepth;
   }
 
   private <T> List<StructureField<T>> extensionElementToFields(DefinitionVisitor<T> visitor,
@@ -219,10 +236,6 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
     }
   }
 
-  private <T> List<StructureField<T>> singleField(String elementName, T result) {
-
-    return Collections.singletonList(StructureField.property(elementName, result));
-  }
 
   /**
    * Returns the fields for the given element. The returned stream can be empty
@@ -261,7 +274,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
 
       // Use a linked hash map to preserve the order of the fields
       // for iteration.
-      Map<String,T> choiceTypes = new LinkedHashMap<>();
+      Map<String, T> choiceTypes = new LinkedHashMap<>();
 
       for (TypeRefComponent typeRef: element.getType()) {
 
@@ -279,11 +292,10 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
           T child = transform(visitor, element, structureDefinition, new ArrayDeque<>());
 
           choiceTypes.put(typeRef.getCode(), child);
-
         }
       }
 
-      StructureField<T> field = new StructureField<T>(elementName,
+      StructureField<T> field = new StructureField<>(elementName,
           elementName,
           null,
           true,
@@ -333,7 +345,6 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
         // Wrap the item in the corresponding multi-valued type.
         return singleField(elementName,
             visitor.visitMultiValued(elementName, composite.get(0).result()));
-
       }
 
     } else if (getDefinition(element) != null) {
@@ -367,9 +378,6 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
     }
   }
 
-  /**
-   * Transform methods of child elements.
-   */
   private <T> List<StructureField<T>> transformChildren(DefinitionVisitor<T> visitor,
       StructureDefinition rootDefinition,
       List<ElementDefinition> definitions,
@@ -402,32 +410,47 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
     }
   }
 
-  private boolean shouldTerminateRecursive(DefinitionVisitor visitor,
-      StructureDefinition structureDefinition,
-      Deque<QualifiedPath> stack) {
-
-    ElementDefinition definitionRootElement = structureDefinition.getSnapshot().getElement().get(0);
-
-    return shouldTerminateRecursive(visitor, structureDefinition, definitionRootElement, stack);
-  }
-
-  private boolean shouldTerminateRecursive(DefinitionVisitor visitor,
+  private <T> StructureField<T> transformContained(DefinitionVisitor<T> visitor,
       StructureDefinition rootDefinition,
-      ElementDefinition elementDefinition, Deque<QualifiedPath> stack) {
+      List<StructureDefinition> containedDefinitions,
+      Deque<QualifiedPath> stack,
+      ElementDefinition element) {
 
+    Map<String, StructureField<T>> containedElements = new LinkedHashMap<>();
 
-    return shouldTerminateRecursive(visitor,
-        new QualifiedPath(rootDefinition.getUrl(), elementDefinition.getPath()),
-        stack);
-  }
+    for (StructureDefinition containedDefinition: containedDefinitions) {
 
-  private boolean shouldTerminateRecursive(DefinitionVisitor visitor,
-      QualifiedPath newPath,
-      Deque<QualifiedPath> stack) {
+      ElementDefinition containedRootElement = containedDefinition.getSnapshot()
+          .getElementFirstRep();
 
-    int maxDepth = visitor.getMaxDepth(newPath.getParentTypeUrl(), newPath.getElementPath());
+      List<ElementDefinition> childDefinitions = containedDefinition.getSnapshot().getElement();
 
-    return stack.stream().filter(path -> path.equals(newPath)).count() > maxDepth;
+      stack.push(new QualifiedPath(containedDefinition.getUrl(), containedRootElement.getPath()));
+
+      List<StructureField<T>> childElements = transformChildren(visitor,
+          containedDefinition,
+          childDefinitions,
+          stack,
+          containedRootElement);
+
+      stack.pop();
+
+      String rootName = elementName(containedRootElement);
+
+      T result = visitor.visitComposite(rootName,
+          containedRootElement.getPath(),
+          rootName,
+          containedDefinition.getUrl(),
+          childElements);
+
+      containedElements.put(rootName, StructureField.property(rootName, result));
+    }
+
+    T result = visitor.visitContained(element.getPath() + ".contained",
+        rootDefinition.getUrl(),
+        containedElements);
+
+    return StructureField.property("contained", result);
   }
 
   @Override
@@ -455,9 +478,41 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
    *
    * @return The schema as a Spark StructType
    */
-  public <T> T transform(DefinitionVisitor<T> visitor,  StructureDefinition definition) {
+  public <T> T transform(DefinitionVisitor<T> visitor, StructureDefinition definition) {
 
     return transform(visitor, null, definition, new ArrayDeque<>());
+  }
+
+  @Override
+  public <T> T transform(DefinitionVisitor<T> visitor,
+      String resourceTypeUrl,
+      List<String> containedResourceTypeUrls) {
+
+    StructureDefinition definition = (StructureDefinition) context.getValidationSupport()
+        .fetchStructureDefinition(context, resourceTypeUrl);
+
+    if (definition == null) {
+
+      throw new IllegalArgumentException("Unable to find definition for " + resourceTypeUrl);
+    }
+
+    List<StructureDefinition> containedDefinitions = containedResourceTypeUrls.stream()
+        .map(containedResourceTypeUrl -> {
+          StructureDefinition containedDefinition = (StructureDefinition) context
+              .getValidationSupport()
+              .fetchStructureDefinition(context, containedResourceTypeUrl);
+
+          if (containedDefinition == null) {
+
+            throw new IllegalArgumentException("Unable to find definition for "
+                + containedResourceTypeUrl);
+          }
+
+          return containedDefinition;
+        })
+        .collect(Collectors.toList());
+
+    return transformRoot(visitor, definition, containedDefinitions, new ArrayDeque<>());
   }
 
   /**
@@ -516,13 +571,54 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
 
       String rootName = elementName(root);
 
-      T result = visitor.visitComposite(rootName,
+      return visitor.visitComposite(rootName,
           rootName,
           rootName,
           definition.getUrl(),
           childElements);
-
-      return result;
     }
+  }
+
+  private <T> T transformRoot(DefinitionVisitor<T> visitor,
+      StructureDefinition definition,
+      List<StructureDefinition> containedDefinitions,
+      Deque<QualifiedPath> stack) {
+
+    ElementDefinition definitionRootElement = definition.getSnapshot().getElementFirstRep();
+
+    List<ElementDefinition> definitions = definition.getSnapshot().getElement();
+
+    ElementDefinition root = definitions.get(0);
+
+    stack.push(new QualifiedPath(definition.getUrl(), definitionRootElement.getPath()));
+
+    List<StructureField<T>> childElements = transformChildren(visitor,
+        definition,
+        definitions,
+        stack,
+        root);
+
+    // If there are contained definitions, create a Resource Container StructureField
+    if (containedDefinitions.size() > 0) {
+
+      StructureField<T> containedElement = transformContained(visitor,
+          definition,
+          containedDefinitions,
+          stack,
+          root);
+
+      // Replace default StructureField with constructed Resource Container StructureField
+      childElements.set(5, containedElement);
+    }
+
+    stack.pop();
+
+    String rootName = elementName(root);
+
+    return visitor.visitComposite(rootName,
+        rootName,
+        rootName,
+        definition.getUrl(),
+        childElements);
   }
 }

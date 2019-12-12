@@ -1,6 +1,6 @@
 package com.cerner.bunsen.stu3;
 
-import java.util.Arrays;
+import com.google.common.collect.ImmutableList;
 import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.CodeType;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
@@ -23,6 +23,7 @@ import org.hl7.fhir.dstu3.model.Narrative;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Provenance;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.StringType;
@@ -56,6 +57,9 @@ public class TestData {
 
   public static final String US_CORE_MEDICATION_REQUEST =
       "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest";
+
+  public static final String PROVENANCE =
+      "http://hl7.org/fhir/StructureDefinition/Provenance";
 
   public static final String VALUE_SET =
       "http://hl7.org/fhir/StructureDefinition/ValueSet";
@@ -210,11 +214,11 @@ public class TestData {
    *
    * @return a FHIR Medication for testing.
    */
-  public static Medication newMedication() {
+  public static Medication newMedication(String id) {
 
     Medication medication = new Medication();
 
-    medication.setId("test-medication");
+    medication.setId(id);
 
     CodeableConcept itemCodeableConcept = new CodeableConcept();
     itemCodeableConcept.addCoding()
@@ -265,13 +269,27 @@ public class TestData {
     medicationRequest
         .setSubject(new Reference("Patient/12345").setDisplay("Here is a display for you."));
 
-    medicationRequest.setDosageInstruction(Arrays.asList(
+    medicationRequest.setDosageInstruction(ImmutableList.of(
         new Dosage().setTiming(new Timing().setRepeat(new TimingRepeatComponent().setCount(10)))));
 
     medicationRequest
         .setSubstitution(new MedicationRequestSubstitutionComponent().setAllowed(true));
 
     return medicationRequest;
+  }
+
+  /**
+   * Returns a new Provenance for testing.
+   *
+   * @return a FHIR Provenance for testing.
+   */
+  public static Provenance newProvenance() {
+
+    Provenance provenance = new Provenance();
+
+    provenance.setId("test-provenance");
+
+    return provenance;
   }
 
 }
