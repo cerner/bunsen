@@ -7,11 +7,13 @@ import com.cerner.bunsen.stu3.avro.PatientReference;
 import com.cerner.bunsen.stu3.avro.us.core.UsCoreEthnicity;
 import com.cerner.bunsen.stu3.TestData;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IntegerType;
+import org.hl7.fhir.dstu3.model.MedicationRequest;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.junit.Assert;
 import org.junit.Test;
@@ -77,10 +79,14 @@ public class SpecificRecordsTest {
 
   // MedicationRequest
   private static final AvroConverter MEDICATION_REQUEST_CONVERTER =
-      AvroConverter.forResource(FhirContexts.forStu3(), TestData.US_CORE_MEDICATION_REQUEST);
+      AvroConverter.forResource(FhirContexts.forStu3(), TestData.US_CORE_MEDICATION_REQUEST,
+          Arrays.asList(TestData.PROVENANCE));
+
+  private static final org.hl7.fhir.dstu3.model.Provenance testProvenance =
+      TestData.newProvenance();
 
   private static final org.hl7.fhir.dstu3.model.MedicationRequest testMedicationRequest =
-      TestData.newMedicationRequest();
+      (MedicationRequest) TestData.newMedicationRequest().addContained(testProvenance);
 
   private static final com.cerner.bunsen.stu3.avro.us.core.MedicationRequest avroMedicationRequest =
       (com.cerner.bunsen.stu3.avro.us.core.MedicationRequest) MEDICATION_REQUEST_CONVERTER
@@ -327,6 +333,20 @@ public class SpecificRecordsTest {
         testMedicationRequest.getDosageInstructionFirstRep().getTiming().getRepeat().getCount(),
         testMedicationRequestDecoded.getDosageInstructionFirstRep().getTiming().getRepeat()
             .getCount());
+  }
+
+  @Test
+  public void testContainedResource() {
+
+    org.hl7.fhir.dstu3.model.Provenance testProvenance =
+        (org.hl7.fhir.dstu3.model.Provenance) testMedicationRequest.getContained().get(0);
+    String testProvenanceId = testProvenance.getId();
+
+    org.hl7.fhir.dstu3.model.Provenance decodedProvenance =
+        (org.hl7.fhir.dstu3.model.Provenance) testMedicationRequestDecoded.getContained().get(0);
+    String decodedProvenanceId = decodedProvenance.getId();
+
+    Assert.assertEquals(testProvenanceId, decodedProvenanceId);
   }
 
 }

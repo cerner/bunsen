@@ -31,7 +31,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.IndexedRecord;
 import org.apache.avro.specific.SpecificData;
 import org.apache.commons.lang3.StringUtils;
@@ -223,7 +222,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
       for (Object arrayItem: containedArray) {
 
-        GenericData.Record resourceContainer = (GenericData.Record) arrayItem;
+        IndexedRecord resourceContainer = (IndexedRecord) arrayItem;
 
         // Coalesce to non-null element in each Resource Container. The number of contained fields
         // will be low, so this nested loop has low cost.
@@ -231,7 +230,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
           if (resourceContainer.get(j) != null) {
 
-            GenericData.Record record = (GenericData.Record) resourceContainer.get(j);
+            IndexedRecord record = (IndexedRecord) resourceContainer.get(j);
             String recordType = record.getSchema().getName();
 
             containedEntries.add(new ContainerEntry(recordType, record));
@@ -255,7 +254,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       for (Object containedEntry: contained) {
 
         IndexedRecord containedRecord = (IndexedRecord) avroData.newRecord(null, containerType);
-        String recordName = ((Record) containedEntry).getSchema().getName();
+        String recordName = ((IndexedRecord) containedEntry).getSchema().getName();
 
         List<Field> fields = containerType.getFields();
 
