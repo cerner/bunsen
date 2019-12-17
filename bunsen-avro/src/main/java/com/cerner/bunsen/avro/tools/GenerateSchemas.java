@@ -2,6 +2,7 @@ package com.cerner.bunsen.avro.tools;
 
 import com.cerner.bunsen.FhirContexts;
 import com.cerner.bunsen.avro.AvroConverter;
+import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,6 +55,11 @@ public class GenerateSchemas {
     Map<String, List<String>> resourceTypeUrls = Arrays.stream(args)
         .skip(1)
         .collect(Collectors.toMap(Function.identity(), item -> Collections.emptyList()));
+
+    // Additional resources with contained resources for testing
+    resourceTypeUrls
+        .put("http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest",
+            ImmutableList.of("http://hl7.org/fhir/StructureDefinition/Provenance"));
 
     List<Schema> schemas = AvroConverter.generateSchemas(FhirContexts.forStu3(), resourceTypeUrls);
 
