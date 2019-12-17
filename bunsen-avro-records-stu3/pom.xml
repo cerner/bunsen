@@ -161,6 +161,7 @@
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter</argument>
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization</argument>
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication</argument>
+            <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest</argument>
           </arguments>
 
         </configuration>
