@@ -8,7 +8,6 @@ import com.cerner.bunsen.spark.SparkRowConverter;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.spark.api.java.JavaRDD;
@@ -254,17 +253,14 @@ public class BundlesTest {
   @Test
   public void testGetResourcesAndContainedResourcesByClass() {
 
-    Class[] containedClasses = new Class[]{Provenance.class};
+    List<Class> containedClasses = ImmutableList.of(Provenance.class);
 
-    Dataset<Row> observations = bundles.extractEntry(spark,
-        bundlesWithContainedRdd,
-        Observation.class,
-        containedClasses);
+    Dataset<Row> observations = bundles
+        .extractEntry(spark, bundlesWithContainedRdd, Observation.class, containedClasses);
 
     SparkRowConverter rowConverter = SparkRowConverter
         .forResource(fhirContext, Observation.class.getSimpleName(),
-            Arrays.stream(containedClasses).map(c -> c.getSimpleName())
-                .collect(Collectors.toList()));
+            containedClasses.stream().map(c -> c.getSimpleName()).collect(Collectors.toList()));
 
     Observation observation = (Observation) rowConverter
         .rowToResource(observations.head());

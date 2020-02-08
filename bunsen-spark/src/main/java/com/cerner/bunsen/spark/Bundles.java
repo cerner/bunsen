@@ -8,7 +8,7 @@ import com.cerner.bunsen.FhirContexts;
 import com.cerner.bunsen.definitions.FhirConversionSupport;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -228,21 +228,21 @@ public class Bundles {
    * @param spark the spark session
    * @param bundles the RDD of FHIR Bundles
    * @param resourceClass the type of resource to extract.
-   * @param containedClasses the type of the resources contained to the
+   * @param containedClasses the {@link List} of type of the resources contained to the
    *      parent resource.
    * @return a dataset of the given resource
    */
   public Dataset<Row> extractEntry(SparkSession spark,
       JavaRDD<BundleContainer> bundles,
       Class resourceClass,
-      Class... containedClasses) {
+      List<Class> containedClasses) {
 
     FhirContext context = FhirContexts.contextFor(fhirVersion);
 
     String resourceTypeUrl = FhirContexts.contextFor(fhirVersion)
         .getResourceDefinition(resourceClass).getName();
 
-    List<String> containedClassesUrls = Arrays.stream(containedClasses)
+    List<String> containedClassesUrls = containedClasses.stream()
         .map(c -> FhirContexts.contextFor(fhirVersion)
             .getResourceDefinition(c).getName())
         .collect(Collectors.toList());
@@ -410,6 +410,7 @@ public class Bundles {
 
       this.converter = converter;
       this.support = FhirConversionSupport.supportFor(fhirVersion);
+      this.containedResourceTypeUrls = Collections.emptyList();
     }
 
     ToResourceRow(String resourceName,
@@ -447,7 +448,7 @@ public class Bundles {
 
       FhirContext context = FhirContexts.contextFor(fhirVersion);
 
-      if (this.containedResourceTypeUrls == null || this.containedResourceTypeUrls.size() == 0) {
+      if (this.containedResourceTypeUrls.isEmpty()) {
         this.converter = SparkRowConverter.forResource(context, resourceTypeUrl);
       } else {
         this.converter = SparkRowConverter.forResource(context, resourceTypeUrl,
