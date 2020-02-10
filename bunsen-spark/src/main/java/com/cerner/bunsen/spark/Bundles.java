@@ -8,8 +8,10 @@ import com.cerner.bunsen.FhirContexts;
 import com.cerner.bunsen.definitions.FhirConversionSupport;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
@@ -17,7 +19,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import scala.Tuple2;
@@ -220,6 +221,47 @@ public class Bundles {
   }
 
   /**
+   * Extracts the given resource type from the RDD of bundles and returns
+   * it as a Dataset of that type, including any declared resources contained
+   * to the parent resource.
+   *
+   * @param spark the spark session
+   * @param bundles the RDD of FHIR Bundles
+   * @param resourceClass the type of resource to extract.
+   * @param containedClasses the {@link List} of type of the resources contained to the
+   *      parent resource.
+   * @return a dataset of the given resource
+   */
+  public Dataset<Row> extractEntry(SparkSession spark,
+      JavaRDD<BundleContainer> bundles,
+      Class resourceClass,
+      List<Class> containedClasses) {
+
+    FhirContext context = FhirContexts.contextFor(fhirVersion);
+
+    String resourceTypeUrl = FhirContexts.contextFor(fhirVersion)
+        .getResourceDefinition(resourceClass).getName();
+
+    List<String> containedClassesUrls = containedClasses.stream()
+        .map(c -> FhirContexts.contextFor(fhirVersion)
+            .getResourceDefinition(c).getName())
+        .collect(Collectors.toList());
+
+    SparkRowConverter converter = SparkRowConverter
+        .forResource(context, resourceTypeUrl, containedClassesUrls);
+
+    ToResourceRow resourceToRowConverter = new ToResourceRow(converter.getResourceType(),
+        resourceTypeUrl,
+        fhirVersion,
+        converter,
+        containedClassesUrls);
+
+    JavaRDD<Row> resourceRdd = bundles.flatMap(resourceToRowConverter);
+
+    return spark.createDataFrame(resourceRdd.rdd(), converter.getSchema());
+  }
+
+  /**
    * Saves an RDD of bundles as a database, where each table
    * has the resource name. This offers a simple way to load and query
    * bundles in a system, although users with more sophisticated ETL
@@ -355,6 +397,8 @@ public class Bundles {
 
     private transient FhirConversionSupport support;
 
+    private transient List<String> containedResourceTypeUrls;
+
     ToResourceRow(String resourceName,
         String resourceTypeUrl,
         FhirVersionEnum fhirVersion,
@@ -366,6 +410,22 @@ public class Bundles {
 
       this.converter = converter;
       this.support = FhirConversionSupport.supportFor(fhirVersion);
+      this.containedResourceTypeUrls = Collections.emptyList();
+    }
+
+    ToResourceRow(String resourceName,
+        String resourceTypeUrl,
+        FhirVersionEnum fhirVersion,
+        SparkRowConverter converter,
+        List<String> contained) {
+
+      this.resourceName = resourceName;
+      this.resourceTypeUrl = resourceTypeUrl;
+      this.fhirVersion = fhirVersion;
+
+      this.converter = converter;
+      this.support = FhirConversionSupport.supportFor(fhirVersion);
+      this.containedResourceTypeUrls = contained;
     }
 
     private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
@@ -375,6 +435,7 @@ public class Bundles {
       stream.writeUTF(resourceName);
       stream.writeUTF(resourceTypeUrl);
       stream.writeObject(fhirVersion);
+      stream.writeObject(containedResourceTypeUrls);
     }
 
     private void readObject(java.io.ObjectInputStream stream) throws IOException,
@@ -382,11 +443,17 @@ public class Bundles {
 
       this.resourceName = stream.readUTF();
       this.resourceTypeUrl = stream.readUTF();
-      this.fhirVersion =  (FhirVersionEnum) stream.readObject();
+      this.fhirVersion = (FhirVersionEnum) stream.readObject();
+      this.containedResourceTypeUrls = (List<String>) stream.readObject();
 
       FhirContext context = FhirContexts.contextFor(fhirVersion);
 
-      this.converter = SparkRowConverter.forResource(context, resourceTypeUrl);
+      if (this.containedResourceTypeUrls.isEmpty()) {
+        this.converter = SparkRowConverter.forResource(context, resourceTypeUrl);
+      } else {
+        this.converter = SparkRowConverter.forResource(context, resourceTypeUrl,
+            containedResourceTypeUrls);
+      }
 
       this.support = FhirConversionSupport.supportFor(fhirVersion);
     }

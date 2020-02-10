@@ -17,7 +17,10 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Condition;
+import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Provenance;
+import org.hl7.fhir.dstu3.model.ResourceType;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -32,6 +35,7 @@ public class BundlesTest {
   private static SparkSession spark;
   private static Bundles bundles;
   private static JavaRDD<BundleContainer> bundlesRdd;
+  private static JavaRDD<BundleContainer> bundlesWithContainedRdd;
 
   private static final FhirContext fhirContext =  FhirContexts.forStu3();
 
@@ -59,6 +63,9 @@ public class BundlesTest {
 
     bundlesRdd = bundles.loadFromDirectory(spark,
         "src/test/resources/xml/bundles", 1).cache();
+
+    bundlesWithContainedRdd = bundles.loadFromDirectory(spark,
+        "src/test/resources/json/bundles-with-contained", 1).cache();
   }
 
   /**
@@ -243,6 +250,29 @@ public class BundlesTest {
     checkPatients(patients);
   }
 
+  @Test
+  public void testGetResourcesAndContainedResourcesByClass() {
+
+    List<Class> containedClasses = ImmutableList.of(Provenance.class);
+
+    Dataset<Row> observations = bundles
+        .extractEntry(spark, bundlesWithContainedRdd, Observation.class, containedClasses);
+
+    SparkRowConverter rowConverter = SparkRowConverter
+        .forResource(fhirContext, Observation.class.getSimpleName(),
+            containedClasses.stream().map(c -> c.getSimpleName()).collect(Collectors.toList()));
+
+    Observation observation = (Observation) rowConverter
+        .rowToResource(observations.head());
+
+    Assert.assertEquals(1, observations.count());
+    Assert.assertEquals(ResourceType.Provenance,
+        observation.getContained().get(0).getResourceType());
+
+    // internal references prefixed with #
+    String expectedId = "#" + "11000100-4";
+    Assert.assertEquals(expectedId, observation.getContained().get(0).getId());
+  }
 
   @Test
   public void testSaveAsDatabase() {
