@@ -1,13 +1,16 @@
 package com.cerner.bunsen.spark;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import com.cerner.bunsen.definitions.HapiConverter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiObjectConverter;
 import com.cerner.bunsen.definitions.StructureDefinitions;
 import com.cerner.bunsen.spark.converters.DefinitionToSparkVisitor;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -71,8 +74,25 @@ public class SparkRowConverter {
 
     StructureDefinitions structureDefinitions = StructureDefinitions.create(context);
 
-    DefinitionToSparkVisitor visitor =
-        new DefinitionToSparkVisitor(structureDefinitions.conversionSupport());
+    Map<String, HapiConverter<DataType>> converters = new HashMap<>();
+
+    String basePackage;
+    FhirVersionEnum fhirVersion = context.getVersion().getVersion();
+    if (FhirVersionEnum.DSTU3.equals(fhirVersion)) {
+
+      basePackage = "com.cerner.bunsen.stu3.spark";
+
+    } else if (FhirVersionEnum.R4.equals(fhirVersion)) {
+
+      basePackage = "com.cerner.bunsen.r4.spark";
+
+    } else {
+
+      throw new IllegalArgumentException("Unsupported FHIR version " + fhirVersion.toString());
+    }
+
+    DefinitionToSparkVisitor visitor = new DefinitionToSparkVisitor(
+        structureDefinitions.conversionSupport(), basePackage, converters);
 
     HapiConverter<DataType> converter = structureDefinitions.transform(visitor,
         resourceTypeUrl,

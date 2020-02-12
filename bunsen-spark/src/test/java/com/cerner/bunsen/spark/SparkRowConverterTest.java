@@ -18,6 +18,7 @@ import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Condition;
 import org.hl7.fhir.dstu3.model.Extension;
+import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.IntegerType;
 import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
@@ -81,9 +82,9 @@ public class SparkRowConverterTest {
 
   private static final MedicationRequest testMedicationRequest =
       (MedicationRequest) TestData.newMedicationRequest()
-      .addContained(testMedicationOne)
-      .addContained(testProvenance)
-      .addContained(testMedicationTwo);
+          .addContained(testMedicationOne)
+          .addContained(testProvenance)
+          .addContained(testMedicationTwo);
 
   private static Dataset<Row> testMedicationRequestDataset;
 
@@ -259,6 +260,23 @@ public class SparkRowConverterTest {
   }
 
   @Test
+  public void testNestedReference() {
+
+    Identifier practitionerIdentifier =
+        testPatient.getGeneralPractitionerFirstRep().getIdentifier();
+
+    Row practitionerIdentifierRow = testPatientDataset
+        .select(functions.explode(functions.col("generalpractitioner")))
+        .select("col.organizationId", "col.practitionerId", "col.identifier.id",
+            "col.identifier.assigner.reference")
+        .head();
+
+    Assert.assertEquals(practitionerIdentifier.getId(), practitionerIdentifierRow.get(2));
+    Assert.assertEquals(practitionerIdentifier.getAssigner().getReference(),
+        practitionerIdentifierRow.get(3));
+  }
+
+  @Test
   public void testSimpleExtension() {
 
     String testBirthSex = testPatient
@@ -420,14 +438,14 @@ public class SparkRowConverterTest {
 
     // Decoding with the base profile should still produce the expected fields.
     SparkRowConverter patientConverter = SparkRowConverter.forResource(fhirContext,
-            "Patient");
+        "Patient");
 
     Patient basePatientDecoded = (Patient) patientConverter
-            .rowToResource(testPatientDataset.head());
+        .rowToResource(testPatientDataset.head());
 
     Assert.assertEquals(testPatient.getId(), basePatientDecoded.getId());
     Assert.assertEquals(testPatient.getGender(), basePatientDecoded.getGender());
     Assert.assertTrue(testPatient.getMultipleBirth()
-            .equalsDeep(basePatientDecoded.getMultipleBirth()));
+        .equalsDeep(basePatientDecoded.getMultipleBirth()));
   }
 }
