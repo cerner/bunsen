@@ -3,6 +3,7 @@ package com.cerner.bunsen.spark.converters;
 import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
 import com.cerner.bunsen.definitions.DefinitionVisitor;
+import com.cerner.bunsen.definitions.DefinitionVisitorsUtil;
 import com.cerner.bunsen.definitions.FhirConversionSupport;
 import com.cerner.bunsen.definitions.HapiChoiceConverter;
 import com.cerner.bunsen.definitions.HapiCompositeConverter;
@@ -17,10 +18,12 @@ import com.cerner.bunsen.definitions.StructureField;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
@@ -43,8 +46,25 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
   private final FhirConversionSupport fhirSupport;
 
-  public DefinitionToSparkVisitor(FhirConversionSupport fhirSupport) {
+  private final String basePackage;
+
+  private final Map<String, HapiConverter<DataType>> visitedConverters;
+
+  /**
+   * Creates a visitor to construct Spark Row conversion objects.
+   *
+   * @param fhirSupport support for FHIR conversions.
+   * @param basePackage the base package to be used as a prefix for unique keys to cache generated
+   *        converters.
+   * @param visitedConverters a mutable cache of generated converters that may
+   *        be reused by types that contain them.
+   */
+  public DefinitionToSparkVisitor(FhirConversionSupport fhirSupport,
+      String basePackage,
+      Map<String, HapiConverter<DataType>> visitedConverters) {
     this.fhirSupport = fhirSupport;
+    this.basePackage = basePackage;
+    this.visitedConverters = visitedConverters;
   }
 
   private static final DataType decimalType = DataTypes.createDecimalType(12, 4);
@@ -117,8 +137,8 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
       String fieldName = ((StructType) getDataType()).apply(index).name();
 
       scala.Option fieldIndex = ((GenericRowWithSchema) composite)
-              .schema()
-              .getFieldIndex(fieldName);
+          .schema()
+          .getFieldIndex(fieldName);
 
       if (fieldIndex.isDefined()) {
         return ((Row) composite).get((Integer) fieldIndex.get());
@@ -397,15 +417,28 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
       String elementPath, String baseType,
       String elementTypeUrl, List<StructureField<HapiConverter<DataType>>> children) {
 
-    StructField[] fields = children.stream()
-        .map(entry -> new StructField(entry.fieldName(),
-            entry.result().getDataType(),
-            true,
-            Metadata.empty()))
-        .toArray(StructField[]::new);
+    String recordName = DefinitionVisitorsUtil.recordNameFor(elementPath);
+    String recordNamespace = DefinitionVisitorsUtil.namespaceFor(basePackage, elementTypeUrl);
+    String fullName = recordNamespace + "." + recordName;
 
-    return new HapiCompositeToSparkConverter(baseType,
-        children, new StructType(fields), fhirSupport);
+    HapiConverter<DataType> converter = visitedConverters.get(fullName);
+
+    if (converter == null) {
+      StructField[] fields = children.stream()
+          .map(entry -> new StructField(entry.fieldName(),
+              entry.result().getDataType(),
+              true,
+              Metadata.empty()))
+          .toArray(StructField[]::new);
+
+      converter = new HapiCompositeToSparkConverter(baseType,
+          children, new StructType(fields), fhirSupport);
+
+      visitedConverters.put(fullName, converter);
+    }
+
+    return converter;
+
   }
 
   @Override
@@ -416,9 +449,9 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
     StructField[] fields = contained.values()
         .stream()
         .map(containedEntry -> new StructField(containedEntry.fieldName(),
-              containedEntry.result().getDataType(),
-              true,
-              Metadata.empty()))
+            containedEntry.result().getDataType(),
+            true,
+            Metadata.empty()))
         .toArray(StructField[]::new);
 
     ArrayType container = new ArrayType(new StructType(fields), true);
@@ -431,33 +464,44 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
       List<String> referenceTypes,
       List<StructureField<HapiConverter<DataType>>> children) {
 
-    // Add direct references
-    List<StructureField<HapiConverter<DataType>>> fieldsWithReferences =
-        referenceTypes.stream()
-        .map(refUri -> {
+    String recordName = referenceTypes.stream().collect(Collectors.joining()) + "Reference";
+    String fullName = basePackage + "." + recordName;
 
-          String relativeType = refUri.substring(refUri.lastIndexOf('/') + 1);
+    HapiConverter<DataType> converter = visitedConverters.get(fullName);
 
-          return new StructureField<HapiConverter<DataType>>("reference",
-              relativeType + "Id",
-              null,
-              false,
-              new RelativeValueConverter(relativeType));
+    if (converter == null) {
+      // Add direct references
+      List<StructureField<HapiConverter<DataType>>> fieldsWithReferences =
+          referenceTypes.stream()
+              .map(refUri -> {
 
-        }).collect(Collectors.toList());
+                String relativeType = refUri.substring(refUri.lastIndexOf('/') + 1);
 
-    fieldsWithReferences.addAll(children);
+                return new StructureField<HapiConverter<DataType>>("reference",
+                    relativeType + "Id",
+                    null,
+                    false,
+                    new RelativeValueConverter(relativeType));
 
-    StructField[] fields = fieldsWithReferences.stream()
-        .map(entry -> new StructField(entry.fieldName(),
-            entry.result().getDataType(),
-            true,
-            Metadata.empty()))
-        .toArray(StructField[]::new);
+              }).collect(Collectors.toList());
 
-    return new HapiCompositeToSparkConverter(null,
-        fieldsWithReferences,
-        new StructType(fields), fhirSupport);
+      fieldsWithReferences.addAll(children);
+
+      StructField[] fields = fieldsWithReferences.stream()
+          .map(entry -> new StructField(entry.fieldName(),
+              entry.result().getDataType(),
+              true,
+              Metadata.empty()))
+          .toArray(StructField[]::new);
+
+      converter = new HapiCompositeToSparkConverter(null,
+          fieldsWithReferences,
+          new StructType(fields), fhirSupport);
+
+      visitedConverters.put(fullName, converter);
+    }
+
+    return converter;
   }
 
   @Override
@@ -470,19 +514,37 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
       return null;
     }
 
-    StructField[] fields = children.stream()
-        .map(entry ->
-            new StructField(entry.fieldName(),
-                entry.result().getDataType(),
-                true,
-                Metadata.empty()))
-        .toArray(StructField[]::new);
+    String recordNamespace = DefinitionVisitorsUtil.namespaceFor(basePackage, extensionUrl);
 
-    return new HapiCompositeToSparkConverter(null,
-        children,
-        new StructType(fields),
-        fhirSupport,
-        extensionUrl);
+    String localPart = extensionUrl.substring(extensionUrl.lastIndexOf('/') + 1);
+
+    String[] parts = localPart.split("[-|_]");
+
+    String recordName = Arrays.stream(parts).map(part ->
+        part.substring(0, 1).toUpperCase() + part.substring(1))
+        .collect(Collectors.joining());
+
+    String fullName = recordNamespace + "." + recordName;
+
+    HapiConverter<DataType> converter = visitedConverters.get(fullName);
+
+    if (converter == null) {
+      StructField[] fields = children.stream()
+          .map(entry ->
+              new StructField(entry.fieldName(),
+                  entry.result().getDataType(),
+                  true,
+                  Metadata.empty()))
+          .toArray(StructField[]::new);
+
+      converter = new HapiCompositeToSparkConverter(null,
+          children,
+          new StructType(fields),
+          fhirSupport,
+          extensionUrl);
+    }
+
+    return converter;
   }
 
   @Override
@@ -519,9 +581,44 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
         })
         .toArray(StructField[]::new);
 
-    return new HapiChoiceToSparkConverter(choiceTypes,
-        new StructType(fields),
-        fhirSupport);
+    String fieldTypesString = choiceTypes.entrySet()
+        .stream()
+        .map(choiceEntry -> {
+
+          // References need their full record name, which includes the permissible referent types
+          if (choiceEntry.getKey().equals("Reference")) {
+
+            StructType structType = (StructType) choiceEntry.getValue().getDataType();
+
+            return Arrays.stream(structType.fields())
+                .filter(field -> field.name().endsWith("Id") & !field.name().equals("id"))
+                .map(field -> field.name().substring(0, field.name().lastIndexOf("Id")))
+                .sorted()
+                .map(StringUtils::capitalize)
+                .collect(Collectors.joining());
+
+          } else {
+
+            return choiceEntry.getKey();
+          }
+        }).sorted()
+        .map(StringUtils::capitalize)
+        .collect(Collectors.joining());
+
+    String fullName = basePackage + "." + "Choice" + fieldTypesString;
+
+    HapiConverter<DataType> converter = visitedConverters.get(fullName);
+
+    if (converter == null) {
+
+      converter = new HapiChoiceToSparkConverter(choiceTypes,
+          new StructType(fields),
+          fhirSupport);
+
+      visitedConverters.put(fullName, converter);
+    }
+
+    return converter;
   }
 
   @Override

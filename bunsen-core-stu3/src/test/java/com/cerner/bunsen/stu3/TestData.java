@@ -22,6 +22,7 @@ import org.hl7.fhir.dstu3.model.MedicationRequest.MedicationRequestSubstitutionC
 import org.hl7.fhir.dstu3.model.Narrative;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
+import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Provenance;
 import org.hl7.fhir.dstu3.model.Quantity;
@@ -171,10 +172,14 @@ public class TestData {
 
     patient.setBirthDateElement(new DateType("1945-01-02"));
 
-    Address address = patient.addAddress();
-
     patient.addGeneralPractitioner().setReference("Practitioner/12345");
 
+    Identifier practitionerIdentifier = new Identifier();
+    practitionerIdentifier.setId("P123456");
+    practitionerIdentifier.getAssigner().setReference("Organization/123456");
+    patient.getGeneralPractitionerFirstRep().setIdentifier(practitionerIdentifier);
+
+    Address address = patient.addAddress();
     address.addLine("123 Fake Street");
     address.setCity("Chicago");
     address.setState("IL");

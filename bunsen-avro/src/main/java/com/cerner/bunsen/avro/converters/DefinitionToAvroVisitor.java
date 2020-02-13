@@ -3,6 +3,7 @@ package com.cerner.bunsen.avro.converters;
 import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
 import com.cerner.bunsen.definitions.DefinitionVisitor;
+import com.cerner.bunsen.definitions.DefinitionVisitorsUtil;
 import com.cerner.bunsen.definitions.FhirConversionSupport;
 import com.cerner.bunsen.definitions.HapiChoiceConverter;
 import com.cerner.bunsen.definitions.HapiCompositeConverter;
@@ -20,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;
@@ -391,8 +390,8 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       String elementTypeUrl,
       Map<String, StructureField<HapiConverter<Schema>>> contained) {
 
-    String recordName = recordNameFor(elementPath);
-    String recordNamespace = namespaceFor(elementTypeUrl);
+    String recordName = DefinitionVisitorsUtil.recordNameFor(elementPath);
+    String recordNamespace = DefinitionVisitorsUtil.namespaceFor(basePackage, elementTypeUrl);
 
     List<Field> fields = contained.values()
         .stream()
@@ -424,8 +423,8 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       String elementTypeUrl,
       List<StructureField<HapiConverter<Schema>>> children) {
 
-    String recordName = recordNameFor(elementPath);
-    String recordNamespace = namespaceFor(elementTypeUrl);
+    String recordName = DefinitionVisitorsUtil.recordNameFor(elementPath);
+    String recordNamespace = DefinitionVisitorsUtil.namespaceFor(basePackage, elementTypeUrl);
     String fullName = recordNamespace + "." + recordName;
 
     HapiConverter<Schema> converter = visitedConverters.get(fullName);
@@ -522,41 +521,6 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
   }
 
-  private static final Pattern STRUCTURE_URL_PATTERN =
-      Pattern.compile("http:\\/\\/hl7.org\\/fhir(\\/.*)?\\/StructureDefinition\\/([^\\/]*)$");
-
-  private String recordNameFor(String elementPath) {
-
-    return Arrays.stream(elementPath.split("\\."))
-        .map(StringUtils::capitalize)
-        .reduce(String::concat)
-        .get();
-  }
-
-  private String namespaceFor(String structuctureDefinitionUrl) {
-
-    Matcher matcher = STRUCTURE_URL_PATTERN.matcher(structuctureDefinitionUrl);
-
-    if (matcher.matches()) {
-
-      String profile = matcher.group(1);
-
-      if (profile != null && profile.length() > 0) {
-
-        String subPackage = profile.replaceAll("/", ".");
-
-        return basePackage + subPackage;
-
-      } else {
-        return basePackage;
-      }
-
-    } else {
-      throw new IllegalArgumentException("Unregonized structure definition URL: "
-          + structuctureDefinitionUrl);
-    }
-  }
-
   @Override
   public HapiConverter<Schema> visitReference(String elementName,
       List<String> referenceTypes,
@@ -621,7 +585,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       return null;
     }
 
-    String recordNamespace = namespaceFor(extensionUrl);
+    String recordNamespace = DefinitionVisitorsUtil.namespaceFor(basePackage, extensionUrl);
 
     String localPart = extensionUrl.substring(extensionUrl.lastIndexOf('/') + 1);
 
@@ -681,19 +645,19 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       Map<String, HapiConverter<Schema>> choiceTypes) {
 
     List<Field> fields = choiceTypes.entrySet()
-            .stream()
-            .map(entry -> {
+        .stream()
+        .map(entry -> {
 
-              // Ensure first character of the field is lower case.
-              String fieldName = lowercase(entry.getKey());
+          // Ensure first character of the field is lower case.
+          String fieldName = lowercase(entry.getKey());
 
-              return new Field(fieldName,
-                      nullable(entry.getValue().getDataType()),
-                      "Choice field",
-                      (Object) null);
+          return new Field(fieldName,
+              nullable(entry.getValue().getDataType()),
+              "Choice field",
+              (Object) null);
 
-            })
-            .collect(Collectors.toList());
+        })
+        .collect(Collectors.toList());
 
     String fieldTypesString = choiceTypes.entrySet()
         .stream()
