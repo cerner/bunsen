@@ -5,7 +5,7 @@
   <groupId>com.cerner.bunsen</groupId>
   <artifactId>bunsen-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.5.0-alpha1-SNAPSHOT</version>
+  <version>0.5.0-SNAPSHOT</version>
   <name>Bunsen Parent</name>
   <description>Use FHIR resources as native Spark data sets</description>
   <url>http://engineering.cerner.com/bunsen</url>

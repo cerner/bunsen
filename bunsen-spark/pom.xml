@@ -6,7 +6,7 @@
   <parent>
     <artifactId>bunsen-parent</artifactId>
     <groupId>com.cerner.bunsen</groupId>
-    <version>0.5.0-alpha1-SNAPSHOT</version>
+    <version>0.5.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <name>Bunsen Spark</name>
