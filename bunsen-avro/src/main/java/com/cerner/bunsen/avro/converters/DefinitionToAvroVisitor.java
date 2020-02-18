@@ -52,7 +52,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
   private static final Schema BOOLEAN_SCHEMA = Schema.create(Type.BOOLEAN);
 
-  private static final HapiConverter BOOLEAN_CONVERTER = new PrimitiveConverter<Schema>() {
+  private static final HapiConverter BOOLEAN_CONVERTER = new PrimitiveConverter<Schema>("Boolean") {
 
     @Override
     public Schema getDataType() {
@@ -62,7 +62,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
   private static final Schema INTEGER_SCHEMA = Schema.create(Type.INT);
 
-  private static final HapiConverter INTEGER_CONVERTER = new PrimitiveConverter<Schema>() {
+  private static final HapiConverter INTEGER_CONVERTER = new PrimitiveConverter<Schema>("Integer") {
 
     @Override
     public Schema getDataType() {
@@ -76,7 +76,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
   private static final Schema DECIMAL_SCHEMA =
       DECIMAL_PRECISION.addToSchema(Schema.create(Type.BYTES));
 
-  private static final HapiConverter DECIMAL_CONVERTER = new PrimitiveConverter<Schema>() {
+  private static final HapiConverter DECIMAL_CONVERTER = new PrimitiveConverter<Schema>("Decimal") {
 
     private final Conversion<BigDecimal> conversion = new Conversions.DecimalConversion();
 

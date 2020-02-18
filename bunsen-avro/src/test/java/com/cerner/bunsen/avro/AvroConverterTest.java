@@ -71,6 +71,13 @@ public class AvroConverterTest {
 
   private static MedicationRequest testMedicationRequestDecoded;
 
+  private static final Patient testBunsenTestProfilePatient = TestData
+      .newBunsenTestProfilePatient();
+
+  private static Record avroBunsenTestProfilePatient;
+
+  private static Patient testBunsenTestProfilePatientDecoded;
+
   /**
    * Initialize test data.
    */
@@ -114,6 +121,15 @@ public class AvroConverterTest {
 
     testMedicationRequestDecoded = (MedicationRequest) medicationRequestConverter
         .avroToResource(avroMedicationRequest);
+
+    AvroConverter converterBunsenTestProfilePatient = AvroConverter
+        .forResource(FhirContexts.forStu3(), TestData.BUNSEN_TEST_PATIENT);
+
+    avroBunsenTestProfilePatient = (Record) converterBunsenTestProfilePatient
+        .resourceToAvro(testBunsenTestProfilePatient);
+
+    testBunsenTestProfilePatientDecoded = (Patient) converterBunsenTestProfilePatient
+        .avroToResource(avroBunsenTestProfilePatient);
   }
 
   @Test
@@ -398,5 +414,43 @@ public class AvroConverterTest {
     // Contained types created.
     Assert.assertTrue(javaFiles.contains(
         "com/cerner/bunsen/stu3/avro/us/core/MedicationRequestContained.java"));
+  }
+
+  @Test
+  public void testSimpleExtensionWithBooleanField() {
+
+    Boolean expected = (Boolean) testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_BOOLEAN_FIELD)
+        .get(0)
+        .getValueAsPrimitive().getValue();
+
+    Boolean actual = (Boolean) avroBunsenTestProfilePatient.get("booleanfield");
+    Assert.assertEquals(expected, actual);
+
+    Boolean decodedBooleanField = (Boolean) testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_BOOLEAN_FIELD)
+        .get(0)
+        .getValueAsPrimitive().getValue();
+
+    Assert.assertEquals(expected, decodedBooleanField);
+  }
+
+  @Test
+  public void testSimpleExtensionWithIntegerField() {
+
+    Integer expected = (Integer) testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_FIELD)
+        .get(0)
+        .getValueAsPrimitive().getValue();
+
+    Integer actual = (Integer) avroBunsenTestProfilePatient.get("integerfield");
+    Assert.assertEquals(expected, actual);
+
+    Integer decodedIntegerField = (Integer) testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_FIELD)
+        .get(0)
+        .getValueAsPrimitive().getValue();
+
+    Assert.assertEquals(expected, decodedIntegerField);
   }
 }

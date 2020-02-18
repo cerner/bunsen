@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
+import org.apache.avro.generic.GenericData.Record;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -78,7 +79,7 @@ public class SparkRowConverterTest {
 
   private static final Medication testMedicationTwo = TestData.newMedication("test-medication-2");
 
-  private static final Provenance testProvenance =  TestData.newProvenance();
+  private static final Provenance testProvenance = TestData.newProvenance();
 
   private static final MedicationRequest testMedicationRequest =
       (MedicationRequest) TestData.newMedicationRequest()
@@ -89,6 +90,14 @@ public class SparkRowConverterTest {
   private static Dataset<Row> testMedicationRequestDataset;
 
   private static MedicationRequest testMedicationRequestDecoded;
+
+  private static final Patient testBunsenTestProfilePatient = TestData
+      .newBunsenTestProfilePatient();
+
+  private static Dataset<Row> testBunsenTestProfilePatientDataset;
+
+  private static Patient testBunsenTestProfilePatientDecoded;
+
 
   /**
    * Loads resource definitions used for testing.
@@ -142,6 +151,19 @@ public class SparkRowConverterTest {
 
     testMedicationRequestDecoded = (MedicationRequest) medicationRequestConverter
         .rowToResource(testMedicationRequestDataset.head());
+
+    SparkRowConverter converterBunsenTestProfilePatient = SparkRowConverter
+        .forResource(FhirContexts.forStu3(), TestData.BUNSEN_TEST_PATIENT);
+
+    Row testBunsenTestProfilePatientRow = converterBunsenTestProfilePatient
+        .resourceToRow(testBunsenTestProfilePatient);
+
+    testBunsenTestProfilePatientDataset = spark
+        .createDataFrame(Collections.singletonList(testBunsenTestProfilePatientRow),
+            converterBunsenTestProfilePatient.getSchema());
+
+    testBunsenTestProfilePatientDecoded = (Patient) converterBunsenTestProfilePatient
+        .rowToResource(testBunsenTestProfilePatientRow);
   }
 
   @Test
@@ -393,7 +415,7 @@ public class SparkRowConverterTest {
         0,
         schema.fields().length);
 
-    for (StructField field: schema.fields()) {
+    for (StructField field : schema.fields()) {
 
       if (field.dataType() instanceof StructType) {
 
@@ -447,5 +469,44 @@ public class SparkRowConverterTest {
     Assert.assertEquals(testPatient.getGender(), basePatientDecoded.getGender());
     Assert.assertTrue(testPatient.getMultipleBirth()
         .equalsDeep(basePatientDecoded.getMultipleBirth()));
+  }
+
+  @Test
+  public void testSimpleExtensionWithBooleanField() {
+
+    Boolean expected = (Boolean) testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_BOOLEAN_FIELD)
+        .get(0)
+        .getValueAsPrimitive().getValue();
+
+    Boolean actual = testBunsenTestProfilePatientDataset.select("booleanfield").head()
+        .getBoolean(0);
+    Assert.assertEquals(expected, actual);
+
+    Boolean decodedBooleanField = (Boolean) testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_BOOLEAN_FIELD)
+        .get(0)
+        .getValueAsPrimitive().getValue();
+
+    Assert.assertEquals(expected, decodedBooleanField);
+  }
+
+  @Test
+  public void testSimpleExtensionWithIntegerField() {
+
+    Integer expected = (Integer) testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_FIELD)
+        .get(0)
+        .getValueAsPrimitive().getValue();
+
+    Integer actual = testBunsenTestProfilePatientDataset.select("integerfield").head().getInt(0);
+    Assert.assertEquals(expected, actual);
+
+    Integer decodedIntegerField = (Integer) testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_FIELD)
+        .get(0)
+        .getValueAsPrimitive().getValue();
+
+    Assert.assertEquals(expected, decodedIntegerField);
   }
 }
