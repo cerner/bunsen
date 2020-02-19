@@ -526,6 +526,13 @@
 
       <dependency>
         <groupId>com.cerner.bunsen</groupId>
+        <artifactId>bunsen-uscore-resources-stu3</artifactId>
+        <type>test-jar</type>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.cerner.bunsen</groupId>
         <artifactId>bunsen-avro</artifactId>
         <version>${project.version}</version>
       </dependency>

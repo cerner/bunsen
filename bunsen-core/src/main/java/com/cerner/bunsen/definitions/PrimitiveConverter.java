@@ -39,6 +39,12 @@ public abstract class PrimitiveConverter<T> extends HapiConverter<T> {
     }
   }
 
+  private final String elementType;
+
+  public PrimitiveConverter(String elementType) {
+    this.elementType = elementType;
+  }
+
   protected void toHapi(Object input, IPrimitiveType primitive) {
     primitive.setValue(input);
   }
@@ -56,5 +62,10 @@ public abstract class PrimitiveConverter<T> extends HapiConverter<T> {
   @Override
   public HapiFieldSetter toHapiConverter(BaseRuntimeElementDefinition... elementDefinitions) {
     return new PrimitiveFieldSetter(elementDefinitions[0]);
+  }
+
+  @Override
+  public String getElementType() {
+    return elementType;
   }
 }

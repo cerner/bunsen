@@ -2,6 +2,7 @@ package com.cerner.bunsen.stu3;
 
 import com.google.common.collect.ImmutableList;
 import org.hl7.fhir.dstu3.model.Address;
+import org.hl7.fhir.dstu3.model.BooleanType;
 import org.hl7.fhir.dstu3.model.CodeType;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
@@ -30,6 +31,7 @@ import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.Timing;
 import org.hl7.fhir.dstu3.model.Timing.TimingRepeatComponent;
+import org.hl7.fhir.dstu3.model.Type;
 import org.hl7.fhir.utilities.xhtml.NodeType;
 import org.hl7.fhir.utilities.xhtml.XhtmlNode;
 
@@ -64,6 +66,15 @@ public class TestData {
 
   public static final String VALUE_SET =
       "http://hl7.org/fhir/StructureDefinition/ValueSet";
+
+  public static final String BUNSEN_TEST_PATIENT =
+      "http://hl7.org/fhir/bunsen/test/StructureDefinition/bunsen-test-patient";
+
+  public static final String BUNSEN_TEST_BOOLEAN_FIELD =
+      "http://hl7.org/fhir/bunsen/test/StructureDefinition/bunsen-test-booleanfield";
+
+  public static final String BUNSEN_TEST_INTEGER_FIELD =
+      "http://hl7.org/fhir/bunsen/test/StructureDefinition/bunsen-test-integerfield";
 
   /**
    * Returns a FHIR Condition for testing purposes.
@@ -295,6 +306,33 @@ public class TestData {
     provenance.setId("test-provenance");
 
     return provenance;
+  }
+
+  /**
+   * Returns a new Patient from Bunsen Test profile for testing.
+   *
+   * @return a FHIR Patient for testing.
+   */
+  public static Patient newBunsenTestProfilePatient() {
+    Patient patient = new Patient();
+
+    patient.setId("test-bunsen-test-profile-patient");
+    patient.setGender(AdministrativeGender.MALE);
+    patient.setActive(true);
+    patient.setMultipleBirth(new IntegerType(1));
+
+    patient.setBirthDateElement(new DateType("1945-01-01"));
+
+    // set extension field
+    Extension booleanField = patient.addExtension();
+    booleanField.setUrl(BUNSEN_TEST_BOOLEAN_FIELD);
+    booleanField.setValue(new BooleanType(true));
+
+    Extension integerField = patient.addExtension();
+    integerField.setUrl(BUNSEN_TEST_INTEGER_FIELD);
+    integerField.setValue(new IntegerType(45678));
+
+    return patient;
   }
 
 }

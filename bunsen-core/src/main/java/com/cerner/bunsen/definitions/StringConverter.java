@@ -7,7 +7,7 @@ public class StringConverter<T> extends PrimitiveConverter<T> {
   private final T dataType;
 
   public StringConverter(T dataType) {
-
+    super("String");
     this.dataType = dataType;
   }
 
@@ -26,12 +26,6 @@ public class StringConverter<T> extends PrimitiveConverter<T> {
     return dataType;
   }
 
-
-  @Override
-  public String getElementType() {
-
-    return "String";
-  }
 }
 
 

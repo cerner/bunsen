@@ -307,7 +307,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
     }
   }
 
-  private static HapiConverter DECIMAL_CONVERTER = new PrimitiveConverter() {
+  private static HapiConverter DECIMAL_CONVERTER = new PrimitiveConverter("Decimal") {
 
     protected void toHapi(Object input, IPrimitiveType primitive) {
 
@@ -368,7 +368,8 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
   private static final HapiConverter DATE_CONVERTER = new StringConverter(DataTypes.StringType);
 
-  private static final HapiConverter BOOLEAN_CONVERTER = new PrimitiveConverter<DataType>() {
+  private static final HapiConverter BOOLEAN_CONVERTER = new PrimitiveConverter<DataType>(
+      "Boolean") {
 
     @Override
     public DataType getDataType() {
@@ -376,7 +377,8 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
     }
   };
 
-  private static final HapiConverter INTEGER_CONVERTER = new PrimitiveConverter<DataType>() {
+  private static final HapiConverter INTEGER_CONVERTER = new PrimitiveConverter<DataType>(
+      "Integer") {
 
     @Override
     public DataType getDataType() {
