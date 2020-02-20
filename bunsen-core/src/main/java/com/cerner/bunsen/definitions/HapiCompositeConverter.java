@@ -157,18 +157,22 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
     Object[] values = new Object[children.size()];
 
+    int valueIndex = 0;
+    Iterator<StructureField<HapiConverter<T>>> schemaIterator = children.iterator();
+
     if (composite instanceof IAnyResource) {
 
-      values[0] = ((IAnyResource) composite).getIdElement().getValueAsString();
+      StructureField<HapiConverter<T>> schemaEntry = schemaIterator.next();
+
+      values[0] = schemaEntry.result().fromHapi(((IAnyResource) composite).getIdElement());
+
+      valueIndex++;
     }
 
     Map<String, List> properties = fhirSupport.compositeValues(composite);
 
-    Iterator<StructureField<HapiConverter<T>>> schemaIterator
-        = children.iterator();
-
     // Co-iterate with an index so we place the correct values into the corresponding locations.
-    for (int valueIndex = 0; valueIndex < children.size(); ++valueIndex) {
+    for (; valueIndex < children.size(); ++valueIndex) {
 
       StructureField<HapiConverter<T>> schemaEntry = schemaIterator.next();
 
