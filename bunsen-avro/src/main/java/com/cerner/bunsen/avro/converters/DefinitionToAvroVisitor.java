@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
 import com.cerner.bunsen.definitions.DefinitionVisitor;
 import com.cerner.bunsen.definitions.DefinitionVisitorsUtil;
+import com.cerner.bunsen.definitions.EnumConverter;
 import com.cerner.bunsen.definitions.FhirConversionSupport;
 import com.cerner.bunsen.definitions.HapiChoiceConverter;
 import com.cerner.bunsen.definitions.HapiCompositeConverter;
@@ -47,6 +48,9 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
   private static final HapiConverter STRING_CONVERTER =
       new StringConverter(Schema.create(Type.STRING));
 
+  private static final HapiConverter ENUM_CONVERTER =
+      new EnumConverter(Schema.create(Type.STRING));
+
   private static final HapiConverter DATE_CONVERTER =
       new StringConverter(Schema.create(Type.STRING));
 
@@ -80,7 +84,8 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
     private final Conversion<BigDecimal> conversion = new Conversions.DecimalConversion();
 
-    protected void toHapi(Object input, IPrimitiveType primitive) {
+    @Override
+    public void toHapi(Object input, IPrimitiveType primitive) {
 
       primitive.setValue(input);
     }
@@ -95,9 +100,6 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
       return DECIMAL_SCHEMA;
     }
   };
-
-  private static final HapiConverter ENUM_CONVERTER =
-      new StringConverter(Schema.create(Type.STRING));
 
   static final Map<String,HapiConverter> TYPE_TO_CONVERTER =
       ImmutableMap.<String,HapiConverter>builder()

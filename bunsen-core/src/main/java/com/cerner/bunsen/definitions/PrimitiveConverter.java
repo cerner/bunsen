@@ -45,7 +45,12 @@ public abstract class PrimitiveConverter<T> extends HapiConverter<T> {
     this.elementType = elementType;
   }
 
-  protected void toHapi(Object input, IPrimitiveType primitive) {
+  /**
+   * Helper method that will set the HAPI value.
+   * @param input the input object
+   * @param primitive the FHIR primitive to set
+   */
+  public void toHapi(Object input, IPrimitiveType primitive) {
     primitive.setValue(input);
   }
 
@@ -54,7 +59,7 @@ public abstract class PrimitiveConverter<T> extends HapiConverter<T> {
   }
 
   @Override
-  public final Object fromHapi(Object input) {
+  public Object fromHapi(Object input) {
 
     return fromHapi((IPrimitiveType) input);
   }

@@ -69,6 +69,13 @@ public class SparkRowConverterTest {
 
   private static Observation testObservationDecoded;
 
+  private static final Observation testObservationNullStatus = TestData.newObservation()
+      .setStatus(Observation.ObservationStatus.NULL);
+
+  private static Dataset<Row> testObservationNullStatusDataset;
+
+  private static Observation testObservationDecodedNullStatus;
+
   private static final Condition testCondition = TestData.newCondition();
 
   private static Dataset<Row> testConditionDataset;
@@ -127,6 +134,15 @@ public class SparkRowConverterTest {
 
     testObservationDecoded =
         (Observation) observationConverter.rowToResource(testObservationDataset.head());
+
+    Row testObservationNullStatusRow = observationConverter
+        .resourceToRow(testObservationNullStatus);
+
+    testObservationNullStatusDataset = spark.createDataFrame(
+        Collections.singletonList(testObservationNullStatusRow), observationConverter.getSchema());
+
+    testObservationDecodedNullStatus = (Observation) observationConverter
+        .rowToResource(testObservationNullStatusDataset.head());
 
     SparkRowConverter conditionConverter = SparkRowConverter.forResource(fhirContext,
         TestData.US_CORE_CONDITION);
@@ -208,6 +224,14 @@ public class SparkRowConverterTest {
 
     Assert.assertEquals(testObservation.getStatus(),
         testObservationDecoded.getStatus());
+  }
+
+  @Test
+  public void testBoundCodeNull() {
+
+    Assert.assertNull(testObservationNullStatusDataset.select("status").head().get(0));
+
+    Assert.assertNull(testObservationDecodedNullStatus.getStatusElement().getValue());
   }
 
   @Test

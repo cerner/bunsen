@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
 import com.cerner.bunsen.definitions.DefinitionVisitor;
 import com.cerner.bunsen.definitions.DefinitionVisitorsUtil;
+import com.cerner.bunsen.definitions.EnumConverter;
 import com.cerner.bunsen.definitions.FhirConversionSupport;
 import com.cerner.bunsen.definitions.HapiChoiceConverter;
 import com.cerner.bunsen.definitions.HapiCompositeConverter;
@@ -309,7 +310,8 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
   private static HapiConverter DECIMAL_CONVERTER = new PrimitiveConverter("Decimal") {
 
-    protected void toHapi(Object input, IPrimitiveType primitive) {
+    @Override
+    public void toHapi(Object input, IPrimitiveType primitive) {
 
       primitive.setValueAsString(((BigDecimal) input).toPlainString());
     }
@@ -323,7 +325,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
   private static final HapiConverter STRING_CONVERTER = new StringConverter(DataTypes.StringType);
 
 
-  private static final HapiConverter ENUM_CONVERTER = new StringConverter(DataTypes.StringType);
+  private static final HapiConverter ENUM_CONVERTER = new EnumConverter(DataTypes.StringType);
 
   /**
    * Converter that returns the relative value of a URI type.

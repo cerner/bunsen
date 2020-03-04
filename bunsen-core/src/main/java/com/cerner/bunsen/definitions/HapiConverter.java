@@ -2,7 +2,6 @@ package com.cerner.bunsen.definitions;
 
 import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
-
 import org.hl7.fhir.instance.model.api.IBase;
 
 /**

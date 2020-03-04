@@ -41,6 +41,13 @@ public class AvroConverterTest {
 
   private static Observation testObservationDecoded;
 
+  private static final Observation testObservationNullStatus = TestData.newObservation()
+      .setStatus(Observation.ObservationStatus.NULL);
+
+  private static Record avroObservationNullStatus;
+
+  private static Observation testObservationDecodedNullStatus;
+
   private static final Patient testPatient = TestData.newPatient();
 
   private static Record avroPatient;
@@ -90,6 +97,12 @@ public class AvroConverterTest {
     avroObservation = (Record) observationConverter.resourceToAvro(testObservation);
 
     testObservationDecoded = (Observation) observationConverter.avroToResource(avroObservation);
+
+    avroObservationNullStatus = (Record) observationConverter
+        .resourceToAvro(testObservationNullStatus);
+
+    testObservationDecodedNullStatus = (Observation) observationConverter
+        .avroToResource(avroObservationNullStatus);
 
     AvroConverter patientConverter = AvroConverter.forResource(FhirContexts.forStu3(),
         TestData.US_CORE_PATIENT);
@@ -195,6 +208,14 @@ public class AvroConverterTest {
 
     Assert.assertEquals(testObservation.getStatus(),
         testObservationDecoded.getStatus());
+  }
+
+  @Test
+  public void testBoundCodeNull() {
+
+    Assert.assertNull(avroObservationNullStatus.get("status"));
+
+    Assert.assertNull(testObservationDecodedNullStatus.getStatusElement().getValue());
   }
 
   @Test
