@@ -217,7 +217,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     @Override
     protected List<ContainerEntry> getContained(Object container) {
 
-      GenericData.Array containedArray = (GenericData.Array) container;
+      List containedArray = (List) container;
 
       List<ContainerEntry> containedEntries = new ArrayList<>();
 
@@ -247,8 +247,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     @Override
     protected Object createContained(Object[] contained) {
 
-      GenericData.Array<IndexedRecord> containedArray =
-          new GenericData.Array<>(contained.length, getDataType());
+      List<IndexedRecord> containedList = new ArrayList<>();
 
       Schema containerType = getDataType().getElementType();
 
@@ -285,10 +284,10 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
         containedRecord.put(containedPosition, containedEntry);
 
-        containedArray.add(containedRecord);
+        containedList.add(containedRecord);
       }
 
-      return containedArray;
+      return new GenericData.Array<>(getDataType(), containedList);
     }
   }
 
@@ -331,9 +330,11 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
       List list = (List) input;
 
-      return list.stream()
+      List convertedList = (List) list.stream()
           .map(item -> elementConverter.fromHapi(item))
           .collect(Collectors.toList());
+
+      return new GenericData.Array<>(getDataType(), convertedList);
     }
 
     @Override
