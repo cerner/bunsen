@@ -2,31 +2,28 @@ package com.cerner.bunsen.definitions;
 
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
-public class StringConverter<T> extends PrimitiveConverter<T> {
+public class EnumConverter<T> extends StringConverter<T> {
 
-  private final T dataType;
+  public EnumConverter(T dataType) {
 
-  public StringConverter(T dataType) {
-    super("String");
-    this.dataType = dataType;
+    super(dataType);
   }
 
   @Override
   public void toHapi(Object input, IPrimitiveType primitive) {
+
+    if ("?".equals(input)) {
+
+      input = null;
+    }
+
     primitive.setValueAsString((String) input);
   }
 
   protected Object fromHapi(IPrimitiveType primitive) {
-    return primitive.getValueAsString();
+
+    return "?".equals(primitive.getValueAsString())
+        ? null
+        : primitive.getValueAsString();
   }
-
-
-  @Override
-  public T getDataType() {
-
-    return dataType;
-  }
-
 }
-
-
