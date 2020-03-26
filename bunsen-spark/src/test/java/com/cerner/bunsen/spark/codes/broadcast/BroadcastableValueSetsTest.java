@@ -232,6 +232,9 @@ public class BroadcastableValueSetsTest {
         .containsAll(priorityValues.get("http://hl7.org/fhir/v3/ActPriority")));
   }
 
+  /**
+   * Added to address https://github.com/cerner/bunsen/issues/85
+   */
   @Test
   public void testThreadSafety() {
     List<Future> futures = new ArrayList<>();
