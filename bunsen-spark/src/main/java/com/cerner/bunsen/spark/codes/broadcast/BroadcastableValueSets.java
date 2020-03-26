@@ -27,16 +27,6 @@ import org.apache.spark.sql.SparkSession;
 public class BroadcastableValueSets implements Serializable {
 
   /**
-   * Spark encoder for value set references.
-   */
-  private static Encoder<Reference> REFERENCE_ENCODER = Encoders.bean(Reference.class);
-
-  /**
-   * Spark encoder for hierarchical ancestor values.
-   */
-  private static Encoder<AncestorValue> ANCESTOR_VALUE_ENCODER = Encoders.bean(AncestorValue.class);
-
-  /**
    * A map from value set reference to code system to a set of values that are contained in that
    * code system.
    */
@@ -276,7 +266,7 @@ public class BroadcastableValueSets implements Serializable {
         addReferenceVersions(valueSets);
 
         Dataset<Reference> referencesToLoad = spark.createDataset(this.references,
-            REFERENCE_ENCODER)
+            Encoders.bean(Reference.class))
             .as("toload");
 
         List<Row> codeReferences = valueSets.getValues()
@@ -304,7 +294,7 @@ public class BroadcastableValueSets implements Serializable {
         addAncestorVersions(hierarchies);
 
         Dataset<AncestorValue> ancestorsToLoad = spark.createDataset(this.ancestorValues,
-            ANCESTOR_VALUE_ENCODER)
+            Encoders.bean(AncestorValue.class))
             .as("toload");
 
         List<Row> descendants = hierarchies.getAncestors()
