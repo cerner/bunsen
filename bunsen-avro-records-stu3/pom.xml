@@ -6,7 +6,7 @@
   <parent>
     <artifactId>bunsen-parent</artifactId>
     <groupId>com.cerner.bunsen</groupId>
-    <version>0.5.3</version>
+    <version>0.5.4-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <name>Bunsen Avro Records STU3</name>
