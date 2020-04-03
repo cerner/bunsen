@@ -266,9 +266,16 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
     } else if (element.getType().size() == 1
         && PRIMITIVE_TYPES.contains(element.getTypeFirstRep().getCode())) {
 
+      T primitiveConverter = visitor
+          .visitPrimitive(elementName, element.getTypeFirstRep().getCode());
 
-      return singleField(elementName,
-          visitor.visitPrimitive(elementName, element.getTypeFirstRep().getCode()));
+      if (!element.getMax().equals("1")) {
+
+        return singleField(elementName, visitor.visitMultiValued(elementName, primitiveConverter));
+      } else {
+
+        return singleField(elementName, primitiveConverter);
+      }
 
     } else if (element.getPath().endsWith("[x]")) {
 

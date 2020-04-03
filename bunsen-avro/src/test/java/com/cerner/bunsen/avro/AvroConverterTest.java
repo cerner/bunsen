@@ -165,6 +165,17 @@ public class AvroConverterTest {
   }
 
   @Test
+  public void testPrimitiveMultiplicity() {
+
+    Assert.assertTrue(testPatient.getName().get(0).getFamily()
+        .equalsIgnoreCase(testPatientDecoded.getName().get(0).getFamily()));
+    Assert.assertTrue(testPatient.getName().get(0).getGiven().get(0).getValueAsString()
+        .equals(testPatientDecoded.getName().get(0).getGiven().get(0).getValueAsString()));
+    Assert.assertTrue(testPatient.getName().get(0).getGiven().get(1).getValueAsString()
+        .equals(testPatientDecoded.getName().get(0).getGiven().get(1).getValueAsString()));
+  }
+
+  @Test
   public void testChoice() throws FHIRException {
 
     // Ensure that a decoded choice type matches the original

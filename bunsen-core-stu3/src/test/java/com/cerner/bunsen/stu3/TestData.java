@@ -12,6 +12,7 @@ import org.hl7.fhir.dstu3.model.DateType;
 import org.hl7.fhir.dstu3.model.Dosage;
 import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.dstu3.model.Extension;
+import org.hl7.fhir.dstu3.model.HumanName;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.IntegerType;
 import org.hl7.fhir.dstu3.model.Medication;
@@ -221,6 +222,13 @@ public class TestData {
     Extension ethnicityText = ethnicity.addExtension();
     ethnicityText.setUrl("text");
     ethnicityText.setValue(new StringType("Not Hispanic or Latino"));
+
+    // Human Name
+    HumanName humanName = new HumanName();
+    humanName.setFamily("family_name");
+    humanName.addGiven("given_name");
+    humanName.addGiven("middle_name");
+    patient.addName(humanName);
 
     return patient;
   }
