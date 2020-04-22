@@ -125,6 +125,8 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
         .fetchStructureDefinition(context, element.getTypeFirstRep().getProfile())
         : null;
 
+    List<StructureField<T>> extensions;
+
     if (definition != null) {
 
       if (shouldTerminateRecursive(visitor,
@@ -139,7 +141,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
 
         ElementDefinition extensionRoot = extensionDefinitions.get(0);
 
-        return visitExtensionDefinition(visitor,
+        extensions = visitExtensionDefinition(visitor,
             rootDefinition,
             element.getSliceName(),
             stack,
@@ -154,13 +156,25 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
         return Collections.emptyList();
       }
 
-      return visitExtensionDefinition(visitor,
+      extensions = visitExtensionDefinition(visitor,
           rootDefinition,
           element.getSliceName(),
           stack,
           element.getTypeFirstRep().getProfile(),
           definitions,
           element);
+    }
+
+    if (!element.getMax().equals("1") && extensions.size() > 0) {
+      // the nested extension element has max: *
+      return Collections.singletonList(StructureField.extension(
+          extensions.get(0).fieldName(),
+          extensions.get(0).extensionUrl(),
+          visitor.visitMultiValued(extensions.get(0).fieldName(), extensions.get(0).result())));
+
+    } else {
+
+      return extensions;
     }
   }
 
@@ -197,8 +211,11 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
           childFields);
 
       if (result == null) {
+
         return Collections.emptyList();
+
       } else {
+
         return Collections.singletonList(
             StructureField.extension(sliceName,
                 url,
@@ -220,7 +237,6 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
 
       String extensionUrl = urlElement.get().getFixed().primitiveValue();
 
-
       List<StructureField<T>> childField = elementToFields(visitor, rootDefinition,
           valueElement.get(), extensionDefinitions, stack);
 
@@ -235,7 +251,6 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
 
     }
   }
-
 
   /**
    * Returns the fields for the given element. The returned stream can be empty
@@ -272,6 +287,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
       if (!element.getMax().equals("1")) {
 
         return singleField(elementName, visitor.visitMultiValued(elementName, primitiveConverter));
+        
       } else {
 
         return singleField(elementName, primitiveConverter);

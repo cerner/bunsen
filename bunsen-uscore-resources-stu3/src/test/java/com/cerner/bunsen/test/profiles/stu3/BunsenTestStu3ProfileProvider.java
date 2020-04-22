@@ -41,6 +41,12 @@ public class BunsenTestStu3ProfileProvider implements ProfileProvider {
     load(support, parser, "definitions/StructureDefinition-bunsen-test-profile-booleanfield.json");
     load(support, parser, "definitions/StructureDefinition-bunsen-test-profile-integerfield.json");
     load(support, parser, "definitions/StructureDefinition-bunsen-test-profile-Patient.json");
+    load(support, parser,
+        "definitions/StructureDefinition-bunsen-test-profile-integerArrayField.json");
+    load(support, parser,
+        "definitions/StructureDefinition-bunsen-test-profile-nested-extension.json");
+    load(support, parser,
+        "definitions/StructureDefinition-bunsen-test-profile-codeableconcept-ext.json");
   }
 
   @Override

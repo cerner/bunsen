@@ -15,7 +15,7 @@ import org.hl7.fhir.instance.model.api.IBaseExtension;
  */
 public class LeafExtensionConverter<T> extends HapiConverter<T> {
 
-  class LeafExensionFieldSetter implements HapiFieldSetter {
+  class LeafExensionFieldSetter implements HapiFieldSetter, HapiObjectConverter {
 
     private final HapiObjectConverter valuetoHapiConverter;
 
@@ -41,7 +41,26 @@ public class LeafExtensionConverter<T> extends HapiConverter<T> {
 
       fieldToSet.getMutator().addValue(parentObject, extension);
     }
+
+    /**
+     * Converts an object from a different data model to a HAPI object.
+     *
+     * @param input the object to convert
+     * @return the HAPI equivalent.
+     */
+    @Override
+    public IBase toHapi(Object input) {
+
+      IBase hapiObject = valuetoHapiConverter.toHapi(input);
+
+      IBaseExtension extension = (IBaseExtension) elementDefinition.newInstance(extensionUrl);
+
+      extension.setValue((IBaseDatatype) hapiObject);
+
+      return extension;
+    }
   }
+
 
   private final String extensionUrl;
 
@@ -54,7 +73,6 @@ public class LeafExtensionConverter<T> extends HapiConverter<T> {
    * @param valueConverter the converter for the extension's value.
    */
   public LeafExtensionConverter(String extensionUrl, HapiConverter valueConverter) {
-
     this.extensionUrl = extensionUrl;
     this.valueConverter = valueConverter;
   }
