@@ -6,8 +6,10 @@ Cerner Corporation
 - Aleksander Eskilson [@bdrillard]
 - Paul Hartwell [@paulhartwell]
 - Amaresh Vakul [@amarvakul]
+- Yushan Wei [@ysmwei]
 
 [@rbrush]: https://github.com/rbrush
 [@bdrillard]: https://github.com/bdrillard
 [@paulhartwell]: https://github.com/PaulHartwell
 [@amarvakul]: https://github.com/amarvakul
+[@ysmwei]: https://github.com/ysmwei
