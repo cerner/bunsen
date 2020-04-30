@@ -211,11 +211,8 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
           childFields);
 
       if (result == null) {
-
         return Collections.emptyList();
-
       } else {
-
         return Collections.singletonList(
             StructureField.extension(sliceName,
                 url,
@@ -287,7 +284,6 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
       if (!element.getMax().equals("1")) {
 
         return singleField(elementName, visitor.visitMultiValued(elementName, primitiveConverter));
-        
       } else {
 
         return singleField(elementName, primitiveConverter);
