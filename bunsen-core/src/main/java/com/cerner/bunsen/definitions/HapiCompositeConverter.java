@@ -4,7 +4,6 @@ import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementCompositeDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
 import ca.uhn.fhir.context.RuntimeElemContainedResourceList;
-import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -80,8 +79,7 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
         StructureField<HapiFieldSetter> child = childIterator.next();
 
-        // Some children are ignored, for instance when terminating recursive
-        // fields.
+        // Some children are ignored, for instance when terminating recursive fields.
         if (child == null || child.result() == null) {
           continue;
         }
@@ -168,7 +166,6 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
       valueIndex++;
     }
-
     Map<String, List> properties = fhirSupport.compositeValues(composite);
 
     // Co-iterate with an index so we place the correct values into the corresponding locations.
@@ -209,6 +206,23 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
             values[valueIndex] = schemaEntry.result().fromHapi(extension);
           }
+        }
+
+      } else if (converter instanceof MultiValueConverter
+          && ((MultiValueConverter)converter).getElementConverter().extensionUrl() != null) {
+
+        final String extensionUrl =
+            ((MultiValueConverter) converter).getElementConverter().extensionUrl();
+
+        List<? extends IBaseExtension> extensions =
+            ((IBaseHasExtensions) composite).getExtension();
+
+        final List<? extends IBaseExtension> extensionList = extensions.stream()
+            .filter(extension -> extension.getUrl().equals(extensionUrl))
+            .collect(Collectors.toList());
+
+        if (extensionList.size() > 0) {
+          values[valueIndex] = schemaEntry.result().fromHapi(extensionList);
         }
       }
     }

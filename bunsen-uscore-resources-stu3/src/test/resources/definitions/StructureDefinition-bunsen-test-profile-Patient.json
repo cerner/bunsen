@@ -454,6 +454,62 @@
         ]
       },
       {
+        "id": "Patient.extension:integerArrayField",
+        "path": "Patient.extension",
+        "sliceName": "integerArrayField",
+        "short": "Extension",
+        "definition": "An Extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": "http://hl7.org/fhir/bunsen/test/StructureDefinition/bunsen-test-integerArrayField"
+          }
+        ],
+        "mustSupport": true,
+        "isModifier": false,
+        "mapping": [
+          {
+            "identity": "test",
+            "map": "Patient.extension"
+          }
+        ]
+      },
+      {
+        "id": "Patient.extension:nestedExt",
+        "path": "Patient.extension",
+        "sliceName": "nestedExt",
+        "short": "Extension",
+        "definition": "An Extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": "http://hl7.org/fhir/bunsen/test/StructureDefinition/bunsen-test-nested-extension"
+          }
+        ],
+        "mustSupport": true,
+        "isModifier": false,
+        "mapping": [
+          {
+            "identity": "test",
+            "map": "Patient.extension"
+          }
+        ]
+      },
+      {
         "id": "Patient.modifierExtension",
         "path": "Patient.modifierExtension",
         "short": "Extensions that cannot be ignored",

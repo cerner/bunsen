@@ -326,6 +326,16 @@ public class AvroConverterTest {
         .get(0)
         .getValue();
 
+    Coding testDetailed1 = (Coding) testEthnicity
+        .getExtensionsByUrl("detailed")
+        .get(0)
+        .getValue();
+
+    Coding testDetailed2 = (Coding) testEthnicity
+        .getExtensionsByUrl("detailed")
+        .get(1)
+        .getValue();
+
     String testText = testEthnicity
         .getExtensionsByUrl("text")
         .get(0)
@@ -341,6 +351,16 @@ public class AvroConverterTest {
         .get(0)
         .getValue();
 
+    Coding decodedDetailed1 = (Coding) decodedEthnicity
+        .getExtensionsByUrl("detailed")
+        .get(0)
+        .getValue();
+
+    Coding decodedDetailed2 = (Coding) decodedEthnicity
+        .getExtensionsByUrl("detailed")
+        .get(1)
+        .getValue();
+
     String decodedText = decodedEthnicity
         .getExtensionsByUrl("text")
         .get(0)
@@ -348,16 +368,27 @@ public class AvroConverterTest {
         .getValueAsString();
 
     Assert.assertTrue(testOmbCategory.equalsDeep(decodedOmbCategory));
+    Assert.assertTrue(testDetailed1.equalsDeep(decodedDetailed1));
+    Assert.assertTrue(testDetailed2.equalsDeep(decodedDetailed2));
     Assert.assertEquals(testText, decodedText);
 
     Record ethnicityRecord = (Record) avroPatient.get("ethnicity");
 
     Record ombCategoryRecord =  (Record) ethnicityRecord.get("ombCategory");
 
+    List<Record> detailedRecord =  (List<Record>) ethnicityRecord.get("detailed");
+
     Assert.assertEquals(testOmbCategory.getSystem(), ombCategoryRecord.get("system"));
     Assert.assertEquals(testOmbCategory.getCode(), ombCategoryRecord.get("code"));
     Assert.assertEquals(testOmbCategory.getDisplay(), ombCategoryRecord.get("display"));
 
+    Assert.assertEquals(testDetailed1.getSystem(), detailedRecord.get(0).get("system"));
+    Assert.assertEquals(testDetailed1.getCode(), detailedRecord.get(0).get("code"));
+    Assert.assertEquals(testDetailed1.getDisplay(), detailedRecord.get(0).get("display"));
+
+    Assert.assertEquals(testDetailed2.getSystem(), detailedRecord.get(1).get("system"));
+    Assert.assertEquals(testDetailed2.getCode(), detailedRecord.get(1).get("code"));
+    Assert.assertEquals(testDetailed2.getDisplay(), detailedRecord.get(1).get("display"));
 
     Assert.assertEquals(testText, ethnicityRecord.get("text"));
   }
@@ -484,5 +515,132 @@ public class AvroConverterTest {
         .getValueAsPrimitive().getValue();
 
     Assert.assertEquals(expected, decodedIntegerField);
+  }
+
+  @Test
+  public void testMultiExtensionWithIntegerArrayField() {
+
+    Integer expected1 = (Integer) testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_ARRAY_FIELD)
+        .get(0).getValueAsPrimitive().getValue();
+
+    Integer expected2 = (Integer) testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_ARRAY_FIELD)
+        .get(1).getValueAsPrimitive().getValue();
+
+    Integer actual1 = ((List<Integer>)avroBunsenTestProfilePatient.get("integerArrayField")).get(0);
+    Integer actual2 = ((List<Integer>)avroBunsenTestProfilePatient.get("integerArrayField")).get(1);
+
+    Assert.assertEquals(expected1, actual1);
+    Assert.assertEquals(expected2, actual2);
+
+    Integer decodedIntegerField1 = (Integer) testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_ARRAY_FIELD)
+        .get(0).getValueAsPrimitive().getValue();
+
+    Integer decodedIntegerField2 = (Integer) testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_ARRAY_FIELD)
+        .get(1).getValueAsPrimitive().getValue();
+
+    Assert.assertEquals(expected1, decodedIntegerField1);
+    Assert.assertEquals(expected2, decodedIntegerField2);
+
+    final List<Record> nestedExtList = (List<Record>) avroBunsenTestProfilePatient
+        .get("nestedExt");
+  }
+
+  @Test
+  public void testMultiNestedExtension() {
+
+    final Extension nestedExtension1 = testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_NESTED_EXT_FIELD)
+        .get(0);
+
+    final Extension nestedExtension2 = testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_NESTED_EXT_FIELD)
+        .get(1);
+
+    String text1 = nestedExtension1.getExtensionsByUrl("text")
+        .get(0).getValueAsPrimitive().getValueAsString();
+
+    String text2 = nestedExtension1.getExtensionsByUrl("text")
+        .get(1).getValueAsPrimitive().getValueAsString();
+
+    String text3 = nestedExtension2.getExtensionsByUrl("text")
+        .get(0).getValueAsPrimitive().getValueAsString();
+
+    CodeableConcept codeableConcept1 = (CodeableConcept) nestedExtension1
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(0).getValue();
+
+    CodeableConcept codeableConcept2 = (CodeableConcept) nestedExtension1
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(1).getValue();
+
+    CodeableConcept codeableConcept3 = (CodeableConcept) nestedExtension2
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(0).getValue();
+
+    final Extension decodedNestedExtension1 = testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_NESTED_EXT_FIELD)
+        .get(0);
+
+    final Extension decodedNestedExtension2 = testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_NESTED_EXT_FIELD)
+        .get(1);
+
+    String decodedText1 = decodedNestedExtension1.getExtensionsByUrl("text")
+        .get(0).getValueAsPrimitive().getValueAsString();
+
+    String decodedText2 = decodedNestedExtension1.getExtensionsByUrl("text")
+        .get(1).getValueAsPrimitive().getValueAsString();
+
+    String decodedText3 = decodedNestedExtension2.getExtensionsByUrl("text")
+        .get(0).getValueAsPrimitive().getValueAsString();
+
+    CodeableConcept decodedCodeableConcept1 = (CodeableConcept) decodedNestedExtension1
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(0).getValue();
+
+    CodeableConcept decodedCodeableConcept2 = (CodeableConcept) decodedNestedExtension1
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(1).getValue();
+
+    CodeableConcept decodedCodeableConcept3 = (CodeableConcept) decodedNestedExtension2
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(0).getValue();
+
+    Assert.assertEquals(text1, decodedText1);
+    Assert.assertEquals(text2, decodedText2);
+    Assert.assertEquals(text3, decodedText3);
+
+    Assert.assertTrue(codeableConcept1.equalsDeep(decodedCodeableConcept1));
+    Assert.assertTrue(codeableConcept2.equalsDeep(decodedCodeableConcept2));
+    Assert.assertTrue(codeableConcept3.equalsDeep(decodedCodeableConcept3));
+
+    final List<Record> nestedExtList = (List<Record>) avroBunsenTestProfilePatient
+        .get("nestedExt");
+
+    final Record nestedExt1 = nestedExtList.get(0);
+    final Record nestedExt2 = nestedExtList.get(1);
+
+    final List<Record> textList1 = (List<Record>) nestedExt1.get("text");
+    final List<Record> textList2 = (List<Record>) nestedExt2.get("text");
+
+    final List<Record> codeableConceptsList1 = (List<Record>) nestedExt1.get("codeableConceptExt");
+    final List<Record> codeableConceptsList2 = (List<Record>) nestedExt2.get("codeableConceptExt");
+
+    Assert.assertEquals(text1, textList1.get(0));
+    Assert.assertEquals(text2, textList1.get(1));
+    Assert.assertEquals(text3, textList2.get(0));
+
+    Assert.assertEquals(codeableConcept1.getCoding().get(0).getCode(),
+        ((List<Record>)codeableConceptsList1.get(0).get("coding")).get(0).get("code"));
+
+    Assert.assertEquals(codeableConcept2.getCoding().get(0).getCode(),
+        ((List<Record>)codeableConceptsList1.get(1).get("coding")).get(0).get("code"));
+
+    Assert.assertEquals(codeableConcept3.getCoding().get(0).getCode(),
+        ((List<Record>)codeableConceptsList2.get(0).get("coding")).get(0).get("code"));
   }
 }

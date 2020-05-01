@@ -12,6 +12,7 @@ import com.cerner.bunsen.definitions.HapiContainedConverter;
 import com.cerner.bunsen.definitions.HapiConverter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiFieldSetter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiObjectConverter;
+import com.cerner.bunsen.definitions.HapiConverter.MultiValueConverter;
 import com.cerner.bunsen.definitions.LeafExtensionConverter;
 import com.cerner.bunsen.definitions.PrimitiveConverter;
 import com.cerner.bunsen.definitions.StringConverter;
@@ -291,7 +292,8 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
     }
   }
 
-  private static class MultiValuedToAvroConverter extends HapiConverter<Schema> {
+  private static class MultiValuedToAvroConverter extends HapiConverter<Schema> implements
+      MultiValueConverter {
 
     private class MultiValuedtoHapiConverter implements HapiFieldSetter {
 
@@ -323,6 +325,11 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
     MultiValuedToAvroConverter(HapiConverter<Schema> elementConverter) {
       this.elementConverter = elementConverter;
+    }
+
+    @Override
+    public HapiConverter getElementConverter() {
+      return elementConverter;
     }
 
     @Override

@@ -47,6 +47,14 @@ public abstract class HapiConverter<T> {
   }
 
   /**
+   * Supporting interface to convert multiple values for the corresponding field on a FHIR object.
+   */
+  public interface MultiValueConverter {
+
+    HapiConverter getElementConverter();
+  }
+
+  /**
    * Converts a HAPI object or list of objects to the equivalent
    * in the alternative data model
    *

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
-import org.apache.avro.generic.GenericData.Record;
+import java.util.List;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -366,6 +366,16 @@ public class SparkRowConverterTest {
         .get(0)
         .getValue();
 
+    Coding testDetailed1 = (Coding) testEthnicity
+        .getExtensionsByUrl("detailed")
+        .get(0)
+        .getValue();
+
+    Coding testDetailed2 = (Coding) testEthnicity
+        .getExtensionsByUrl("detailed")
+        .get(1)
+        .getValue();
+
     String testText = testEthnicity
         .getExtensionsByUrl("text")
         .get(0)
@@ -381,6 +391,16 @@ public class SparkRowConverterTest {
         .get(0)
         .getValue();
 
+    Coding decodedDetailed1 = (Coding) decodedEthnicity
+        .getExtensionsByUrl("detailed")
+        .get(0)
+        .getValue();
+
+    Coding decodedDetailed2 = (Coding) decodedEthnicity
+        .getExtensionsByUrl("detailed")
+        .get(1)
+        .getValue();
+
     String decodedText = decodedEthnicity
         .getExtensionsByUrl("text")
         .get(0)
@@ -388,6 +408,8 @@ public class SparkRowConverterTest {
         .getValueAsString();
 
     Assert.assertTrue(testOmbCategory.equalsDeep(decodedOmbCategory));
+    Assert.assertTrue(testDetailed1.equalsDeep(decodedDetailed1));
+    Assert.assertTrue(testDetailed2.equalsDeep(decodedDetailed2));
     Assert.assertEquals(testText, decodedText);
 
     Row ombCategoryRow = testPatientDataset.select(
@@ -399,6 +421,21 @@ public class SparkRowConverterTest {
     Assert.assertEquals(testOmbCategory.getSystem(), ombCategoryRow.get(0));
     Assert.assertEquals(testOmbCategory.getCode(), ombCategoryRow.get(1));
     Assert.assertEquals(testOmbCategory.getDisplay(), ombCategoryRow.get(2));
+
+    // the ethnicity extension has multiple "detailed" sub-extension values
+    Row detailedRow = testPatientDataset.select(
+        "ethnicity.detailed.system",
+        "ethnicity.detailed.code",
+        "ethnicity.detailed.display")
+        .head();
+
+    Assert.assertEquals(testDetailed1.getSystem(), detailedRow.getList(0).get(0));
+    Assert.assertEquals(testDetailed1.getCode(), detailedRow.getList(1).get(0));
+    Assert.assertEquals(testDetailed1.getDisplay(), detailedRow.getList(2).get(0));
+
+    Assert.assertEquals(testDetailed2.getSystem(), detailedRow.getList(0).get(1));
+    Assert.assertEquals(testDetailed2.getCode(), detailedRow.getList(1).get(1));
+    Assert.assertEquals(testDetailed2.getDisplay(), detailedRow.getList(2).get(1));
 
     Row textRow = testPatientDataset.select("ethnicity.text").head();
 
@@ -543,5 +580,161 @@ public class SparkRowConverterTest {
         .getValueAsPrimitive().getValue();
 
     Assert.assertEquals(expected, decodedIntegerField);
+  }
+
+  @Test
+  public void testMultiExtensionWithIntegerArrayField() {
+
+    Integer expected1 = (Integer) testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_ARRAY_FIELD)
+        .get(0).getValueAsPrimitive().getValue();
+
+    Integer expected2 = (Integer) testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_ARRAY_FIELD)
+        .get(1).getValueAsPrimitive().getValue();
+
+    Integer actual1 = (Integer) testBunsenTestProfilePatientDataset
+        .select("integerArrayField").head().getList(0).get(0);
+
+    Integer actual2 = (Integer) testBunsenTestProfilePatientDataset
+        .select("integerArrayField").head().getList(0).get(1);
+
+    Assert.assertEquals(expected1, actual1);
+    Assert.assertEquals(expected2, actual2);
+
+    Integer decodedIntegerArrayField1 = (Integer) testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_ARRAY_FIELD)
+        .get(0).getValueAsPrimitive().getValue();
+
+    Integer decodedIntegerArrayField2 = (Integer) testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_INTEGER_ARRAY_FIELD)
+        .get(1).getValueAsPrimitive().getValue();
+
+    Assert.assertEquals(expected1, decodedIntegerArrayField1);
+    Assert.assertEquals(expected2, decodedIntegerArrayField2);
+  }
+
+  @Test
+  public void testMultiNestedExtension() {
+
+    final Extension nestedExtension1 = testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_NESTED_EXT_FIELD)
+        .get(0);
+
+    final Extension nestedExtension2 = testBunsenTestProfilePatient
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_NESTED_EXT_FIELD)
+        .get(1);
+
+    String text1 = nestedExtension1.getExtensionsByUrl("text")
+        .get(0).getValueAsPrimitive().getValueAsString();
+
+    String text2 = nestedExtension1.getExtensionsByUrl("text")
+        .get(1).getValueAsPrimitive().getValueAsString();
+
+    String text3 = nestedExtension2.getExtensionsByUrl("text")
+        .get(0).getValueAsPrimitive().getValueAsString();
+
+    CodeableConcept codeableConcept1 = (CodeableConcept) nestedExtension1
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(0).getValue();
+
+    CodeableConcept codeableConcept2 = (CodeableConcept) nestedExtension1
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(1).getValue();
+
+    CodeableConcept codeableConcept3 = (CodeableConcept) nestedExtension2
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(0).getValue();
+
+    final Extension decodedNestedExtension1 = testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_NESTED_EXT_FIELD)
+        .get(0);
+
+    final Extension decodedNestedExtension2 = testBunsenTestProfilePatientDecoded
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_NESTED_EXT_FIELD)
+        .get(1);
+
+    String decodedText1 = decodedNestedExtension1.getExtensionsByUrl("text")
+        .get(0).getValueAsPrimitive().getValueAsString();
+
+    String decodedText2 = decodedNestedExtension1.getExtensionsByUrl("text")
+        .get(1).getValueAsPrimitive().getValueAsString();
+
+    String decodedText3 = decodedNestedExtension2.getExtensionsByUrl("text")
+        .get(0).getValueAsPrimitive().getValueAsString();
+
+    CodeableConcept decodedCodeableConcept1 = (CodeableConcept) decodedNestedExtension1
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(0).getValue();
+
+    CodeableConcept decodedCodeableConcept2 = (CodeableConcept) decodedNestedExtension1
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(1).getValue();
+
+    CodeableConcept decodedCodeableConcept3 = (CodeableConcept) decodedNestedExtension2
+        .getExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD)
+        .get(0).getValue();
+
+    Assert.assertEquals(text1, decodedText1);
+    Assert.assertEquals(text2, decodedText2);
+    Assert.assertEquals(text3, decodedText3);
+
+    Assert.assertTrue(codeableConcept1.equalsDeep(decodedCodeableConcept1));
+    Assert.assertTrue(codeableConcept2.equalsDeep(decodedCodeableConcept2));
+    Assert.assertTrue(codeableConcept3.equalsDeep(decodedCodeableConcept3));
+
+    final Dataset<Row> textExtDataset =
+        testBunsenTestProfilePatientDataset.select("nestedExt.text");
+
+    final Dataset<Row> textRow = textExtDataset
+        .select(functions.explode(functions.col("text")).alias("textRow"));
+
+    final Object text_1 = textRow.collectAsList().get(0).getList(0).get(0);
+    final Object text_2 = textRow.collectAsList().get(0).getList(0).get(1);
+    final Object text_3 = textRow.collectAsList().get(1).getList(0).get(0);
+
+    Assert.assertEquals(decodedText1, text_1);
+    Assert.assertEquals(decodedText2, text_2);
+    Assert.assertEquals(decodedText3, text_3);
+
+    final Dataset<Row> codeableConceptExtDataset =
+        testBunsenTestProfilePatientDataset.select("nestedExt.codeableConceptExt");
+
+    final Dataset<Row> conceptRow = codeableConceptExtDataset
+        .select(functions.explode(functions.col("codeableConceptExt")).alias("conceptRow"));
+
+    final int conceptRow1_size = conceptRow.collectAsList().get(0).getList(0).size();
+    final int conceptRow2_size = conceptRow.collectAsList().get(1).getList(0).size();
+
+    Assert.assertEquals(2, conceptRow1_size);
+    Assert.assertEquals(1, conceptRow2_size);
+
+    final List<Row> conceptRow1 = conceptRow.collectAsList().get(0).getList(0);
+    final Object coding_1 = conceptRow1.get(0).getList(1).get(0);
+    final Object coding_2 = conceptRow1.get(1).getList(1).get(0);
+
+    Assert.assertEquals(decodedCodeableConcept1.getCoding().get(0).getCode(),
+        ((Row)coding_1).getAs("code"));
+    Assert.assertEquals(decodedCodeableConcept1.getCoding().get(0).getDisplay(),
+        ((Row)coding_1).getAs("display"));
+    Assert.assertEquals(decodedCodeableConcept1.getCoding().get(0).getSystem(),
+        ((Row)coding_1).getAs("system"));
+
+    Assert.assertEquals(decodedCodeableConcept2.getCoding().get(0).getCode(),
+        ((Row)coding_2).getAs("code"));
+    Assert.assertEquals(decodedCodeableConcept2.getCoding().get(0).getDisplay(),
+        ((Row)coding_2).getAs("display"));
+    Assert.assertEquals(decodedCodeableConcept2.getCoding().get(0).getSystem(),
+        ((Row)coding_2).getAs("system"));
+
+    final List<Row> conceptRow2 = conceptRow.collectAsList().get(1).getList(0);
+    final Object coding_3 = conceptRow2.get(0).getList(1).get(0);
+
+    Assert.assertEquals(decodedCodeableConcept3.getCoding().get(0).getCode(),
+        ((Row)coding_3).getAs("code"));
+    Assert.assertEquals(decodedCodeableConcept3.getCoding().get(0).getDisplay(),
+        ((Row)coding_3).getAs("display"));
+    Assert.assertEquals(decodedCodeableConcept3.getCoding().get(0).getSystem(),
+        ((Row)coding_3).getAs("system"));
   }
 }

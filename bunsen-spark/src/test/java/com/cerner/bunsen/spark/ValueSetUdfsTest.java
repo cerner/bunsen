@@ -1,6 +1,5 @@
 package com.cerner.bunsen.spark;
 
-import ca.uhn.fhir.context.FhirContext;
 import com.cerner.bunsen.FhirContexts;
 import com.cerner.bunsen.spark.codes.Hierarchies;
 import com.cerner.bunsen.spark.codes.broadcast.BroadcastableValueSets;

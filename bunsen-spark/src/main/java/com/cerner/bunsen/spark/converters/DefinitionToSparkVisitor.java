@@ -12,6 +12,7 @@ import com.cerner.bunsen.definitions.HapiContainedConverter;
 import com.cerner.bunsen.definitions.HapiConverter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiFieldSetter;
 import com.cerner.bunsen.definitions.HapiConverter.HapiObjectConverter;
+import com.cerner.bunsen.definitions.HapiConverter.MultiValueConverter;
 import com.cerner.bunsen.definitions.LeafExtensionConverter;
 import com.cerner.bunsen.definitions.PrimitiveConverter;
 import com.cerner.bunsen.definitions.StringConverter;
@@ -231,7 +232,8 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
     }
   }
 
-  private static class MultiValuedToSparkConverter extends HapiConverter {
+  private static class MultiValuedToSparkConverter extends HapiConverter implements
+      MultiValueConverter {
 
     private class MultiValuedtoHapiConverter implements HapiFieldSetter {
 
@@ -279,6 +281,11 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
     MultiValuedToSparkConverter(HapiConverter elementConverter) {
       this.elementConverter = elementConverter;
+    }
+
+    @Override
+    public HapiConverter getElementConverter() {
+      return elementConverter;
     }
 
     @Override
