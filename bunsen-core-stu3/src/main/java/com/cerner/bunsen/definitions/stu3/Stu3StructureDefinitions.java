@@ -170,6 +170,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
       return Collections.singletonList(StructureField.extension(
           extensions.get(0).fieldName(),
           extensions.get(0).extensionUrl(),
+          extensions.get(0).isModifier(),
           visitor.visitMultiValued(extensions.get(0).fieldName(), extensions.get(0).result())));
 
     } else {
@@ -216,6 +217,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
         return Collections.singletonList(
             StructureField.extension(sliceName,
                 url,
+                extensionRoot.getIsModifier(),
                 result));
       }
 
@@ -244,6 +246,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
       return Collections.singletonList(
           StructureField.extension(sliceName,
               extensionUrl,
+              extensionRoot.getIsModifier(),
               result));
 
     }
@@ -317,6 +320,7 @@ public class Stu3StructureDefinitions extends StructureDefinitions {
       StructureField<T> field = new StructureField<>(elementName,
           elementName,
           null,
+          false,
           true,
           visitor.visitChoice(elementName, choiceTypes));
 

@@ -17,6 +17,8 @@ public class StructureField<T> {
 
   private final boolean isChoice;
 
+  private final boolean isModifier;
+
   private final T visitorResult;
 
   /**
@@ -25,18 +27,21 @@ public class StructureField<T> {
    * @param propertyName the FHIR property name
    * @param fieldName the field name for which the property is encoded
    * @param extensionUrl the URL, if this is for an extension
+   * @param isModifier flag indicating whether this is a modifier extension
    * @param isChoice flag indicating whether this is a choice type
    * @param visitorResult the result of the visitor.
    */
   public StructureField(String propertyName,
       String fieldName,
       String extensionUrl,
+      boolean isModifier,
       boolean isChoice,
       T visitorResult) {
 
     this.propertyName = propertyName;
     this.fieldName = fieldName;
     this.extensionUrl = extensionUrl;
+    this.isModifier = isModifier;
     this.isChoice = isChoice;
     this.visitorResult = visitorResult;
   }
@@ -75,6 +80,16 @@ public class StructureField<T> {
   }
 
   /**
+   * An indicator whether the field is a modifier extension.
+   *
+   * @return true if it is a modifier extension, false otherwise.
+   */
+  public boolean isModifier() {
+
+    return isModifier;
+  }
+
+  /**
    * An indicator whether the field is a choice type.
    *
    * @return true if it is a choice type, false otherwise.
@@ -103,7 +118,7 @@ public class StructureField<T> {
    */
   public static <T> StructureField<T> property(String propertyName, T visitorResult) {
 
-    return new StructureField<>(propertyName, propertyName, null, false, visitorResult);
+    return new StructureField<>(propertyName, propertyName, null, false, false, visitorResult);
   }
 
   /**
@@ -111,14 +126,15 @@ public class StructureField<T> {
    *
    * @param fieldName the name of the field in which the extension is represented.
    * @param extensionUrl the URL for the extension.
+   * @param isModifier flag indicating whether this is a modifier extension
    * @param visitorResult the visitor result.
    * @param <T> the return type of the visitor.
    * @return the StructField for the given extension.
    */
   public static <T> StructureField<T> extension(String fieldName,
       String extensionUrl,
+      boolean isModifier,
       T visitorResult) {
-
-    return new StructureField<>(null, fieldName, extensionUrl, false, visitorResult);
+    return new StructureField<>(null, fieldName, extensionUrl, isModifier, false, visitorResult);
   }
 }

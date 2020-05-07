@@ -12,6 +12,7 @@ import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBase;
 import org.hl7.fhir.instance.model.api.IBaseExtension;
 import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
+import org.hl7.fhir.instance.model.api.IBaseHasModifierExtensions;
 
 /**
  * Partial converter implementation for composite structures.
@@ -90,8 +91,9 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
           if (child.extensionUrl() != null) {
 
-            BaseRuntimeChildDefinition childDefinition =
-                compositeDefinition.getChildByName("extension");
+            BaseRuntimeChildDefinition childDefinition = child.isModifier()
+                ? compositeDefinition.getChildByName("modifierExtension")
+                : compositeDefinition.getChildByName("extension");
 
             child.result().setField(fhirObject, childDefinition, fieldValue);
 
@@ -196,9 +198,10 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
         }
       } else if (converter.extensionUrl() != null) {
 
-        // No corresponding property for the name, so see if it is an extension.
-        List<? extends IBaseExtension> extensions =
-            ((IBaseHasExtensions) composite).getExtension();
+        // No corresponding property for the name, so see if it is an Extension or ModifierExtention
+        List<? extends IBaseExtension> extensions = schemaEntry.isModifier()
+            ? ((IBaseHasModifierExtensions) composite).getModifierExtension()
+            : ((IBaseHasExtensions) composite).getExtension();
 
         for (IBaseExtension extension: extensions) {
 
@@ -214,8 +217,9 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
         final String extensionUrl =
             ((MultiValueConverter) converter).getElementConverter().extensionUrl();
 
-        List<? extends IBaseExtension> extensions =
-            ((IBaseHasExtensions) composite).getExtension();
+        List<? extends IBaseExtension> extensions = schemaEntry.isModifier()
+            ? ((IBaseHasModifierExtensions) composite).getModifierExtension()
+            : ((IBaseHasExtensions) composite).getExtension();
 
         final List<? extends IBaseExtension> extensionList = extensions.stream()
             .filter(extension -> extension.getUrl().equals(extensionUrl))
@@ -283,6 +287,7 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
             "contained",
             null,
             false,
+            false,
             containedFieldSetter);
 
       } else if (child.extensionUrl() != null) {
@@ -337,6 +342,7 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
       return new StructureField<>(child.propertyName(),
           child.fieldName(),
           child.extensionUrl(),
+          child.isModifier(),
           child.isChoice(),
           childConverter);
 

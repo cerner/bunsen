@@ -492,6 +492,7 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
                     relativeType + "Id",
                     null,
                     false,
+                    false,
                     new RelativeValueConverter(relativeType));
 
               }).collect(Collectors.toList());

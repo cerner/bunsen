@@ -84,6 +84,13 @@ public class TestData {
   public static final String BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD =
       "http://hl7.org/fhir/bunsen/test/StructureDefinition/bunsen-test-codeableConcept-extension";
 
+  public static final String BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD =
+      "http://hl7.org/fhir/bunsen/test/StructureDefinition/"
+          + "bunsen-test-codeableConcept-modifierExtension";
+
+  public static final String BUNSEN_TEST_STRING_MODIFIER_EXT_FIELD =
+      "http://hl7.org/fhir/bunsen/test/StructureDefinition/bunsen-test-string-modifierExtension";
+
   /**
    * Returns a FHIR Condition for testing purposes.
    *
@@ -429,6 +436,33 @@ public class TestData {
     final Extension codeableConceptExt3 = nestedExtension2.addExtension();
     codeableConceptExt3.setUrl(BUNSEN_TEST_CODEABLE_CONCEPT_EXT_FIELD);
     codeableConceptExt3.setValue(codeableconcept3);
+
+    // add multiple ModifierExtension fields
+    Extension stringModifierExtension = patient.addModifierExtension();
+    stringModifierExtension.setUrl(BUNSEN_TEST_STRING_MODIFIER_EXT_FIELD);
+    stringModifierExtension.setValue(new StringType("test string modifier value"));
+
+    CodeableConcept concept1 = new CodeableConcept();
+    concept1.addCoding()
+        .setSystem("http://snomed.info/sct")
+        .setCode("C-1")
+        .setDisplay("C-1 Codeable Concept Modifier Extension")
+        .setUserSelected(true);
+
+    Extension codeableConceptField = patient.addModifierExtension();
+    codeableConceptField.setUrl(BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD);
+    codeableConceptField.setValue(concept1);
+
+    CodeableConcept concept2 = new CodeableConcept();
+    concept2.addCoding()
+        .setSystem("http://snomed.info/sct")
+        .setCode("C-2")
+        .setDisplay("C-2 Codeable Concept Modifier Extension")
+        .setUserSelected(true);
+
+    Extension codeableConceptField2 = patient.addModifierExtension();
+    codeableConceptField2.setUrl(BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD);
+    codeableConceptField2.setValue(concept2);
 
     return patient;
   }
