@@ -737,4 +737,62 @@ public class SparkRowConverterTest {
     Assert.assertEquals(decodedCodeableConcept3.getCoding().get(0).getSystem(),
         ((Row)coding_3).getAs("system"));
   }
+
+  @Test
+  public void testSimpleModifierExtensionWithStringField() {
+
+    String expected = (String) testBunsenTestProfilePatient
+        .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_STRING_MODIFIER_EXT_FIELD)
+        .get(0).getValueAsPrimitive().getValue();
+
+    String actual = testBunsenTestProfilePatientDataset.select("stringModifierExt")
+        .head().getString(0);
+
+    Assert.assertEquals(expected, actual);
+
+    String decodedStringField = (String) testBunsenTestProfilePatientDecoded
+        .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_STRING_MODIFIER_EXT_FIELD)
+        .get(0).getValueAsPrimitive().getValue();
+
+    Assert.assertEquals(expected, decodedStringField);
+  }
+
+  @Test
+  public void testMultiModifierExtensionsWithCodeableConceptField() {
+
+    CodeableConcept expected1 = (CodeableConcept) testBunsenTestProfilePatient
+        .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD)
+        .get(0).getValue();
+
+    CodeableConcept expected2 = (CodeableConcept) testBunsenTestProfilePatient
+        .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD)
+        .get(1).getValue();
+
+    CodeableConcept decodedCodeableConceptField1 =
+        (CodeableConcept) testBunsenTestProfilePatientDecoded
+            .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD)
+            .get(0).getValue();
+
+    CodeableConcept decodedCodeableConceptField2 =
+        (CodeableConcept) testBunsenTestProfilePatientDecoded
+            .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD)
+            .get(1).getValue();
+
+    Assert.assertTrue(expected1.equalsDeep(decodedCodeableConceptField1));
+    Assert.assertTrue(expected2.equalsDeep(decodedCodeableConceptField2));
+
+    final List<Row> codings = testBunsenTestProfilePatientDataset
+        .select(functions.explode(functions.col("codeableConceptModifierExt.coding"))
+            .alias("coding")).select("coding.code", "coding.display").collectAsList();
+
+    Assert.assertEquals(decodedCodeableConceptField1.getCoding().get(0).getCode(),
+        codings.get(0).getList(0).get(0));
+    Assert.assertEquals(decodedCodeableConceptField1.getCoding().get(0).getDisplay(),
+        codings.get(0).getList(1).get(0));
+
+    Assert.assertEquals(decodedCodeableConceptField2.getCoding().get(0).getCode(),
+        codings.get(1).getList(0).get(0));
+    Assert.assertEquals(decodedCodeableConceptField2.getCoding().get(0).getDisplay(),
+        codings.get(1).getList(1).get(0));
+  }
 }

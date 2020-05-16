@@ -237,8 +237,6 @@ public class Bundles {
       Class resourceClass,
       List<Class> containedClasses) {
 
-    FhirContext context = FhirContexts.contextFor(fhirVersion);
-
     String resourceTypeUrl = FhirContexts.contextFor(fhirVersion)
         .getResourceDefinition(resourceClass).getName();
 
@@ -246,6 +244,25 @@ public class Bundles {
         .map(c -> FhirContexts.contextFor(fhirVersion)
             .getResourceDefinition(c).getName())
         .collect(Collectors.toList());
+
+    return extractEntry(spark, bundles, resourceTypeUrl, containedClassesUrls);
+  }
+
+  /**
+   * Extracts the given resource type from the RDD of bundles and returns
+   * it as a Dataset of that type, including any declared resources contained
+   * to the parent resource.
+   *
+   * @param spark the spark session
+   * @param bundles the RDD of FHIR Bundles
+   * @param resourceTypeUrl the url of the resource
+   * @param containedClassesUrls the list of urls of the resources contained to the parent resource
+   * @return a dataset of the given resource
+   */
+  public Dataset<Row> extractEntry(SparkSession spark, JavaRDD<BundleContainer> bundles,
+      String resourceTypeUrl, List<String> containedClassesUrls) {
+
+    FhirContext context = FhirContexts.contextFor(fhirVersion);
 
     SparkRowConverter converter = SparkRowConverter
         .forResource(context, resourceTypeUrl, containedClassesUrls);

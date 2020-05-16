@@ -643,4 +643,67 @@ public class AvroConverterTest {
     Assert.assertEquals(codeableConcept3.getCoding().get(0).getCode(),
         ((List<Record>)codeableConceptsList2.get(0).get("coding")).get(0).get("code"));
   }
+
+  @Test
+  public void testSimpleModifierExtensionWithStringField() {
+
+    String expected = (String) testBunsenTestProfilePatient
+        .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_STRING_MODIFIER_EXT_FIELD)
+        .get(0).getValueAsPrimitive().getValue();
+
+    String actual = (String) avroBunsenTestProfilePatient.get("stringModifierExt");
+
+    Assert.assertEquals(expected, actual);
+
+    String decodedStringField = (String) testBunsenTestProfilePatientDecoded
+        .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_STRING_MODIFIER_EXT_FIELD)
+        .get(0).getValueAsPrimitive().getValue();
+
+    Assert.assertEquals(expected, decodedStringField);
+  }
+
+  @Test
+  public void testMultiModifierExtensionsWithCodeableConceptField() {
+
+    CodeableConcept expected1 = (CodeableConcept) testBunsenTestProfilePatient
+        .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD)
+        .get(0).getValue();
+
+    CodeableConcept expected2 = (CodeableConcept) testBunsenTestProfilePatient
+        .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD)
+        .get(1).getValue();
+
+    CodeableConcept decodedCodeableConceptField1 =
+        (CodeableConcept) testBunsenTestProfilePatientDecoded
+            .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD)
+            .get(0).getValue();
+
+    CodeableConcept decodedCodeableConceptField2 =
+        (CodeableConcept) testBunsenTestProfilePatientDecoded
+            .getModifierExtensionsByUrl(TestData.BUNSEN_TEST_CODEABLE_CONCEPT_MODIFIER_EXT_FIELD)
+            .get(1).getValue();
+
+    Assert.assertTrue(expected1.equalsDeep(decodedCodeableConceptField1));
+    Assert.assertTrue(expected2.equalsDeep(decodedCodeableConceptField2));
+
+    final List<Record> codeableConceptList = (List<Record>) avroBunsenTestProfilePatient
+        .get("codeableConceptModifierExt");
+
+    final Record codeableConcept1 = codeableConceptList.get(0);
+    final Record codeableConcept2 = codeableConceptList.get(1);
+
+    Assert.assertEquals(decodedCodeableConceptField1.getCoding().get(0).getSystem(),
+        ((List<Record>)codeableConcept1.get("coding")).get(0).get("system"));
+    Assert.assertEquals(decodedCodeableConceptField1.getCoding().get(0).getCode(),
+        ((List<Record>)codeableConcept1.get("coding")).get(0).get("code"));
+    Assert.assertEquals(decodedCodeableConceptField1.getCoding().get(0).getDisplay(),
+        ((List<Record>)codeableConcept1.get("coding")).get(0).get("display"));
+
+    Assert.assertEquals(decodedCodeableConceptField2.getCoding().get(0).getSystem(),
+        ((List<Record>)codeableConcept2.get("coding")).get(0).get("system"));
+    Assert.assertEquals(decodedCodeableConceptField2.getCoding().get(0).getCode(),
+        ((List<Record>)codeableConcept2.get("coding")).get(0).get("code"));
+    Assert.assertEquals(decodedCodeableConceptField2.getCoding().get(0).getDisplay(),
+        ((List<Record>)codeableConcept2.get("coding")).get(0).get("display"));
+  }
 }

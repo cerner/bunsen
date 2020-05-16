@@ -47,6 +47,10 @@ public class BunsenTestStu3ProfileProvider implements ProfileProvider {
         "definitions/StructureDefinition-bunsen-test-profile-nested-extension.json");
     load(support, parser,
         "definitions/StructureDefinition-bunsen-test-profile-codeableconcept-ext.json");
+    load(support, parser,
+        "definitions/StructureDefinition-bunsen-test-codeableConcept-modifierExt.json");
+    load(support, parser,
+        "definitions/StructureDefinition-bunsen-test-string-modifierExt.json");
   }
 
   @Override
