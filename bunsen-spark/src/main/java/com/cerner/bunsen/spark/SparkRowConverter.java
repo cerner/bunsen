@@ -68,7 +68,7 @@ public class SparkRowConverter {
    * @param containedResourceTypeUrls the list of URLs of contained resource types
    * @return an Avro converter instance.
    */
-  public static SparkRowConverter forResource(FhirContext context,
+  public static synchronized SparkRowConverter forResource(FhirContext context,
       String resourceTypeUrl,
       List<String> containedResourceTypeUrls) {
 
