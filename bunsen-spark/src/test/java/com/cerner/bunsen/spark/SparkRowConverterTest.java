@@ -23,6 +23,7 @@ import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.IntegerType;
 import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
+import org.hl7.fhir.dstu3.model.Meta;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Provenance;
@@ -794,5 +795,19 @@ public class SparkRowConverterTest {
         codings.get(1).getList(0).get(0));
     Assert.assertEquals(decodedCodeableConceptField2.getCoding().get(0).getDisplay(),
         codings.get(1).getList(1).get(0));
+  }
+
+  @Test
+  public void testMetaElement() {
+
+    String id =  testPatient.getId();
+    Meta meta = testPatient.getMeta();
+
+    Assert.assertEquals(id, testPatientDecoded.getId());
+    Assert.assertEquals(meta.getTag().size(), testPatientDecoded.getMeta().getTag().size());
+    Assert.assertEquals(meta.getTag().get(0).getCode(),
+        testPatientDecoded.getMeta().getTag().get(0).getCode());
+    Assert.assertEquals(meta.getTag().get(0).getSystem(),
+        testPatientDecoded.getMeta().getTag().get(0).getSystem());
   }
 }

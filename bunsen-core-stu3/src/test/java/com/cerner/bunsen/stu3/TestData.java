@@ -1,6 +1,7 @@
 package com.cerner.bunsen.stu3;
 
 import com.google.common.collect.ImmutableList;
+import java.util.List;
 import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.BooleanType;
 import org.hl7.fhir.dstu3.model.CodeType;
@@ -21,6 +22,7 @@ import org.hl7.fhir.dstu3.model.Medication.MedicationPackageComponent;
 import org.hl7.fhir.dstu3.model.Medication.MedicationPackageContentComponent;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
 import org.hl7.fhir.dstu3.model.MedicationRequest.MedicationRequestSubstitutionComponent;
+import org.hl7.fhir.dstu3.model.Meta;
 import org.hl7.fhir.dstu3.model.Narrative;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
@@ -262,6 +264,19 @@ public class TestData {
     humanName.addGiven("given_name");
     humanName.addGiven("middle_name");
     patient.addName(humanName);
+
+
+    Meta meta = new Meta();
+
+    List<Coding> tag = meta.getTag();
+
+    Coding code = new Coding();
+    code.setCode("test-code");
+    code.setSystem("test-system");
+
+    tag.add(code);
+    meta.setTag(tag);
+    patient.setMeta(meta);
 
     return patient;
   }
