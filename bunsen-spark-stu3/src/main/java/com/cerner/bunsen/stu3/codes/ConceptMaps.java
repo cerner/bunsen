@@ -3,7 +3,6 @@ package com.cerner.bunsen.stu3.codes;
 import static org.apache.spark.sql.functions.lit;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
-
 import com.cerner.bunsen.FhirContexts;
 import com.cerner.bunsen.spark.SparkRowConverter;
 import com.cerner.bunsen.spark.codes.Mapping;
@@ -11,7 +10,6 @@ import com.cerner.bunsen.spark.codes.UrlAndVersion;
 import com.cerner.bunsen.spark.codes.base.AbstractConceptMaps;
 import com.cerner.bunsen.spark.codes.broadcast.BroadcastableConceptMap;
 import com.cerner.bunsen.spark.codes.broadcast.BroadcastableMappings;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
@@ -32,7 +29,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoder;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-
 import org.hl7.fhir.dstu3.model.ConceptMap;
 import org.hl7.fhir.dstu3.model.ConceptMap.ConceptMapGroupComponent;
 import org.hl7.fhir.dstu3.model.ConceptMap.ConceptMapGroupUnmappedMode;

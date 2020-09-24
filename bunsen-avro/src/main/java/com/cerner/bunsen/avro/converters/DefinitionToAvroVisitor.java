@@ -177,7 +177,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
 
     private final GenericData avroData = SpecificData.get();
 
-    HapiChoiceToAvroConverter(Map<String ,HapiConverter<Schema>> choiceTypes,
+    HapiChoiceToAvroConverter(Map<String, HapiConverter<Schema>> choiceTypes,
         Schema structType,
         FhirConversionSupport fhirSupport) {
 
