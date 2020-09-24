@@ -24,6 +24,7 @@ import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IntegerType;
 import org.hl7.fhir.dstu3.model.Medication;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
+import org.hl7.fhir.dstu3.model.Meta;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Provenance;
@@ -705,5 +706,20 @@ public class AvroConverterTest {
         ((List<Record>)codeableConcept2.get("coding")).get(0).get("code"));
     Assert.assertEquals(decodedCodeableConceptField2.getCoding().get(0).getDisplay(),
         ((List<Record>)codeableConcept2.get("coding")).get(0).get("display"));
+  }
+
+  @Test
+  public void testMetaElement() {
+
+    String id =  testPatient.getId();
+    Meta meta = testPatient.getMeta();
+
+    Assert.assertEquals(id, testPatientDecoded.getId());
+
+    Assert.assertEquals(meta.getTag().size(), testPatientDecoded.getMeta().getTag().size());
+    Assert.assertEquals(meta.getTag().get(0).getCode(),
+        testPatientDecoded.getMeta().getTag().get(0).getCode());
+    Assert.assertEquals(meta.getTag().get(0).getSystem(),
+        testPatientDecoded.getMeta().getTag().get(0).getSystem());
   }
 }
