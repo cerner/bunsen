@@ -100,7 +100,9 @@ public class DefinitionToSparkVisitor implements DefinitionVisitor<HapiConverter
 
     @Override
     public void setField(IBase parentObject, BaseRuntimeChildDefinition fieldToSet,
-        Object sparkObject) {}
+        Object sparkObject) {
+
+    }
 
     @Override
     public IBase toHapi(Object input) {

@@ -45,7 +45,9 @@ public abstract class HapiCompositeConverter<T> extends HapiConverter<T> {
 
     @Override
     public void setField(IBase parentObject, BaseRuntimeChildDefinition fieldToSet,
-        Object sourceObject) {}
+        Object sourceObject) {
+
+    }
 
     @Override
     public IBase toHapi(Object input) {

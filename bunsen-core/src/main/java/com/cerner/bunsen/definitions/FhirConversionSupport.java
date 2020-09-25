@@ -39,7 +39,7 @@ public abstract class FhirConversionSupport implements Serializable {
   public abstract Map<String, List> compositeValues(IBase composite);
 
   /**
-   * Extracts resources of the given type from a FHIR bundle
+   * Extracts resources of the given type from a FHIR bundle.
    *
    * @param bundle the bundle
    * @param resourceType the resource type name, such as "Condition" or "Observation"

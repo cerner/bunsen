@@ -9,7 +9,6 @@ import com.cerner.bunsen.FhirContexts;
 import com.cerner.bunsen.spark.SparkRowConverter;
 import com.cerner.bunsen.spark.codes.UrlAndVersion;
 import com.cerner.bunsen.spark.codes.Value;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;

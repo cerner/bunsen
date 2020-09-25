@@ -56,7 +56,7 @@ public abstract class HapiConverter<T> {
 
   /**
    * Converts a HAPI object or list of objects to the equivalent
-   * in the alternative data model
+   * in the alternative data model.
    *
    * @param input a HAPI object.
    * @return the data model-specific equivalent.
