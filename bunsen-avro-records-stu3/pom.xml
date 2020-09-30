@@ -135,7 +135,10 @@
             <argument>${project.build.directory}/fhir_resources.avpr</argument>
 
             <!-- FHIR resources to generate. All data elements contained in these
-                 resources will be generated as well. -->
+                 resources will be generated as well. -->           
+            
+            <!-- NOTE: Contained classes should be in the same argument as their
+                 parent class, deliminated by semicolons (i.e. resource;contained) -->
 
             <!-- Base Resources -->
             <argument>http://hl7.org/fhir/StructureDefinition/Patient</argument>
@@ -153,6 +156,7 @@
             <argument>http://hl7.org/fhir/StructureDefinition/ProcedureRequest</argument>
             <argument>http://hl7.org/fhir/StructureDefinition/Observation</argument>
             <argument>http://hl7.org/fhir/StructureDefinition/Procedure</argument>
+            <argument>http://hl7.org/fhir/StructureDefinition/MedicationRequest;http://hl7.org/fhir/StructureDefinition/Medication</argument>
 
             <!-- US Core Resources -->
             <argument>http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient</argument>
