@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Java Usage &mdash; Bunsen 0.5.10-SNAPSHOT documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script type="text/javascript" src="_static/github_fork.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/github_fork.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="FHIR Versions" href="fhir_versions.html" />
+    <link rel="prev" title="Getting Started" href="introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Bunsen
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.10-SNAPSHOT
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Java Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-encoders">Creating Encoders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#converting-existing-datasets">Converting Existing Datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fhir_versions.html">FHIR Versions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_bunsen_works.html">How Bunsen Works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stu3_pythonapis.html">STU3 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="r4_pythonapis.html">R4 Python APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="snomed_and_loinc.html">Working with SNOMED, LOINC, and Other Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building Bunsen</a></li>
+</ul>
+
+            
+          
+<li>
+  <a href="apidocs/index.html">JavaDocs</a>
+  <a href="https://github.com/cerner/bunsen">GitHub Repository</a>
+</li>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bunsen</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Java Usage</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/java_usage.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="java-usage">
+<h1>Java Usage<a class="headerlink" href="#java-usage" title="Permalink to this headline">¶</a></h1>
+<p>Bunsen allows any org.hl7.fhir.dstu3.model.* Java object to be encoded as an Apache Spark Dataset,
+transformed and queried, and then optionally decoded back to the original Java forms.</p>
+<div class="section" id="creating-encoders">
+<h2>Creating Encoders<a class="headerlink" href="#creating-encoders" title="Permalink to this headline">¶</a></h2>
+<p>Here is a simple example of converting a local list of FHIR Condition objects into
+a Dataset and some simple queries of that dataset:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">FhirEncoders</span> <span class="n">encoders</span> <span class="o">=</span> <span class="n">FhirEncoders</span><span class="o">.</span><span class="na">forStu3</span><span class="o">().</span><span class="na">getOrCreate</span><span class="o">();</span>
+
+<span class="n">List</span><span class="o">&lt;</span><span class="n">Condition</span><span class="o">&gt;</span> <span class="n">conditionList</span> <span class="o">=</span> <span class="c1">// A list of org.hl7.fhir.dstu3.model.Condition objects.</span>
+
+<span class="n">Dataset</span><span class="o">&lt;</span><span class="n">Condition</span><span class="o">&gt;</span> <span class="n">conditions</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="na">createDataset</span><span class="o">(</span><span class="n">conditionList</span><span class="o">,</span>
+    <span class="n">encoders</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">Condition</span><span class="o">.</span><span class="na">class</span><span class="o">));</span>
+
+<span class="c1">// Query for conditions based on arbitrary Spark SQL expressions</span>
+<span class="n">Dataset</span><span class="o">&lt;</span><span class="n">Condition</span><span class="o">&gt;</span> <span class="n">activeConditions</span> <span class="o">=</span> <span class="n">conditions</span>
+    <span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">&quot;clinicalStatus == &#39;active&#39; and verificationStatus == &#39;confirmed&#39;&quot;</span><span class="o">);</span>
+
+<span class="c1">// Count the query results</span>
+<span class="kt">long</span> <span class="n">activeConditionCount</span> <span class="o">=</span> <span class="n">activeConditions</span><span class="o">.</span><span class="na">count</span><span class="o">();</span>
+
+<span class="c1">// Convert the results back into a list of org.hl7.fhir.dstu3.model.Condition objects.</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">Condition</span><span class="o">&gt;</span> <span class="n">retrievedConditions</span> <span class="o">=</span> <span class="n">activeConditions</span><span class="o">.</span><span class="na">collectAsList</span><span class="o">();</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="converting-existing-datasets">
+<h2>Converting Existing Datasets<a class="headerlink" href="#converting-existing-datasets" title="Permalink to this headline">¶</a></h2>
+<p>In other cases, users may have an existing Spark Dataset of FHIR resources in their JSON
+or XML forms. In this case, the <a class="reference external" href="http://hapifhir.io">HAPI FHIR</a> APIs in Spark map functions
+to convert to the data model, and then use Bunsen to encode the produced data mdoel as FHIR
+resources.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// Created as a static field to avoid creation costs on each invocation.</span>
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">FhirContext</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">FhirContext</span><span class="o">.</span><span class="na">forDstu3</span><span class="o">();</span>
+
+<span class="c1">// &lt;snip&gt;</span>
+
+<span class="n">FhirEncoders</span> <span class="n">encoders</span> <span class="o">=</span> <span class="n">FhirEncoders</span><span class="o">.</span><span class="na">forStu3</span><span class="o">().</span><span class="na">getOrCreate</span><span class="o">();</span>
+
+<span class="n">Dataset</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">conditionJsons</span> <span class="o">=</span> <span class="c1">// A Dataset of FHIR conditions in JSON form.</span>
+
+<span class="n">Dataset</span><span class="o">&lt;</span><span class="n">Condition</span><span class="o">&gt;</span> <span class="n">conditions</span> <span class="o">=</span> <span class="n">conditionJsons</span><span class="o">.</span><span class="na">map</span><span class="o">(</span>
+    <span class="o">(</span><span class="n">MapFunction</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span><span class="n">Condition</span><span class="o">&gt;)</span> <span class="n">conditionString</span> <span class="o">-&gt;</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="o">(</span><span class="n">Condition</span><span class="o">)</span> <span class="n">ctx</span><span class="o">.</span><span class="na">newJsonParser</span><span class="o">().</span><span class="na">parseResource</span><span class="o">(</span><span class="n">conditionString</span><span class="o">);</span>
+    <span class="o">},</span>
+    <span class="n">encoders</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">Condition</span><span class="o">.</span><span class="na">class</span><span class="o">));</span>
+
+<span class="c1">// Arbitrary queries or further transformations the the conditions Dataset goes here.</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="fhir_versions.html" class="btn btn-neutral float-right" title="FHIR Versions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="introduction.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cerner
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
