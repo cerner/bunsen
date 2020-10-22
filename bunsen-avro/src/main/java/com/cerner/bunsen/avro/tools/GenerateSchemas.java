@@ -20,6 +20,8 @@ import org.apache.avro.Schema;
  */
 public class GenerateSchemas {
 
+  private static final String DELIMITER = ";";
+
   /**
    * Main entrypoint for schema generation tool.
    *
@@ -54,7 +56,8 @@ public class GenerateSchemas {
 
     Map<String, List<String>> resourceTypeUrls = Arrays.stream(args)
         .skip(1)
-        .collect(Collectors.toMap(item -> item.split(";")[0], item -> generateContainedUrls(item)));
+        .collect(Collectors.toMap(item -> item.split(DELIMITER)[0],
+            item -> generateContainedUrls(item)));
 
     List<Schema> schemas = AvroConverter.generateSchemas(FhirContexts.forStu3(), resourceTypeUrls);
 
@@ -85,11 +88,11 @@ public class GenerateSchemas {
    * @param key the string containing resource url(s)
    * @return the list of contained urls
    */
-  private static List<String> generateContainedUrls(String key) {
-    if (!key.contains(";")) {
+  public static List<String> generateContainedUrls(String key) {
+    if (!key.contains(DELIMITER)) {
       return Collections.emptyList();
     }
-    String[] splitKey = key.split(";");
+    String[] splitKey = key.split(DELIMITER);
     String[] valList = Arrays.copyOfRange(splitKey, 1, splitKey.length);
     return Arrays.asList(valList);
   }
