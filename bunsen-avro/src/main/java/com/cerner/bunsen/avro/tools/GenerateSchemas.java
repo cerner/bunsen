@@ -20,7 +20,7 @@ import org.apache.avro.Schema;
  */
 public class GenerateSchemas {
 
-  private static final String DELIMITER = ";";
+  public static final String DELIMITER = ";";
 
   /**
    * Main entrypoint for schema generation tool.

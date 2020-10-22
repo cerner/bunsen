@@ -51,7 +51,7 @@ public class GenerateSchemasTest {
   @Test
   public void testGenerateContainedUrlsWithStringWithOneContainedResource() {
     String testResourceWithContained = 
-        BASE_TEST_URL + ";http://test.org/test_contained";
+        BASE_TEST_URL + GenerateSchemas.DELIMITER + "http://test.org/test_contained";
     List<String> testContainedList = 
         GenerateSchemas.generateContainedUrls(testResourceWithContained);
 
@@ -61,7 +61,7 @@ public class GenerateSchemasTest {
 
   @Test
   public void testGenerateContainedUrlWithStringWithMultipleContainedResources() {
-    StringJoiner joiner = new StringJoiner(";");
+    StringJoiner joiner = new StringJoiner(GenerateSchemas.DELIMITER);
     joiner.add(BASE_TEST_URL);
     String[] originalList = new String[10];
 
