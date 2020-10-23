@@ -353,14 +353,14 @@ public class SpecificRecordsTest {
   }
 
   @Test
-  public void testNullDefaultValuesProperlyEncodedForContainedTypes() {
+  public void testNullDefaultValuesForContainedTypes() {
     MedicationRequestContained medicationRequest =
         MedicationRequestContained.newBuilder().build();
     Assert.assertNull(medicationRequest.getMedication());
   }
 
   @Test
-  public void testNullDefaultValuesProperlyEncodedForCompositeTypes() {
+  public void testNullDefaultValuesForCompositeTypes() {
     ConditionEvidence conditionEvidence =
         ConditionEvidence.newBuilder().build();
     Assert.assertNull(conditionEvidence.getId());
@@ -370,7 +370,7 @@ public class SpecificRecordsTest {
 
 
   @Test
-  public void testNullDefaultValuesProperlyEncodedForParentExtensionTypes() {
+  public void testNullDefaultValuesForParentExtensionTypes() {
     UsCoreRace usCoreRace = UsCoreRace.newBuilder().build();
     Assert.assertNull(usCoreRace.getOmbCategory());
     Assert.assertNull(usCoreRace.getDetailed());
@@ -378,7 +378,7 @@ public class SpecificRecordsTest {
   }
 
   @Test
-  public void testNullDefaultValuesProperlyEncodedForChoiceTypes() {
+  public void testNullDefaultValuesForChoiceTypes() {
     ChoicePeriodDate cpd = ChoicePeriodDate.newBuilder().build();
     Assert.assertNull(cpd.getDate());
 
@@ -389,7 +389,7 @@ public class SpecificRecordsTest {
   }
 
   @Test
-  public void testNullDefaultValuesProperlyEncodedForReferenceTypes() {
+  public void testNullDefaultValuesForReferenceTypes() {
     OrganizationPractitionerReference opr =
         OrganizationPractitionerReference.newBuilder().build();
     Assert.assertNull(opr.getOrganizationId());
