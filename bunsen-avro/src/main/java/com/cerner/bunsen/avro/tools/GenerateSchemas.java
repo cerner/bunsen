@@ -2,6 +2,7 @@ package com.cerner.bunsen.avro.tools;
 
 import com.cerner.bunsen.FhirContexts;
 import com.cerner.bunsen.avro.AvroConverter;
+import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,6 +19,8 @@ import org.apache.avro.Schema;
  * Simple utility class to generate avro schemas for a given set of resource types.
  */
 public class GenerateSchemas {
+
+  public static final String DELIMITER = ";";
 
   /**
    * Main entrypoint for schema generation tool.
@@ -53,7 +56,8 @@ public class GenerateSchemas {
 
     Map<String, List<String>> resourceTypeUrls = Arrays.stream(args)
         .skip(1)
-        .collect(Collectors.toMap(Function.identity(), item -> Collections.emptyList()));
+        .collect(Collectors.toMap(item -> item.split(DELIMITER)[0],
+            item -> generateContainedUrls(item)));
 
     List<Schema> schemas = AvroConverter.generateSchemas(FhirContexts.forStu3(), resourceTypeUrls);
 
@@ -76,5 +80,20 @@ public class GenerateSchemas {
     }
 
     return 0;
+  }
+
+  /**
+   * Helper function to extract contained resources from resource string.
+   * 
+   * @param key the string containing resource url(s)
+   * @return the list of contained urls
+   */
+  public static List<String> generateContainedUrls(String key) {
+    if (!key.contains(DELIMITER)) {
+      return Collections.emptyList();
+    }
+    String[] splitKey = key.split(DELIMITER);
+    String[] valList = Arrays.copyOfRange(splitKey, 1, splitKey.length);
+    return Arrays.asList(valList);
   }
 }

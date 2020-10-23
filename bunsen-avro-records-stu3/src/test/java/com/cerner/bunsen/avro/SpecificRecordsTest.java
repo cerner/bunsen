@@ -1,15 +1,20 @@
 package com.cerner.bunsen.avro;
 
 import com.cerner.bunsen.FhirContexts;
+import com.cerner.bunsen.stu3.TestData;
+import com.cerner.bunsen.stu3.avro.ChoiceAddressCodeableConceptLocationReference;
+import com.cerner.bunsen.stu3.avro.ChoicePeriodDate;
+import com.cerner.bunsen.stu3.avro.MedicationRequestContained;
 import com.cerner.bunsen.stu3.avro.Observation;
 import com.cerner.bunsen.stu3.avro.OrganizationPractitionerReference;
 import com.cerner.bunsen.stu3.avro.PatientReference;
+import com.cerner.bunsen.stu3.avro.us.core.ConditionEvidence;
+import com.cerner.bunsen.stu3.avro.us.core.Patient;
 import com.cerner.bunsen.stu3.avro.us.core.UsCoreEthnicity;
-import com.cerner.bunsen.stu3.TestData;
+import com.cerner.bunsen.stu3.avro.us.core.UsCoreRace;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IntegerType;
@@ -17,8 +22,6 @@ import org.hl7.fhir.dstu3.model.MedicationRequest;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.cerner.bunsen.stu3.avro.us.core.Patient;
 
 /**
  * Unit test for conversion of specific records to and from HAPI resources.
@@ -349,4 +352,50 @@ public class SpecificRecordsTest {
     Assert.assertEquals(testProvenanceId, decodedProvenanceId);
   }
 
+  @Test
+  public void testNullDefaultValuesForContainedTypes() {
+    MedicationRequestContained medicationRequest =
+        MedicationRequestContained.newBuilder().build();
+    Assert.assertNull(medicationRequest.getMedication());
+  }
+
+  @Test
+  public void testNullDefaultValuesForCompositeTypes() {
+    ConditionEvidence conditionEvidence =
+        ConditionEvidence.newBuilder().build();
+    Assert.assertNull(conditionEvidence.getId());
+    Assert.assertNull(conditionEvidence.getCode());
+    Assert.assertNull(conditionEvidence.getDetail());
+  }
+
+
+  @Test
+  public void testNullDefaultValuesForParentExtensionTypes() {
+    UsCoreRace usCoreRace = UsCoreRace.newBuilder().build();
+    Assert.assertNull(usCoreRace.getOmbCategory());
+    Assert.assertNull(usCoreRace.getDetailed());
+    Assert.assertNull(usCoreRace.getText());
+  }
+
+  @Test
+  public void testNullDefaultValuesForChoiceTypes() {
+    ChoicePeriodDate cpd = ChoicePeriodDate.newBuilder().build();
+    Assert.assertNull(cpd.getDate());
+
+    ChoiceAddressCodeableConceptLocationReference testLocation =
+        ChoiceAddressCodeableConceptLocationReference.newBuilder().build();
+    Assert.assertNull(testLocation.getAddress());
+    Assert.assertNull(testLocation.getReference());
+  }
+
+  @Test
+  public void testNullDefaultValuesForReferenceTypes() {
+    OrganizationPractitionerReference opr =
+        OrganizationPractitionerReference.newBuilder().build();
+    Assert.assertNull(opr.getOrganizationId());
+    Assert.assertNull(opr.getId());
+    Assert.assertNull(opr.getReference());
+    Assert.assertNull(opr.getIdentifier());
+    Assert.assertNull(opr.getDisplay());
+  }
 }

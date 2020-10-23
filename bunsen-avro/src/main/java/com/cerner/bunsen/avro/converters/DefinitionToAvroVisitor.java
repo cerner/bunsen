@@ -567,7 +567,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
           .map(entry -> new Field(entry.fieldName(),
               nullable(entry.result().getDataType()),
               "Reference field",
-              (Object) null))
+              JsonProperties.NULL_VALUE))
           .collect(Collectors.toList());
 
       Schema schema = Schema.createRecord(recordName,
@@ -617,7 +617,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
               new Field(entry.fieldName(),
                   nullable(entry.result().getDataType()),
                   "Doc here",
-                  (Object) null))
+                  JsonProperties.NULL_VALUE))
           .collect(Collectors.toList());
 
       Schema schema = Schema.createRecord(recordName,
@@ -665,7 +665,7 @@ public class DefinitionToAvroVisitor implements DefinitionVisitor<HapiConverter<
           return new Field(fieldName,
               nullable(entry.getValue().getDataType()),
               "Choice field",
-              (Object) null);
+              JsonProperties.NULL_VALUE);
 
         })
         .collect(Collectors.toList());
