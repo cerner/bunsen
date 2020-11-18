@@ -155,7 +155,7 @@ public abstract class AbstractValueSets<T extends IBaseResource,C extends Abstra
         .stream()
         .peek(p -> {
           if (p.getVersion() == null) {
-            throw new RuntimeException("Version is null for valueset with url " + p.getUrl());
+            throw new RuntimeException("Version is missing for valueset with url " + p.getUrl());
           }
         })
         .collect(Collectors.toMap(UrlAndVersion::getUrl,
