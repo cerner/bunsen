@@ -153,6 +153,11 @@ public abstract class AbstractValueSets<T extends IBaseResource,C extends Abstra
     return spark.createDataset(members.rdd(), URL_AND_VERSION_ENCODER)
         .collectAsList()
         .stream()
+        .peek(p -> {
+          if (p.getVersion() == null) {
+            throw new RuntimeException("Version is null for valueset with url " + p.getUrl());
+          }
+        })
         .collect(Collectors.toMap(UrlAndVersion::getUrl,
             UrlAndVersion::getVersion));
   }

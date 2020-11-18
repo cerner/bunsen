@@ -1,0 +1,46 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "ValueSet",
+        "id": "valueset-id",
+        "url": "urn:test:valueset:valueset",
+        "identifier": [
+          {
+            "use": "usual",
+            "type": {
+              "text": "ValueSet"
+            },
+            "system": "urn:test:system",
+            "value": "a",
+            "assigner": {
+              "reference": "reference1"
+            }
+          }
+        ],
+        "name": "Test_Valueset",
+        "title": "Test_Valueset",
+        "status": "active",
+        "compose": {
+          "include": [
+            {
+              "system": "urn:oid:2.2.2.1.1.1.1",
+              "concept": [
+                {
+                  "code": "11",
+                  "display": "test display"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ValueSet/valueset-id"
+      }
+    }
+  ]
+}

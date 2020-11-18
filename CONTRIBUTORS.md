@@ -9,6 +9,7 @@ Cerner Corporation
 - Yushan Wei [@ysmwei]
 - Nate Langlois [@ntlanglois]
 - Sriram Iyer [@ramiyer1998]
+- Sravan Kumar Anumula [@sanumula]
 
 [@rbrush]: https://github.com/rbrush
 [@bdrillard]: https://github.com/bdrillard
@@ -17,3 +18,4 @@ Cerner Corporation
 [@ysmwei]: https://github.com/ysmwei
 [@ntlanglois]: https://github.com/ntlanglois
 [@ramiyer1998]: https://github.com/ramiyer1998
+[@sanumula]: https://github.com/sanumula

@@ -1,14 +1,25 @@
 package com.cerner.bunsen.stu3.codes;
 
 import com.cerner.bunsen.FhirContexts;
+import com.cerner.bunsen.spark.Bundles;
+import com.cerner.bunsen.spark.Bundles.BundleContainer;
 import com.cerner.bunsen.spark.SparkRowConverter;
+import com.cerner.bunsen.spark.codes.Hierarchies;
 import com.cerner.bunsen.spark.codes.Value;
+import com.cerner.bunsen.spark.codes.broadcast.BroadcastableValueSets;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.hl7.fhir.dstu3.model.ValueSet;
 import org.hl7.fhir.dstu3.model.ValueSet.ConceptSetComponent;
@@ -364,5 +375,33 @@ public class ValueSetsTest {
 
     Assert.assertEquals(1, values.size());
     Assert.assertEquals(expectedValue, values.get(0));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testValuesetBundleWithMissingVersion() {
+
+    JavaRDD<BundleContainer> valueSetsRdd = Bundles.forStu3()
+        .loadFromDirectory(spark, "src/test/resources/json/valuesets-bundle", 1);
+
+    Dataset<Row> valueSetList = Bundles.forStu3()
+        .extractEntry(spark, valueSetsRdd, "ValueSet");
+    ValueSets valueSets = ValueSets.getEmpty(spark).withValueSets(valueSetList);
+
+    BroadcastableValueSets.Builder builder = BroadcastableValueSets.newBuilder();
+
+    Map<String, String> valueSetsInfo = new HashMap<>();
+    valueSetsInfo.put("Test_Valueset", "urn:test:valueset:valueset");
+
+    for (Entry entry : valueSetsInfo.entrySet()) {
+      builder.addReference((String) entry.getKey(), (String) entry.getValue());
+    }
+
+    BroadcastableValueSets broadcastableValueSets = builder.build(
+        spark, valueSets,
+        Hierarchies.getEmpty(spark));
+
+    JavaSparkContext ctx = new JavaSparkContext(spark.sparkContext());
+
+    Broadcast<BroadcastableValueSets> broadcast = ctx.broadcast(broadcastableValueSets);
   }
 }
