@@ -1,6 +1,8 @@
 package com.cerner.bunsen.spark.codes.broadcast;
 
 import com.cerner.bunsen.FhirContexts;
+import com.cerner.bunsen.spark.Bundles;
+import com.cerner.bunsen.spark.Bundles.BundleContainer;
 import com.cerner.bunsen.spark.MockValueSets;
 import com.cerner.bunsen.spark.SparkRowConverter;
 import com.cerner.bunsen.spark.codes.Hierarchies;
@@ -10,13 +12,18 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -199,6 +206,23 @@ public class BroadcastableValueSetsTest {
     Assert.assertFalse(valueSets.hasCode("priorities",
         "http://hl7.org/fhir/v3/ActPriority",
         "R"));
+  }
+
+  @Test
+  public void testBroadcastableValuesetThrowsExceptionWhenVersionIsMissing() {
+
+    MockValueSets mockValueSets1 = MockValueSets.createValuesetWithMissingVersion(spark,
+        SparkRowConverter.forResource(FhirContexts.forStu3(), "ValueSet"));
+
+    try {
+      BroadcastableValueSets valueSets = BroadcastableValueSets.newBuilder()
+          .addReference("priorities",
+              "urn:test:valueset:valueset")
+          .build(spark, mockValueSets1, Hierarchies.getEmpty(spark));
+    } catch (RuntimeException e) {
+      Assert.assertEquals("Version is missing for valueset with url urn:test:valueset:valueset",
+          e.getMessage());
+    }
   }
 
   @Test

@@ -87,6 +87,39 @@ public class MockValueSets extends AbstractValueSets<ValueSet,MockValueSets> {
         valueSetRowConverter);
   }
 
+  /**
+   * Convenience method to create a MockValueSets instance with missing valueset version element.
+   */
+  public static MockValueSets createValuesetWithMissingVersion(SparkSession spark,
+      SparkRowConverter valueSetRowConverter) {
+
+    Dataset<UrlAndVersion> urlAndVersion = spark.createDataset(
+        ImmutableList.of(new UrlAndVersion(
+                "urn:test:valueset:valueset",
+                null)),
+        AbstractValueSets.getUrlAndVersionEncoder());
+
+    Dataset<Row> valueSet = valueSetRowConverter.toDataFrame(spark,
+        ImmutableList.of(new ValueSet()
+                .setUrl("urn:test:valueset:valueset")))
+        .withColumn("timestamp", lit("20180101120000").cast("timestamp"));
+
+    Dataset<Value> values = spark.createDataset(
+        ImmutableList.of(new Value(
+                "urn:test:valueset:valueset",
+                "1.1.0",
+                "urn:test:system",
+                null,
+                "99200")),
+        AbstractValueSets.getValueEncoder());
+
+    return new MockValueSets(spark,
+        urlAndVersion,
+        valueSet,
+        values,
+        valueSetRowConverter);
+  }
+
   @Override
   protected void addToValueSet(ValueSet valueSet, Dataset<Value> values) {
     throw new UnsupportedOperationException("Not implemented in mock class.");
