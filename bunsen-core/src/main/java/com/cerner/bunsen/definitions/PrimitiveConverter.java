@@ -3,6 +3,7 @@ package com.cerner.bunsen.definitions;
 import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
 import ca.uhn.fhir.context.BaseRuntimeElementDefinition;
 import org.hl7.fhir.instance.model.api.IBase;
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
 public abstract class PrimitiveConverter<T> extends HapiConverter<T> {
@@ -54,13 +55,19 @@ public abstract class PrimitiveConverter<T> extends HapiConverter<T> {
     primitive.setValue(input);
   }
 
+  protected Object fromHapi(IIdType id) {
+    return id.getIdPart();
+  }
+
   protected Object fromHapi(IPrimitiveType primitive) {
     return primitive.getValue();
   }
 
   @Override
   public Object fromHapi(Object input) {
-
+    if (input instanceof IIdType) {
+      return fromHapi((IIdType) input);
+    }
     return fromHapi((IPrimitiveType) input);
   }
 

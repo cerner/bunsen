@@ -133,9 +133,9 @@ public class BundlesTest {
     Assert.assertEquals(3, patientIds.size());
 
     List<String> expectedIds = ImmutableList.of(
-        "Patient/6666001",
-        "Patient/1032702",
-        "Patient/9995679");
+        "6666001",
+        "1032702",
+        "9995679");
 
     Assert.assertTrue(patientIds.containsAll(expectedIds));
   }
@@ -158,11 +158,11 @@ public class BundlesTest {
     Assert.assertEquals(5, conditionIds.size());
 
     List<String> expectedIds = ImmutableList.of(
-        "Condition/119",
-        "Condition/120",
-        "Condition/121",
-        "Condition/122",
-        "Condition/123");
+        "119",
+        "120",
+        "121",
+        "122",
+        "123");
 
     Assert.assertTrue(conditionIds.containsAll(expectedIds));
   }
