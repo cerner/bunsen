@@ -10,6 +10,7 @@ Cerner Corporation
 - Nate Langlois [@ntlanglois]
 - Sriram Iyer [@ramiyer1998]
 - Sravan Kumar Anumula [@sanumula]
+- Susan Choi [@sc036868]
 
 [@rbrush]: https://github.com/rbrush
 [@bdrillard]: https://github.com/bdrillard
@@ -19,3 +20,4 @@ Cerner Corporation
 [@ntlanglois]: https://github.com/ntlanglois
 [@ramiyer1998]: https://github.com/ramiyer1998
 [@sanumula]: https://github.com/sanumula
+[@sc036868]: https://github.com/sc036868

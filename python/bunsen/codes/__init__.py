@@ -88,8 +88,7 @@ class ConceptMaps(object):
         :return: the version of the given map
         """
         df = self.get_maps().where(functions.col('url') == url)
-        results = df.groupBy('version') \
-          .agg(functions.max('version').alias('latest')) \
+        results = df.agg(functions.max('version').alias('latest')) \
           .collect()
         return results[0].latest if len(results) > 0 else None
 
@@ -264,8 +263,7 @@ class ValueSets(object):
         :return: the version of the ValueSet, or None if there is none
         """
         df = self.get_value_sets().where(functions.col('url') == url)
-        results = df.groupBy('version') \
-          .agg(functions.max('version').alias('latest')) \
+        results = df.agg(functions.max('version').alias('latest')) \
           .collect()
         return results[0].latest if len(results) > 0 else None
 
