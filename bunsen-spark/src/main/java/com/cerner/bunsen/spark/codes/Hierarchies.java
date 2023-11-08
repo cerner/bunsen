@@ -435,7 +435,7 @@ public class Hierarchies {
 
     } catch (Exception describeException) {
 
-      if (describeException instanceof NoSuchTableException) {
+      if (describeException.getMessage().toLowerCase().contains("table or view not found")) {
 
         hasExistingAncestors = false;
 

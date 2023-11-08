@@ -631,7 +631,7 @@ public abstract class AbstractConceptMaps<T extends IBaseResource,
       // Checked exceptions when calling into Scala upset the Java compiler,
       // hence the need for this workaround and re-throw to propagate unexpected
       // failures.
-      if (describeException instanceof NoSuchTableException) {
+      if (describeException.getMessage().toLowerCase().contains("table or view not found")) {
 
         hasExistingMaps = false;
 

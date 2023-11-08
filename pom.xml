@@ -5,7 +5,7 @@
   <groupId>com.cerner.bunsen</groupId>
   <artifactId>bunsen-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.5.12-SNAPSHOT</version>
+  <version>0.6.0-SNAPSHOT</version>
   <name>Bunsen Parent</name>
   <description>Use FHIR resources as native Spark data sets</description>
   <url>http://engineering.cerner.com/bunsen</url>
@@ -22,15 +22,15 @@
     <compile.source>1.8</compile.source>
 
     <!-- Spark -->
-    <spark.version>2.4.4</spark.version>
-    <scala.version>2.11.8</scala.version>
-    <scala.binary.version>2.11</scala.binary.version>
+    <spark.version>3.2.1</spark.version>
+    <scala.version>2.12.17</scala.version>
+    <scala.binary.version>2.12</scala.binary.version>
     <hapi.fhir.version>3.8.0</hapi.fhir.version>
     <avro.version>1.8.2</avro.version>
     <junit.version>4.13.1</junit.version>
     <scm.url>http://github.com/cerner/bunsen/tree/master/</scm.url>
     <scm.connection>scm:git:git@github.com/cerner/bunsen.git</scm.connection>
-    <python.version>3.5.3</python.version>
+    <python.version>3.7.3</python.version>
     <maven-javadoc.plugin.version>2.10.3</maven-javadoc.plugin.version>
     <maven-project-info-reports.plugin.version>2.9</maven-project-info-reports.plugin.version>
   </properties>
@@ -637,6 +637,12 @@
         <groupId>org.apache.avro</groupId>
         <artifactId>avro-compiler</artifactId>
         <version>${avro.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.thoughtworks.paranamer</groupId>
+        <artifactId>paranamer</artifactId>
+        <version>2.8</version>
       </dependency>
 
       <!-- Test dependencies -->

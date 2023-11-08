@@ -1,6 +1,8 @@
 import os
 import sys
 import logging
+import findspark
+findspark.init()
 
 from tempfile import mkdtemp
 from pytest import fixture
